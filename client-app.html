@@ -1237,41 +1237,19 @@ function injectLiveSignal(signal, ibkrLink) {
       ${signal.note ? '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;margin:12px 0;font-size:12px;color:var(--muted2);line-height:1.5;font-style:italic">📝 ' + signal.note + '</div>' : ''}
       <div class="action-row" style="margin-top:16px">
         <button class="btn-skip" onclick="skipSignal()">✕ Salta</button>
-        <button class="btn-execute" onclick="openIBKR('${ibkrLink || ''}')">
-          ${isBuy ? '▲' : '▼'} Apri ${signal.optionType} ${signal.direction}
-        </button>
+        <a href="${ibkrLink || '#'}" target="_blank" rel="noopener"
+           class="btn-execute"
+           style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;">
+          ${isBuy ? '▲' : '▼'} Apri su IBKR
+        </a>
       </div>
     </div>`;
   }
 }
 
 function openIBKR(link) {
-  if (!link) return;
-  // Mostra overlay con link IBKR — il browser non blocca link <a> cliccati dall'utente
-  const overlay = document.getElementById('overlay');
-  const sheet = document.getElementById('confirm-sheet');
-  const title = document.getElementById('confirm-title');
-  const detail = document.getElementById('confirm-detail');
-  const warning = document.getElementById('confirm-warning');
-  const btn = document.getElementById('confirm-btn');
-
-  title.textContent = 'Apri su IBKR';
-  title.style.color = 'var(--accent)';
-  detail.innerHTML = `
-    <div style="text-align:center;padding:8px 0">
-      <div style="font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.5">
-        Tocca il bottone per aprire IBKR<br>con l'ordine già precompilato.
-      </div>
-      <a href="${link}" target="_blank" rel="noopener"
-        style="display:block;background:var(--accent);color:#061a15;font-size:17px;font-weight:800;
-               padding:16px;border-radius:14px;text-decoration:none;text-align:center;
-               box-shadow:0 8px 24px rgba(0,212,170,0.35);">
-        ▲ Apri IBKR
-      </a>
-    </div>`;
-  warning.style.display = 'none';
-  btn.style.display = 'none';
-  overlay.classList.add('show');
+  // Non più usata — il bottone è ora un <a> diretto
+  if (link) window.location.href = link;
 }
 
 function urlBase64ToUint8Array(b64) {
@@ -1291,15 +1269,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function readPendingSignal() {
+  // 1. Prova prima dal cache del SW (se app aperta da notifica)
   try {
     const cache = await caches.open('tradedesk-pending');
     const resp  = await cache.match('/pending-signal');
-    if (!resp) return;
-    const { signal, ibkrLink } = await resp.json();
-    // Cancella dopo aver letto
-    await cache.delete('/pending-signal');
-    if (signal) setTimeout(() => injectLiveSignal(signal, ibkrLink), 400);
-  } catch(e) { console.warn('readPendingSignal:', e); }
+    if (resp) {
+      const { signal, ibkrLink } = await resp.json();
+      await cache.delete('/pending-signal');
+      if (signal) { injectLiveSignal(signal, ibkrLink); return; }
+    }
+  } catch(e) {}
+
+  // 2. Fallback: chiedi al server l'ultimo segnale
+  try {
+    const res = await fetch(SERVER_URL + '/latest-signal');
+    const data = await res.json();
+    if (data && data.signal) {
+      injectLiveSignal(data.signal, data.ibkrLink);
+    }
+  } catch(e) { console.warn('readPendingSignal server:', e); }
 }
 
 </script>
