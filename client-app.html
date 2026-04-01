@@ -779,6 +779,20 @@ html, body {
           <div style="font-size:13px;color:var(--muted);line-height:1.5">Riceverai una notifica push<br>non appena arriva un nuovo trade.</div>
         </div>
       </div>
+      <!-- IBKR LINK CARD — appare quando c'è un segnale attivo -->
+      <div id="ibkr-card" style="display:none;flex-direction:column;gap:0;border-radius:20px;overflow:hidden;border:1px solid rgba(0,212,170,0.25);background:#0d2420;">
+        <div style="padding:16px 20px 12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Segnale attivo</div>
+          <div id="ibkr-signal-summary" style="font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.8;"></div>
+        </div>
+        <a id="ibkr-main-link" href="#" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;justify-content:center;gap:10px;
+                  background:var(--accent);color:#061a15;font-size:18px;font-weight:800;
+                  padding:20px;text-decoration:none;letter-spacing:-0.3px;
+                  border-top:1px solid rgba(0,212,170,0.3);">
+          ▲ Apri ordine su IBKR
+        </a>
+      </div>
 
       <!-- MINI POSITIONS below signal -->
       <div class="section-header">
@@ -1184,67 +1198,71 @@ navigator.serviceWorker?.addEventListener('message', e => {
 });
 
 function injectLiveSignal(signal, ibkrLink) {
-  const card  = document.getElementById('signal-card');
-  const isBuy = signal.direction === 'BUY';
-  const isOpt = signal.asset === 'OPTIONS';
-  const isCall = signal.optionType === 'CALL';
-  document.getElementById('signal-badge').style.display = 'flex';
-  switchPage('signal');
+  if (!signal) return;
 
+  const isBuy  = signal.direction === 'BUY';
+  const isOpt  = signal.asset === 'OPTIONS';
+  const isCall = signal.optionType === 'CALL';
+
+  // Badge nav
+  document.getElementById('signal-badge').style.display = 'flex';
+
+  // Mostra la card IBKR
+  const ibkrCard = document.getElementById('ibkr-card');
+  const ibkrLink2 = document.getElementById('ibkr-main-link');
+  const summary = document.getElementById('ibkr-signal-summary');
+
+  ibkrCard.style.display = 'flex';
+
+  // Colore card in base a direzione
+  ibkrCard.style.background = isBuy ? '#0d2420' : '#220d12';
+  ibkrCard.style.borderColor = isBuy ? 'rgba(0,212,170,0.25)' : 'rgba(255,77,109,0.25)';
+  ibkrLink2.style.background = isBuy ? 'var(--accent)' : 'var(--sell)';
+
+  // Testo bottone
+  if (isOpt) {
+    ibkrLink2.textContent = (isBuy ? '▲' : '▼') + ' Apri ' + (signal.optionType || '') + ' ' + signal.direction + ' su IBKR';
+  } else {
+    ibkrLink2.textContent = (isBuy ? '▲' : '▼') + ' Apri ' + signal.direction + ' ' + signal.ticker + ' su IBKR';
+  }
+
+  // Riepilogo segnale
   if (isOpt) {
     const expLabel = signal.expiry
       ? new Date(signal.expiry + 'T00:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'2-digit'})
       : '—';
     const expo = signal.optPrice && signal.contracts
       ? '$' + (parseFloat(signal.optPrice) * parseInt(signal.contracts) * 100).toFixed(0) : '—';
-    const color = isCall ? 'var(--accent)' : 'var(--sell)';
-    const borderColor = isCall ? 'rgba(0,212,170,0.2)' : 'rgba(255,77,109,0.2)';
-    const bgColor = isCall ? 'rgba(0,212,170,0.07)' : 'rgba(255,77,109,0.07)';
-
-    card.className = 'signal-card ' + (isBuy ? 'buy-signal' : 'sell-signal');
-    card.innerHTML = `<div class="signal-glow"></div><div class="signal-inner">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="signal-badge" style="margin-bottom:0"><span class="badge-pulse"></span>Nuovo segnale</div>
-        <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${bgColor};color:${color};border:1px solid ${borderColor}">${signal.optionType}</div>
-      </div>
-      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:2px">
-        <div class="signal-ticker">${signal.ticker}</div>
-        <div style="font-size:15px;font-weight:700;color:${color}">${signal.direction}</div>
-      </div>
-      <div class="signal-subtitle">${signal.asset} · ${signal.orderType || 'LIMIT'} ORDER</div>
-      <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:14px;padding:14px 16px;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;justify-content:space-between;">
-          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Strike</div>
-            <div style="font-size:26px;font-weight:800;color:${color}">${signal.strike || '—'}</div></div>
-          <div style="text-align:right"><div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Scadenza</div>
-            <div style="font-size:20px;font-weight:800;color:var(--text)">${expLabel.toUpperCase()}</div></div>
-        </div>
-        <div style="height:1px;background:${borderColor}"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Premio</div>
-            <div style="font-size:17px;font-weight:700;color:var(--text)">$${signal.optPrice || '—'}</div></div>
-          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Contratti</div>
-            <div style="font-size:17px;font-weight:700;color:var(--text)">${signal.contracts || '—'}</div></div>
-          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Esposizione</div>
-            <div style="font-size:17px;font-weight:700;color:var(--warn)">${expo}</div></div>
-        </div>
-      </div>
-      <div class="signal-levels">
-        <div class="level-box"><div class="level-label">Entrata</div><div class="level-value level-entry">${signal.entry || 'MKT'}</div></div>
-        <div class="level-box"><div class="level-label">Stop</div><div class="level-value level-stop">${signal.stop || '—'}</div></div>
-        <div class="level-box"><div class="level-label">Target</div><div class="level-value level-tp">${signal.target || '—'}</div></div>
-      </div>
-      ${signal.note ? '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;margin:12px 0;font-size:12px;color:var(--muted2);line-height:1.5;font-style:italic">📝 ' + signal.note + '</div>' : ''}
-      <div class="action-row" style="margin-top:16px">
-        <button class="btn-skip" onclick="skipSignal()">✕ Salta</button>
-        <a href="${ibkrLink || '#'}" target="_blank" rel="noopener"
-           class="btn-execute"
-           style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;">
-          ${isBuy ? '▲' : '▼'} Apri su IBKR
-        </a>
-      </div>
-    </div>`;
+    summary.innerHTML =
+      '<b>' + signal.ticker + '</b> ' + (signal.optionType||'') +
+      ' &nbsp;·&nbsp; Strike <b>' + (signal.strike||'—') + '</b>' +
+      ' &nbsp;·&nbsp; Scad. <b>' + expLabel + '</b><br>' +
+      'Premio <b>$' + (signal.optPrice||'—') + '</b>' +
+      ' &nbsp;·&nbsp; Contratti <b>' + (signal.contracts||'—') + '</b>' +
+      ' &nbsp;·&nbsp; Esposizione <b style="color:var(--warn)">' + expo + '</b>' +
+      (signal.stop ? '<br>Stop <b style="color:var(--warn)">$' + signal.stop + '</b>' : '') +
+      (signal.target ? ' &nbsp;·&nbsp; Target <b style="color:var(--accent)">$' + signal.target + '</b>' : '') +
+      (signal.note ? '<br><i style="color:var(--muted2)">' + signal.note + '</i>' : '');
+  } else {
+    summary.innerHTML =
+      '<b>' + signal.ticker + '</b> ' + signal.asset +
+      ' &nbsp;·&nbsp; ' + signal.direction +
+      ' &nbsp;·&nbsp; Qty <b>' + (signal.qty||'—') + '</b><br>' +
+      'Entry <b>' + (signal.entry||'MKT') + '</b>' +
+      (signal.stop ? ' &nbsp;·&nbsp; Stop <b style="color:var(--warn)">' + signal.stop + '</b>' : '') +
+      (signal.target ? ' &nbsp;·&nbsp; TP <b style="color:var(--accent)">' + signal.target + '</b>' : '') +
+      (signal.note ? '<br><i style="color:var(--muted2)">' + signal.note + '</i>' : '');
   }
+
+  // Imposta link IBKR — <a> reale, browser non può bloccarlo
+  ibkrLink2.href = ibkrLink || '#';
+
+  // Salva in localStorage per riapertura
+  try {
+    localStorage.setItem('lastSignal', JSON.stringify({ signal, ibkrLink }));
+  } catch(e) {}
+
+  switchPage('signal');
 }
 
 function openIBKR(link) {
@@ -1269,7 +1287,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function readPendingSignal() {
-  // 1. Prova prima dal cache del SW (se app aperta da notifica)
+  // 1. Cache SW
   try {
     const cache = await caches.open('tradedesk-pending');
     const resp  = await cache.match('/pending-signal');
@@ -1280,14 +1298,24 @@ async function readPendingSignal() {
     }
   } catch(e) {}
 
-  // 2. Fallback: chiedi al server l'ultimo segnale
+  // 2. Server polling
   try {
-    const res = await fetch(SERVER_URL + '/latest-signal');
+    const res  = await fetch(SERVER_URL + '/latest-signal');
     const data = await res.json();
     if (data && data.signal) {
       injectLiveSignal(data.signal, data.ibkrLink);
+      return;
     }
-  } catch(e) { console.warn('readPendingSignal server:', e); }
+  } catch(e) {}
+
+  // 3. localStorage fallback
+  try {
+    const saved = localStorage.getItem('lastSignal');
+    if (saved) {
+      const { signal, ibkrLink } = JSON.parse(saved);
+      if (signal) injectLiveSignal(signal, ibkrLink);
+    }
+  } catch(e) {}
 }
 
 </script>
