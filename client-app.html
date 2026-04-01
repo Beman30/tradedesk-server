@@ -1283,22 +1283,24 @@ function urlBase64ToUint8Array(b64) {
 document.addEventListener('DOMContentLoaded', () => {
   setupPushNotifications();
 
-  // Leggi segnale dai parametri URL (quando l'app viene aperta da notifica push)
-  const params = new URLSearchParams(window.location.search);
-  const signalParam = params.get('signal');
-  const ibkrParam = params.get('ibkr');
-  if (signalParam) {
-    try {
-      const signal = JSON.parse(decodeURIComponent(signalParam));
-      const ibkrLink = ibkrParam ? decodeURIComponent(ibkrParam) : '';
-      setTimeout(() => injectLiveSignal(signal, ibkrLink), 500);
-    } catch(e) { console.warn('Errore parsing signal da URL:', e); }
-  }
+  // Leggi segnale pendente dal cache storage (messo lì dal service worker)
+  readPendingSignal();
 
-  // Reset btn-confirm display (potrebbe essere nascosto da openIBKR)
   document.getElementById('confirm-btn').style.display = '';
   document.getElementById('confirm-warning').style.display = '';
 });
+
+async function readPendingSignal() {
+  try {
+    const cache = await caches.open('tradedesk-pending');
+    const resp  = await cache.match('/pending-signal');
+    if (!resp) return;
+    const { signal, ibkrLink } = await resp.json();
+    // Cancella dopo aver letto
+    await cache.delete('/pending-signal');
+    if (signal) setTimeout(() => injectLiveSignal(signal, ibkrLink), 400);
+  } catch(e) { console.warn('readPendingSignal:', e); }
+}
 
 </script>
 </body>
