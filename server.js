@@ -186,6 +186,9 @@ app.post('/send-signal', async (req, res) => {
   const ibkrLink = buildIBKRLink(signal);
   const { title, body } = buildNotificationText(signal);
 
+  // Salva come ultimo segnale (per polling dal cliente)
+  lastSignal = { signal, ibkrLink: buildIBKRLink(signal), timestamp: Date.now() };
+
   // Salva segnale
   const data = loadData();
   const signalRecord = {
@@ -270,6 +273,16 @@ app.get('/signals', (req, res) => {
   const data  = loadData();
   const limit = parseInt(req.query.limit) || 20;
   res.json(data.signals.slice(0, limit));
+});
+
+// ── Ultimo segnale — il cliente lo legge quando apre l'app ──
+// Resta in memoria finché non viene letto dal cliente
+let lastSignal = null;
+
+app.get('/latest-signal', (req, res) => {
+  if (!lastSignal) return res.json({ signal: null });
+  res.json(lastSignal);
+  // NON cancelliamo — il cliente può riaprire l'app e trovarlo ancora
 });
 
 // ── Link IBKR standalone (per test) ─────────────────────────
