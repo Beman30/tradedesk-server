@@ -754,28 +754,30 @@
   <!-- RIGHT: Log + Clients -->
   <div class="signal-log">
     <!-- Clients -->
-    <div class="clients-strip">
-      <div class="form-title" style="margin-bottom:4px">Clienti connessi</div>
-      <div class="client-entry" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="client-avatar">MC</div>
-          <span class="client-name">Marco C.</span>
+    <div class="clients-strip" id="clients-strip">
+      <div class="form-title" style="margin-bottom:8px">Clienti</div>
+      <!-- Clienti caricati dal server o configurati qui -->
+      <div id="clients-list">
+        <div class="client-entry" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="client-avatar">MC</div>
+            <span class="client-name">Marco C.</span>
+          </div>
+          <button onclick="openWhatsApp('393401234567')"
+            style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);
+                   border-radius:8px;padding:5px 12px;color:#25d366;font-family:var(--mono);
+                   font-size:10px;font-weight:600;cursor:pointer;letter-spacing:0.05em;">
+            WA
+          </button>
         </div>
-        <span class="client-status online">● online</span>
       </div>
-      <div class="client-entry" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="client-avatar">AL</div>
-          <span class="client-name">Andrea L.</span>
-        </div>
-        <span class="client-status offline">○ offline</span>
-      </div>
-      <div class="client-entry" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="client-avatar">GR</div>
-          <span class="client-name">Giulia R.</span>
-        </div>
-        <span class="client-status online">● online</span>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <button onclick="sendToAll()"
+          style="width:100%;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);
+                 border-radius:8px;padding:10px;color:#25d366;font-family:var(--mono);
+                 font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.08em;">
+          📲 INVIA A TUTTI VIA WHATSAPP
+        </button>
       </div>
     </div>
 
@@ -1104,9 +1106,150 @@
   document.addEventListener('DOMContentLoaded', () => {
     loadClients();
     setInterval(loadClients, 30000);
-    // Trigger options toggle in case OPTIONS is pre-selected
     toggleOptions();
   });
+
+  // ─── WHATSAPP ──────────────────────────────────────────────
+  // Numeri clienti — modifica qui con i numeri reali
+  // Formato internazionale senza + e senza spazi: 393401234567
+  const CLIENTI_WA = [
+    { nome: 'Marco C.',  numero: '393401234567' },
+    { nome: 'Andrea L.', numero: '393407654321' },
+    { nome: 'Giulia R.', numero: '393409876543' },
+  ];
+
+  function buildWAMessage() {
+    const ticker    = document.getElementById('ticker').value.trim().toUpperCase();
+    const asset     = document.getElementById('asset').value;
+    const direction = window.direction || 'BUY';
+    const isOpt     = asset === 'OPTIONS';
+    const entry     = document.getElementById('entry').value;
+    const stop      = document.getElementById('stop').value;
+    const target    = document.getElementById('target').value;
+    const note      = document.getElementById('note').value.trim();
+
+    if (!ticker) { alert('Inserisci almeno il ticker prima di inviare'); return null; }
+
+    // Costruisce il link IBKR
+    let ibkrLink = '';
+    if (isOpt) {
+      const strike    = document.getElementById('strike').value;
+      const expiry    = document.getElementById('expiry').value;
+      const optPrice  = document.getElementById('opt-price').value;
+      const contracts = document.getElementById('contracts').value;
+      const optType   = window.optionType || 'CALL';
+      const expiryFmt = expiry ? expiry.replace(/-/g,'') : '';
+
+      const params = new URLSearchParams({
+        action:    direction === 'BUY' ? 'Buy' : 'Sell',
+        symbol:    ticker,
+        secType:   'OPT',
+        right:     optType,
+        strike:    strike,
+        expiry:    expiryFmt,
+        quantity:  contracts || 1,
+        orderType: 'MKT',
+        exchange:  'SMART',
+        currency:  'USD',
+      });
+      ibkrLink = 'https://client.ibkr.com/ol/home.html#/trade?' + params.toString();
+
+      // Testo messaggio opzioni
+      const expLabel = expiry
+        ? new Date(expiry + 'T00:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'2-digit'})
+        : '—';
+      const expo = optPrice && contracts
+        ? '$' + (parseFloat(optPrice) * parseInt(contracts) * 100).toFixed(0) : '';
+
+      let msg = '📡 *SEGNALE TradeDesk*
+
+';
+      msg += `*${ticker} ${optType} ${strike}*
+`;
+      msg += `Scadenza: ${expLabel}
+`;
+      msg += `Premio: $${optPrice || '—'} · ${contracts || '—'} contratti
+`;
+      if (expo) msg += `Esposizione: ${expo}
+`;
+      if (entry) msg += `Sottostante: $${entry}
+`;
+      if (stop)  msg += `Stop: $${stop}
+`;
+      if (target) msg += `Target: $${target}
+`;
+      if (note)  msg += `
+📝 ${note}
+`;
+      msg += `
+👉 *Apri ordine su IBKR:*
+${ibkrLink}`;
+      msg += '
+
+⚠️ Verifica i dati prima di confermare.';
+      return msg;
+
+    } else {
+      const qty       = document.getElementById('qty').value;
+      const orderType = window.orderType || 'MKT';
+      const limitPrice = document.getElementById('limit-price')?.value;
+
+      const params = new URLSearchParams({
+        action:    direction === 'BUY' ? 'Buy' : 'Sell',
+        symbol:    ticker,
+        secType:   'STK',
+        quantity:  qty || 1,
+        orderType: orderType === 'MKT' ? 'MKT' : 'LMT',
+        price:     limitPrice || entry || '',
+        exchange:  'SMART',
+        currency:  'USD',
+      });
+      ibkrLink = 'https://client.ibkr.com/ol/home.html#/trade?' + params.toString();
+
+      let msg = '📡 *SEGNALE TradeDesk*
+
+';
+      msg += `*${direction} ${ticker}* · ${asset}
+`;
+      if (qty)   msg += `Quantità: ${qty}
+`;
+      if (entry) msg += `Entry: $${entry}
+`;
+      if (stop)  msg += `Stop: $${stop}
+`;
+      if (target) msg += `Target: $${target}
+`;
+      if (note)  msg += `
+📝 ${note}
+`;
+      msg += `
+👉 *Apri ordine su IBKR:*
+${ibkrLink}`;
+      msg += '
+
+⚠️ Verifica i dati prima di confermare.';
+      return msg;
+    }
+  }
+
+  function openWhatsApp(numero) {
+    const msg = buildWAMessage();
+    if (!msg) return;
+    const url = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
+  }
+
+  function sendToAll() {
+    const msg = buildWAMessage();
+    if (!msg) return;
+    // Apre WhatsApp per ogni cliente con 800ms di delay tra uno e l'altro
+    CLIENTI_WA.forEach((c, i) => {
+      setTimeout(() => {
+        const url = 'https://wa.me/' + c.numero + '?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
+      }, i * 800);
+    });
+  }
 
   function renderLog() {
     const list = document.getElementById('log-list');
