@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0c0f">
+<title>TradeDesk</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #0a0c0f;
+  --surface: #13161c;
+  --surface2: #1a1e27;
+  --surface3: #20252f;
+  --border: #232830;
+  --border2: #2c3340;
+  --text: #eceef2;
+  --muted: #4a5568;
+  --muted2: #6b7a8d;
+  --accent: #00d4aa;
+  --accent-dim: rgba(0,212,170,0.1);
+  --accent-glow: rgba(0,212,170,0.25);
+  --buy: #00d4aa;
+  --buy-dark: #00a882;
+  --sell: #ff4d6d;
+  --sell-dim: rgba(255,77,109,0.1);
+  --sell-glow: rgba(255,77,109,0.25);
+  --sell-dark: #cc3a56;
+  --warn: #f59e0b;
+  --warn-dim: rgba(245,158,11,0.1);
+  --mono: 'SF Mono', 'Fira Code', monospace;
+  --sans: -apple-system, 'Helvetica Neue', sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── LAYOUT ─────────────────────────────────── */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* STATUS BAR AREA */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 10px;
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.connection-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.conn-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50% { opacity:0.4; }
+}
+
+/* ─── CONTENT AREA ───────────────────────────── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.content::-webkit-scrollbar { display: none; }
+
+/* ─── SIGNAL CARD (hero) ─────────────────────── */
+.signal-card {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.signal-card.buy-signal {
+  background: linear-gradient(145deg, #0d2420 0%, #0f1c1a 100%);
+  border: 1px solid rgba(0,212,170,0.25);
+}
+
+.signal-card.sell-signal {
+  background: linear-gradient(145deg, #220d12 0%, #1c0f12 100%);
+  border: 1px solid rgba(255,77,109,0.25);
+}
+
+.signal-card.no-signal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.signal-glow {
+  position: absolute;
+  top: -40px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 100px;
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.buy-signal .signal-glow { background: rgba(0,212,170,0.15); }
+.sell-signal .signal-glow { background: rgba(255,77,109,0.15); }
+
+.signal-inner { padding: 20px; position: relative; }
+
+.signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.buy-signal .signal-badge {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(0,212,170,0.3);
+}
+
+.sell-signal .signal-badge {
+  background: var(--sell-dim);
+  color: var(--sell);
+  border: 1px solid rgba(255,77,109,0.3);
+}
+
+.badge-pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.buy-signal .badge-pulse { background: var(--accent); }
+.sell-signal .badge-pulse { background: var(--sell); }
+
+.signal-ticker {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.buy-signal .signal-ticker { color: var(--text); }
+.sell-signal .signal-ticker { color: var(--text); }
+
+.signal-subtitle {
+  font-size: 13px;
+  color: var(--muted2);
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.signal-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.level-box {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.level-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.level-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.level-entry { color: var(--text); }
+.level-stop { color: var(--warn); }
+.level-tp { color: var(--accent); }
+.sell-signal .level-tp { color: var(--sell); }
+
+/* ACTION BUTTONS */
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+}
+
+.btn-skip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  color: var(--muted2);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-skip:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
+
+.btn-execute {
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+}
+
+.btn-execute:active { transform: scale(0.96); }
+
+.buy-signal .btn-execute {
+  background: var(--accent);
+  color: #061a15;
+  box-shadow: 0 8px 24px rgba(0,212,170,0.3);
+}
+
+.sell-signal .btn-execute {
+  background: var(--sell);
+  color: #1a0208;
+  box-shadow: 0 8px 24px rgba(255,77,109,0.3);
+}
+
+/* NO SIGNAL STATE */
+.no-signal-inner {
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.no-signal-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+
+.no-signal-text {
+  font-size: 15px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+
+.no-signal-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ─── SECTION HEADER ─────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 2px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.section-action {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ─── POSITION CARDS ─────────────────────────── */
+.position-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pos-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+
+.pos-left { display: flex; align-items: center; gap: 10px; }
+
+.pos-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.pos-icon.long { background: var(--accent-dim); color: var(--accent); }
+.pos-icon.short { background: var(--sell-dim); color: var(--sell); }
+
+.pos-name { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+.pos-detail { font-size: 12px; color: var(--muted2); margin-top: 1px; font-weight: 500; }
+
+.pos-right { text-align: right; }
+.pos-pnl { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.pos-pnl.pos { color: var(--accent); }
+.pos-pnl.neg { color: var(--sell); }
+.pos-pnl-pct { font-size: 12px; color: var(--muted2); margin-top: 1px; font-weight: 500; }
+
+.pos-levels {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  border-top: 1px solid var(--border);
+}
+
+.pos-level-item {
+  padding: 10px 12px;
+  border-right: 1px solid var(--border);
+}
+
+.pos-level-item:last-child { border-right: none; }
+
+.pos-level-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.pos-level-val {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.pos-close-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  color: var(--sell);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pos-close-btn:active { background: var(--sell-dim); }
+
+/* ─── CHAT ───────────────────────────────────── */
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.msg-in {
+  background: var(--surface2);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+
+.msg-out {
+  background: var(--accent);
+  color: #061a15;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+  font-weight: 500;
+}
+
+.msg-time {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  padding: 0 4px;
+}
+
+.msg-time.right { text-align: right; }
+
+.msg-system {
+  align-self: center;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-weight: 500;
+}
+
+/* ─── BOTTOM NAV ─────────────────────────────── */
+.bottom-nav {
+  display: flex;
+  background: rgba(13,16,22,0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding-bottom: var(--safe-bottom);
+  flex-shrink: 0;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 0 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: opacity 0.15s;
+  position: relative;
+}
+
+.nav-item:active { opacity: 0.6; }
+
+.nav-icon {
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+}
+
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-item.active .nav-label { color: var(--accent); }
+
+.nav-badge {
+  position: absolute;
+  top: 8px;
+  right: calc(50% - 18px);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--sell);
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg);
+}
+
+/* ─── PAGES ──────────────────────────────────── */
+.page { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.page.active { display: flex; }
+
+/* Signal page */
+#page-signal .content { justify-content: flex-start; }
+
+/* Positions page */
+#page-positions .content { }
+
+/* Chat page */
+#page-chat {
+  display: none;
+  flex-direction: column;
+}
+
+#page-chat.active { display: flex; }
+
+.chat-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-content::-webkit-scrollbar { display: none; }
+
+.chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + var(--safe-bottom));
+  background: rgba(13,16,22,0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+
+.chat-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 22px;
+  padding: 10px 16px;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+  font-family: var(--sans);
+  -webkit-appearance: none;
+}
+
+.chat-input::placeholder { color: var(--muted); }
+
+.chat-send {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.chat-send:active { transform: scale(0.92); }
+
+/* ─── CONFIRM OVERLAY ────────────────────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,15,0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 100;
+  padding: 0 16px;
+  padding-bottom: calc(24px + var(--safe-bottom));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.confirm-sheet {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transform: translateY(40px);
+  transition: transform 0.3s ease;
+}
+
+.overlay.show .confirm-sheet { transform: translateY(0); }
+
+.confirm-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.confirm-detail {
+  background: var(--surface3);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirm-key { font-size: 13px; color: var(--muted2); font-weight: 500; }
+.confirm-val { font-size: 14px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.confirm-val.buy { color: var(--accent); }
+.confirm-val.sell { color: var(--sell); }
+.confirm-val.warn { color: var(--warn); }
+
+.confirm-warning {
+  background: var(--warn-dim);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--warn);
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.confirm-actions { display: flex; gap: 10px; }
+
+.btn-cancel {
+  flex: 1;
+  padding: 16px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  color: var(--muted2);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cancel:active { opacity: 0.7; }
+
+.btn-confirm-exec {
+  flex: 2;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: -0.2px;
+}
+
+.btn-confirm-exec:active { transform: scale(0.97); }
+.btn-confirm-exec.buy { background: var(--accent); color: #061a15; box-shadow: 0 8px 24px rgba(0,212,170,0.35); }
+.btn-confirm-exec.sell { background: var(--sell); color: #1a0208; box-shadow: 0 8px 24px rgba(255,77,109,0.35); }
+
+/* CLOSE CONFIRM */
+.close-sheet { }
+.close-sheet .confirm-title { color: var(--sell); }
+
+/* SUCCESS FLASH */
+.success-flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  border-radius: 24px;
+  padding: 32px 40px;
+  text-align: center;
+  z-index: 200;
+  opacity: 0;
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.success-flash.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.success-icon { font-size: 48px; margin-bottom: 12px; }
+.success-text { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+.success-sub { font-size: 13px; color: var(--muted2); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── PAGE: SEGNALE ─────────────────────── -->
+  <div class="page active" id="page-signal">
+    <div class="status-bar">
+      <div class="app-name">TradeDesk</div>
+      <div class="connection-pill">
+        <span class="conn-dot"></span>
+        Marco C.
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- SIGNAL HERO CARD -->
+      <div class="signal-card buy-signal" id="signal-card">
+        <div class="signal-glow"></div>
+        <div class="signal-inner">
+
+          <!-- HEADER BADGE -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="signal-badge" style="margin-bottom:0">
+              <span class="badge-pulse"></span>
+              Nuovo segnale
+            </div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;padding:4px 10px;border-radius:20px;background:rgba(0,212,170,0.12);color:var(--accent);border:1px solid rgba(0,212,170,0.25)">
+              CALL
+            </div>
+          </div>
+
+          <!-- TICKER + DESCRIZIONE -->
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:2px">
+            <div class="signal-ticker">SPY</div>
+            <div style="font-size:15px;font-weight:700;color:var(--accent);letter-spacing:-0.3px">BUY</div>
+          </div>
+          <div class="signal-subtitle">S&P 500 ETF · ARCA · LIMIT ORDER</div>
+
+          <!-- OPZIONE HIGHLIGHT BOX -->
+          <div style="background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.2);border-radius:14px;padding:14px 16px;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Strike</div>
+                <div style="font-size:26px;font-weight:800;letter-spacing:-1px;color:var(--accent)">525</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Scadenza</div>
+                <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text)">20 GIU '26</div>
+              </div>
+            </div>
+            <div style="height:1px;background:rgba(0,212,170,0.15);"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Premio</div>
+                <div style="font-size:17px;font-weight:700;color:var(--text)">$3.50</div>
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Contratti</div>
+                <div style="font-size:17px;font-weight:700;color:var(--text)">2</div>
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Esposizione</div>
+                <div style="font-size:17px;font-weight:700;color:var(--warn)">$700</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIVELLI SOTTOSTANTE -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Livelli sottostante</div>
+            <div class="signal-levels">
+              <div class="level-box">
+                <div class="level-label">Entrata</div>
+                <div class="level-value level-entry">525.00</div>
+              </div>
+              <div class="level-box">
+                <div class="level-label">Stop</div>
+                <div class="level-value level-stop">518.00</div>
+              </div>
+              <div class="level-box">
+                <div class="level-label">Target</div>
+                <div class="level-value level-tp">535.00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTE -->
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--muted2);line-height:1.5;font-style:italic;">
+            📝 Breakout sopra resistenza 524, volume confermato. R/R 1:2.
+          </div>
+
+          <div class="action-row">
+            <button class="btn-skip" onclick="skipSignal()">✕ Salta</button>
+            <button class="btn-execute" onclick="showConfirm('open')">▲ Apri CALL BUY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MINI POSITIONS below signal -->
+      <div class="section-header">
+        <span class="section-title">Le tue posizioni</span>
+        <button class="section-action" onclick="switchPage('positions')">Vedi tutte →</button>
+      </div>
+
+      <div class="position-card">
+        <div class="pos-main">
+          <div class="pos-left">
+            <div class="pos-icon long">L</div>
+            <div>
+              <div class="pos-name">XLF</div>
+              <div class="pos-detail">LEAPS Call · DEC '28 · 43</div>
+            </div>
+          </div>
+          <div class="pos-right">
+            <div class="pos-pnl neg">-$68</div>
+            <div class="pos-pnl-pct">-0.9%</div>
+          </div>
+        </div>
+        <div class="pos-levels">
+          <div class="pos-level-item">
+            <div class="pos-level-label">Entry</div>
+            <div class="pos-level-val">12.24</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Mark</div>
+            <div class="pos-level-val">12.23</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Qty</div>
+            <div class="pos-level-val">1 ctr</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── PAGE: POSIZIONI ───────────────────── -->
+  <div class="page" id="page-positions">
+    <div class="status-bar">
+      <div class="app-name">Posizioni</div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent)">P&L: +$74</div>
+    </div>
+
+    <div class="content">
+
+      <div class="position-card">
+        <div class="pos-main">
+          <div class="pos-left">
+            <div class="pos-icon long">L</div>
+            <div>
+              <div class="pos-name">SPY</div>
+              <div class="pos-detail">ETF · ARCA · 10 azioni</div>
+            </div>
+          </div>
+          <div class="pos-right">
+            <div class="pos-pnl pos">+$142</div>
+            <div class="pos-pnl-pct">+0.7%</div>
+          </div>
+        </div>
+        <div class="pos-levels">
+          <div class="pos-level-item">
+            <div class="pos-level-label">Entry</div>
+            <div class="pos-level-val">520.00</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Mark</div>
+            <div class="pos-level-val">534.20</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Stop</div>
+            <div class="pos-level-val">515.00</div>
+          </div>
+        </div>
+        <button class="pos-close-btn" onclick="showConfirm('close', 'SPY', 10, 142)">
+          ✕ Chiudi posizione
+        </button>
+      </div>
+
+      <div class="position-card">
+        <div class="pos-main">
+          <div class="pos-left">
+            <div class="pos-icon long">L</div>
+            <div>
+              <div class="pos-name">XLF</div>
+              <div class="pos-detail">LEAPS Call · DEC '28 · 43</div>
+            </div>
+          </div>
+          <div class="pos-right">
+            <div class="pos-pnl neg">-$68</div>
+            <div class="pos-pnl-pct">-0.9%</div>
+          </div>
+        </div>
+        <div class="pos-levels">
+          <div class="pos-level-item">
+            <div class="pos-level-label">Entry</div>
+            <div class="pos-level-val">12.24</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Mark</div>
+            <div class="pos-level-val">12.23</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Contratti</div>
+            <div class="pos-level-val">1</div>
+          </div>
+        </div>
+        <button class="pos-close-btn" onclick="showConfirm('close', 'XLF CALL 43', 1, -68)">
+          ✕ Chiudi posizione
+        </button>
+      </div>
+
+      <div class="position-card">
+        <div class="pos-main">
+          <div class="pos-left">
+            <div class="pos-icon short">S</div>
+            <div>
+              <div class="pos-name">BAC</div>
+              <div class="pos-detail">Short Call · APR '26 · 51</div>
+            </div>
+          </div>
+          <div class="pos-right">
+            <div class="pos-pnl pos">+$6</div>
+            <div class="pos-pnl-pct">+11%</div>
+          </div>
+        </div>
+        <div class="pos-levels">
+          <div class="pos-level-item">
+            <div class="pos-level-label">Entry</div>
+            <div class="pos-level-val">0.50</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Mark</div>
+            <div class="pos-level-val">0.445</div>
+          </div>
+          <div class="pos-level-item">
+            <div class="pos-level-label">Contratti</div>
+            <div class="pos-level-val">-1</div>
+          </div>
+        </div>
+        <button class="pos-close-btn" onclick="showConfirm('close', 'BAC CALL 51', -1, 6)">
+          ✕ Chiudi posizione
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── PAGE: CHAT ────────────────────────── -->
+  <div class="page" id="page-chat">
+    <div class="status-bar">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(0,212,170,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--accent)">N</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">Nicola</div>
+          <div style="font-size:11px;color:var(--accent)">● online</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-content" id="chat-messages">
+      <div class="msg msg-system">Oggi · 09:14</div>
+      <div>
+        <div class="msg msg-in">Ciao Marco, mercato interessante stamattina. Ho aperto una posizione su SPY, ti mando il segnale tra poco.</div>
+        <div class="msg-time">09:14</div>
+      </div>
+      <div style="align-self:flex-end">
+        <div class="msg msg-out">Ok, sono pronto 👍</div>
+        <div class="msg-time right">09:15</div>
+      </div>
+      <div>
+        <div class="msg msg-in">Segnale inviato — SPY BUY limit 525. Stop a 518, target 535. R/R 1:2.</div>
+        <div class="msg-time">09:32</div>
+      </div>
+      <div style="align-self:flex-end">
+        <div class="msg msg-out">Eseguito ✓</div>
+        <div class="msg-time right">09:33</div>
+      </div>
+      <div>
+        <div class="msg msg-in">Ottimo. Tienila d'occhio, se SPY torna sotto 521 chiudiamo.</div>
+        <div class="msg-time">10:05</div>
+      </div>
+    </div>
+
+    <div class="chat-input-bar">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Scrivi un messaggio..." autocomplete="off">
+      <button class="chat-send" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM NAV ────────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-signal" onclick="switchPage('signal')">
+      <span class="nav-icon">📡</span>
+      <span class="nav-label">Segnale</span>
+      <span class="nav-badge" id="signal-badge">1</span>
+    </button>
+    <button class="nav-item" id="nav-positions" onclick="switchPage('positions')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Posizioni</span>
+    </button>
+    <button class="nav-item" id="nav-chat" onclick="switchPage('chat')">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+    </button>
+  </nav>
+
+  <!-- ─── CONFIRM OVERLAY ───────────────────── -->
+  <div class="overlay" id="overlay" onclick="hideConfirm(event)">
+    <div class="confirm-sheet" id="confirm-sheet">
+      <div class="confirm-title" id="confirm-title">Conferma operazione</div>
+
+      <div class="confirm-detail" id="confirm-detail">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="confirm-warning" id="confirm-warning">
+        ⚠️ Questa operazione verrà eseguita sul tuo conto IBKR. Verifica i dettagli prima di confermare.
+      </div>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" onclick="hideConfirm()">Annulla</button>
+        <button class="btn-confirm-exec buy" id="confirm-btn" onclick="executeAction()">
+          Conferma
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS FLASH -->
+  <div class="success-flash" id="success-flash">
+    <div class="success-icon" id="success-icon">✅</div>
+    <div class="success-text" id="success-text">Ordine inviato</div>
+    <div class="success-sub" id="success-sub">IBKR riceverà l'ordine</div>
+  </div>
+
+</div>
+
+<script>
+let currentPage = 'signal';
+let pendingAction = null;
+
+// ─── NAVIGATION ──────────────────────────────
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  currentPage = page;
+
+  if (page === 'chat') {
+    setTimeout(() => {
+      const c = document.getElementById('chat-messages');
+      c.scrollTop = c.scrollHeight;
+    }, 50);
+  }
+}
+
+// ─── SIGNAL ACTIONS ──────────────────────────
+function skipSignal() {
+  const card = document.getElementById('signal-card');
+  card.style.transition = 'opacity 0.3s, transform 0.3s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(60px)';
+  document.getElementById('signal-badge').style.display = 'none';
+  setTimeout(() => {
+    card.innerHTML = `<div class="no-signal-inner">
+      <div class="no-signal-icon">📭</div>
+      <div class="no-signal-text">Nessun segnale attivo</div>
+      <div class="no-signal-sub">Riceverai una notifica quando arriva</div>
+    </div>`;
+    card.className = 'signal-card no-signal';
+    card.style.opacity = '1';
+    card.style.transform = '';
+  }, 300);
+}
+
+// ─── CONFIRM OVERLAY ─────────────────────────
+function showConfirm(type, ticker, qty, pnl) {
+  pendingAction = { type, ticker, qty, pnl };
+  const overlay = document.getElementById('overlay');
+  const detail = document.getElementById('confirm-detail');
+  const title = document.getElementById('confirm-title');
+  const btn = document.getElementById('confirm-btn');
+
+  if (type === 'open') {
+    title.textContent = '▲ Apri CALL · SPY';
+    title.style.color = 'var(--accent)';
+    detail.innerHTML = `
+      <div class="confirm-row"><span class="confirm-key">Strumento</span><span class="confirm-val buy">SPY · CALL</span></div>
+      <div class="confirm-row"><span class="confirm-key">Strike</span><span class="confirm-val" style="font-size:18px;font-weight:800">525</span></div>
+      <div class="confirm-row"><span class="confirm-key">Scadenza</span><span class="confirm-val">20 GIU 2026</span></div>
+      <div class="confirm-row"><span class="confirm-key">Tipo ordine</span><span class="confirm-val">LIMIT</span></div>
+      <div class="confirm-row"><span class="confirm-key">Premio limite</span><span class="confirm-val">$3.50 / ctr</span></div>
+      <div class="confirm-row"><span class="confirm-key">Contratti</span><span class="confirm-val">2</span></div>
+      <div class="confirm-row"><span class="confirm-key">Esposizione totale</span><span class="confirm-val warn">$700.00</span></div>
+      <div style="height:1px;background:var(--border2);margin:4px 0"></div>
+      <div class="confirm-row"><span class="confirm-key">Stop sottostante</span><span class="confirm-val warn">$518.00</span></div>
+      <div class="confirm-row"><span class="confirm-key">Target sottostante</span><span class="confirm-val buy">$535.00</span></div>
+    `;
+    btn.textContent = 'Conferma CALL BUY ▲';
+    btn.className = 'btn-confirm-exec buy';
+  } else {
+    const isNeg = pnl < 0;
+    title.textContent = `✕ Chiudi ${ticker}`;
+    title.style.color = 'var(--sell)';
+    detail.innerHTML = `
+      <div class="confirm-row"><span class="confirm-key">Posizione</span><span class="confirm-val">${ticker}</span></div>
+      <div class="confirm-row"><span class="confirm-key">Qty</span><span class="confirm-val">${qty}</span></div>
+      <div class="confirm-row"><span class="confirm-key">P&L attuale</span><span class="confirm-val ${isNeg ? 'sell' : 'buy'}">${isNeg ? '-' : '+'}$${Math.abs(pnl)}</span></div>
+      <div class="confirm-row"><span class="confirm-key">Tipo chiusura</span><span class="confirm-val">MARKET</span></div>
+    `;
+    btn.textContent = 'Chiudi posizione';
+    btn.className = 'btn-confirm-exec sell';
+  }
+
+  overlay.classList.add('show');
+}
+
+function hideConfirm(e) {
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('show');
+  pendingAction = null;
+}
+
+function executeAction() {
+  document.getElementById('overlay').classList.remove('show');
+  const flash = document.getElementById('success-flash');
+  const isOpen = pendingAction && pendingAction.type === 'open';
+
+  document.getElementById('success-icon').textContent = isOpen ? '✅' : '🔴';
+  document.getElementById('success-text').textContent = isOpen ? 'Ordine BUY inviato' : 'Posizione chiusa';
+  document.getElementById('success-sub').textContent = isOpen ? 'IBKR eseguirà l\'ordine' : 'Ordine di chiusura inviato a IBKR';
+
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 2200);
+
+  if (isOpen) {
+    document.getElementById('signal-badge').style.display = 'none';
+    skipSignal();
+  }
+  pendingAction = null;
+}
+
+// ─── CHAT ─────────────────────────────────────
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const container = document.getElementById('chat-messages');
+  const wrapper = document.createElement('div');
+  wrapper.style.alignSelf = 'flex-end';
+  wrapper.innerHTML = `<div class="msg msg-out">${text}</div><div class="msg-time right">${new Date().toTimeString().slice(0,5)}</div>`;
+  container.appendChild(wrapper);
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// ─── KEYBOARD FIX (iOS) ───────────────────────
+// Prevents content from being hidden under keyboard
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    document.querySelector('.app').style.height = window.visualViewport.height + 'px';
+  });
+}
+
+const SERVER_URL = 'https://tradedesk-server-production.up.railway.app';
+const CLIENT_ID   = 'marco-c';
+const CLIENT_NAME = 'Marco C.';
+
+async function setupPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    const { publicKey } = await fetch(SERVER_URL + '/vapid-public-key').then(r => r.json());
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+    await fetch(SERVER_URL + '/register-client', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId: CLIENT_ID, name: CLIENT_NAME, subscription })
+    });
+    console.log('[PUSH] Registrato');
+    document.querySelector('.connection-pill').innerHTML = '<span class="conn-dot"></span> Connesso';
+  } catch(e) { console.warn('[PUSH] Setup fallito:', e.message); }
+}
+
+navigator.serviceWorker?.addEventListener('message', e => {
+  if (e.data?.type === 'NEW_SIGNAL') injectLiveSignal(e.data.signal, e.data.ibkrLink);
+});
+
+function injectLiveSignal(signal, ibkrLink) {
+  const card  = document.getElementById('signal-card');
+  const isBuy = signal.direction === 'BUY';
+  const isOpt = signal.asset === 'OPTIONS';
+  const isCall = signal.optionType === 'CALL';
+  document.getElementById('signal-badge').style.display = 'flex';
+  switchPage('signal');
+
+  if (isOpt) {
+    const expLabel = signal.expiry
+      ? new Date(signal.expiry + 'T00:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'2-digit'})
+      : '—';
+    const expo = signal.optPrice && signal.contracts
+      ? '$' + (parseFloat(signal.optPrice) * parseInt(signal.contracts) * 100).toFixed(0) : '—';
+    const color = isCall ? 'var(--accent)' : 'var(--sell)';
+    const borderColor = isCall ? 'rgba(0,212,170,0.2)' : 'rgba(255,77,109,0.2)';
+    const bgColor = isCall ? 'rgba(0,212,170,0.07)' : 'rgba(255,77,109,0.07)';
+
+    card.className = 'signal-card ' + (isBuy ? 'buy-signal' : 'sell-signal');
+    card.innerHTML = `<div class="signal-glow"></div><div class="signal-inner">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="signal-badge" style="margin-bottom:0"><span class="badge-pulse"></span>Nuovo segnale</div>
+        <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${bgColor};color:${color};border:1px solid ${borderColor}">${signal.optionType}</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:2px">
+        <div class="signal-ticker">${signal.ticker}</div>
+        <div style="font-size:15px;font-weight:700;color:${color}">${signal.direction}</div>
+      </div>
+      <div class="signal-subtitle">${signal.asset} · ${signal.orderType || 'LIMIT'} ORDER</div>
+      <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:14px;padding:14px 16px;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;">
+          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Strike</div>
+            <div style="font-size:26px;font-weight:800;color:${color}">${signal.strike || '—'}</div></div>
+          <div style="text-align:right"><div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Scadenza</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text)">${expLabel.toUpperCase()}</div></div>
+        </div>
+        <div style="height:1px;background:${borderColor}"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Premio</div>
+            <div style="font-size:17px;font-weight:700;color:var(--text)">$${signal.optPrice || '—'}</div></div>
+          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Contratti</div>
+            <div style="font-size:17px;font-weight:700;color:var(--text)">${signal.contracts || '—'}</div></div>
+          <div><div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Esposizione</div>
+            <div style="font-size:17px;font-weight:700;color:var(--warn)">${expo}</div></div>
+        </div>
+      </div>
+      <div class="signal-levels">
+        <div class="level-box"><div class="level-label">Entrata</div><div class="level-value level-entry">${signal.entry || 'MKT'}</div></div>
+        <div class="level-box"><div class="level-label">Stop</div><div class="level-value level-stop">${signal.stop || '—'}</div></div>
+        <div class="level-box"><div class="level-label">Target</div><div class="level-value level-tp">${signal.target || '—'}</div></div>
+      </div>
+      ${signal.note ? '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;margin:12px 0;font-size:12px;color:var(--muted2);line-height:1.5;font-style:italic">📝 ' + signal.note + '</div>' : ''}
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn-skip" onclick="skipSignal()">✕ Salta</button>
+        <button class="btn-execute" onclick="openIBKR('${ibkrLink || ''}')">
+          ${isBuy ? '▲' : '▼'} Apri ${signal.optionType} ${signal.direction}
+        </button>
+      </div>
+    </div>`;
+  }
+}
+
+function openIBKR(link) {
+  window._pendingIBKRLink = link || null;
+  showConfirm('open');
+}
+
+const _origExec = executeAction;
+window.executeAction = function() {
+  _origExec();
+  if (window._pendingIBKRLink) {
+    setTimeout(() => { window.open(window._pendingIBKRLink, '_blank'); window._pendingIBKRLink = null; }, 400);
+  }
+};
+
+function urlBase64ToUint8Array(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+}
+
+document.addEventListener('DOMContentLoaded', setupPushNotifications);
+
+</script>
+</body>
+</html>
