@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeDesk · Link Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0c0f;
+  --surface: #111318;
+  --surface2: #181c22;
+  --border: #252d3a;
+  --text: #eceef2;
+  --muted: #4a5568;
+  --muted2: #6b7280;
+  --accent: #00d4aa;
+  --sell: #ff4d6d;
+  --warn: #f59e0b;
+  --green-wa: #25d366;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
+h1 { font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; margin-bottom: 32px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+label { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+input, select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px 14px;
+  outline: none;
+  width: 100%;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+input::placeholder { color: var(--muted); font-size: 13px; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; cursor: pointer; }
+select option { background: #1a1f2e; }
+
+/* DIR TOGGLE */
+.dir-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.dir-btn { padding: 14px; background: var(--surface2); border: none; cursor: pointer; font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--muted); transition: all 0.15s; letter-spacing: 0.05em; }
+.dir-btn.buy.active { background: rgba(0,212,170,0.15); color: var(--accent); border-bottom: 2px solid var(--accent); }
+.dir-btn.sell.active { background: rgba(255,77,109,0.15); color: var(--sell); border-bottom: 2px solid var(--sell); }
+
+/* TYPE TOGGLE */
+.type-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.type-btn { padding: 11px; background: var(--surface2); border: none; cursor: pointer; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--muted); transition: all 0.15s; }
+.type-btn.active { background: rgba(0,212,170,0.15); color: var(--accent); }
+
+/* OPTIONS BLOCK */
+#opt-block { display: none; flex-direction: column; gap: 16px; padding: 16px; background: rgba(0,212,170,0.04); border: 1px solid rgba(0,212,170,0.15); border-radius: 12px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); }
+
+/* GENERATE BUTTON */
+.gen-btn { padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: #061a15; font-family: var(--mono); font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.1em; transition: opacity 0.15s; }
+.gen-btn:active { opacity: 0.8; }
+
+/* RESULT */
+#result { display: none; flex-direction: column; gap: 12px; }
+
+.result-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
+  word-break: break-all;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.6;
+}
+
+.copy-btn {
+  padding: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all 0.15s;
+}
+.copy-btn:active { background: var(--border); }
+.copy-btn.copied { border-color: var(--accent); color: var(--accent); }
+
+.wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: var(--green-wa);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.wa-btn:active { opacity: 0.85; }
+
+.msg-preview {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.label-small { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+</style>
+</head>
+<body>
+
+<h1>● TradeDesk · Genera Link</h1>
+
+<div class="card">
+
+  <!-- DIREZIONE -->
+  <div class="field">
+    <label>Direzione</label>
+    <div class="dir-toggle">
+      <button class="dir-btn buy active" id="btn-buy" onclick="setDir('BUY')">▲ BUY</button>
+      <button class="dir-btn sell" id="btn-sell" onclick="setDir('SELL')">▼ SELL</button>
+    </div>
+  </div>
+
+  <!-- TICKER + ASSET -->
+  <div class="row2">
+    <div class="field">
+      <label>Ticker</label>
+      <input type="text" id="ticker" placeholder="SPY" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="field">
+      <label>Asset</label>
+      <select id="asset" onchange="toggleAsset()">
+        <option value="STK">Stock / ETF</option>
+        <option value="OPT">Opzione</option>
+        <option value="FUT">Futures</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STOCK FIELDS -->
+  <div id="stock-block" class="field">
+    <label>Quantità</label>
+    <input type="number" id="qty" placeholder="10" min="1">
+  </div>
+
+  <!-- OPTIONS BLOCK -->
+  <div id="opt-block">
+    <!-- CALL / PUT -->
+    <div class="field">
+      <label>Tipo opzione</label>
+      <div class="type-toggle">
+        <button class="type-btn active" id="btn-call" onclick="setOptType('CALL')">CALL</button>
+        <button class="type-btn" id="btn-put" onclick="setOptType('PUT')">PUT</button>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field">
+        <label>Strike</label>
+        <input type="number" id="strike" placeholder="525" step="0.5">
+      </div>
+      <div class="field">
+        <label>Scadenza</label>
+        <input type="date" id="expiry" style="color-scheme:dark;font-size:13px;">
+      </div>
+      <div class="field">
+        <label>Contratti</label>
+        <input type="number" id="contracts" placeholder="2" min="1">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Premio ($)</label>
+        <input type="number" id="opt-price" placeholder="3.50" step="0.01">
+      </div>
+      <div class="field">
+        <label>Esposizione</label>
+        <input type="text" id="exposure" placeholder="—" readonly style="color:var(--warn);background:rgba(245,158,11,0.06);">
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVELLI -->
+  <div class="row3">
+    <div class="field">
+      <label>Entry</label>
+      <input type="number" id="entry" placeholder="525.00" step="0.01">
+    </div>
+    <div class="field">
+      <label>Stop</label>
+      <input type="number" id="stop" placeholder="518.00" step="0.01">
+    </div>
+    <div class="field">
+      <label>Target</label>
+      <input type="number" id="target" placeholder="535.00" step="0.01">
+    </div>
+  </div>
+
+  <!-- NOTE -->
+  <div class="field">
+    <label>Note (opzionale)</label>
+    <input type="text" id="note" placeholder="Es: breakout confermato...">
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- GENERA -->
+  <button class="gen-btn" onclick="generate()">▶ GENERA LINK IBKR</button>
+
+  <!-- RISULTATO -->
+  <div id="result">
+    <div class="divider"></div>
+
+    <span class="label-small">Anteprima messaggio WhatsApp</span>
+    <div class="msg-preview" id="msg-preview"></div>
+
+    <button class="copy-btn" id="copy-btn" onclick="copyLink()">📋 Copia link IBKR</button>
+
+    <a id="wa-link" href="#" target="_blank" rel="noopener" class="wa-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.127 1.532 5.862L.057 23.886a.5.5 0 0 0 .612.612l6.047-1.461A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.694-.528-5.219-1.446l-.374-.222-3.878.937.955-3.785-.243-.389A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Apri WhatsApp
+    </a>
+  </div>
+
+</div>
+
+<script>
+let dir = 'BUY';
+let optType = 'CALL';
+let ibkrLink = '';
+
+function setDir(d) {
+  dir = d;
+  document.getElementById('btn-buy').className = 'dir-btn buy' + (d==='BUY' ? ' active' : '');
+  document.getElementById('btn-sell').className = 'dir-btn sell' + (d==='SELL' ? ' active' : '');
+}
+
+function setOptType(t) {
+  optType = t;
+  document.getElementById('btn-call').className = 'type-btn' + (t==='CALL' ? ' active' : '');
+  document.getElementById('btn-put').className = 'type-btn' + (t==='PUT' ? ' active' : '');
+}
+
+function toggleAsset() {
+  const isOpt = document.getElementById('asset').value === 'OPT';
+  document.getElementById('opt-block').style.display = isOpt ? 'flex' : 'none';
+  document.getElementById('stock-block').style.display = isOpt ? 'none' : '';
+}
+
+// Calcola esposizione opzione live
+['opt-price','contracts'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const p = parseFloat(document.getElementById('opt-price').value);
+    const c = parseInt(document.getElementById('contracts').value);
+    document.getElementById('exposure').value =
+      (p && c) ? '$' + (p * c * 100).toFixed(0) : '—';
+  });
+});
+
+function generate() {
+  const ticker  = document.getElementById('ticker').value.trim().toUpperCase();
+  const asset   = document.getElementById('asset').value;
+  const entry   = document.getElementById('entry').value;
+  const stop    = document.getElementById('stop').value;
+  const target  = document.getElementById('target').value;
+  const note    = document.getElementById('note').value.trim();
+
+  if (!ticker) { alert('Inserisci il ticker'); return; }
+
+  let msg = '📡 *SEGNALE*\n\n';
+  let params = {};
+
+  if (asset === 'OPT') {
+    const strike    = document.getElementById('strike').value;
+    const expiry    = document.getElementById('expiry').value;
+    const contracts = document.getElementById('contracts').value;
+    const optPrice  = document.getElementById('opt-price').value;
+    const exposure  = document.getElementById('exposure').value;
+
+    if (!strike || !expiry) { alert('Inserisci strike e scadenza'); return; }
+
+    const expiryFmt = expiry.replace(/-/g,'');
+    const expLabel  = new Date(expiry + 'T00:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'2-digit'});
+
+    params = {
+      action:    dir === 'BUY' ? 'Buy' : 'Sell',
+      symbol:    ticker,
+      secType:   'OPT',
+      right:     optType,
+      strike:    strike,
+      expiry:    expiryFmt,
+      quantity:  contracts || 1,
+      orderType: 'MKT',
+      exchange:  'SMART',
+      currency:  'USD',
+    };
+
+    msg += `*${ticker} ${optType} ${strike}* · ${dir}\n`;
+    msg += `Scadenza: ${expLabel}\n`;
+    if (optPrice) msg += `Premio: $${optPrice}/ctr\n`;
+    if (contracts) msg += `Contratti: ${contracts}\n`;
+    if (exposure && exposure !== '—') msg += `Esposizione: ${exposure}\n`;
+    if (entry) msg += `Sottostante: $${entry}\n`;
+    if (stop)  msg += `Stop: $${stop}\n`;
+    if (target) msg += `Target: $${target}\n`;
+
+  } else {
+    const qty = document.getElementById('qty').value;
+
+    params = {
+      action:    dir === 'BUY' ? 'Buy' : 'Sell',
+      symbol:    ticker,
+      secType:   asset,
+      quantity:  qty || 1,
+      orderType: entry ? 'LMT' : 'MKT',
+      price:     entry || '',
+      exchange:  'SMART',
+      currency:  'USD',
+    };
+
+    msg += `*${dir} ${ticker}*\n`;
+    if (qty)    msg += `Quantità: ${qty}\n`;
+    if (entry)  msg += `Entry: $${entry}\n`;
+    if (stop)   msg += `Stop: $${stop}\n`;
+    if (target) msg += `Target: $${target}\n`;
+  }
+
+  if (note) msg += `\n📝 ${note}\n`;
+
+  // Genera link IBKR
+  ibkrLink = 'https://client.ibkr.com/ol/home.html#/trade?' + new URLSearchParams(params).toString();
+
+  msg += `\n👉 *Apri su IBKR:*\n${ibkrLink}`;
+  msg += '\n\n⚠️ Verifica prima di confermare.';
+
+  // Mostra risultato
+  document.getElementById('msg-preview').textContent = msg;
+  document.getElementById('wa-link').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  document.getElementById('result').style.display = 'flex';
+
+  // Scroll al risultato
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(ibkrLink).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copiato!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copia link IBKR';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
