@@ -796,9 +796,12 @@
 </main>
 
 <script>
-  let direction = 'BUY';
-  let optionType = 'CALL';
-  let orderType = 'MKT';
+  window.direction = 'BUY';
+  window.optionType = 'CALL';
+  window.orderType = 'MKT';
+  let direction = window.direction;
+  let optionType = window.optionType;
+  let orderType = window.orderType;
 
   const orderHints = {
     MKT: 'Esecuzione immediata al prezzo corrente di mercato.',
@@ -814,6 +817,7 @@
 
   function setOrderType(type) {
     orderType = type;
+    window.orderType = type;
     const ids = { MKT: 'ot-mkt', LMT: 'ot-lmt', SLT: 'ot-slt' };
     Object.entries(ids).forEach(([k, id]) => {
       const btn = document.getElementById(id);
@@ -880,6 +884,7 @@
 
   function setOptionType(type) {
     optionType = type;
+    window.optionType = type;
     const callBtn = document.getElementById('btn-call');
     const putBtn = document.getElementById('btn-put');
     if (type === 'CALL') {
@@ -927,6 +932,7 @@
 
   function setDir(dir) {
     direction = dir;
+    window.direction = dir;
     document.getElementById('btn-buy').classList.toggle('active', dir === 'BUY');
     document.getElementById('btn-sell').classList.toggle('active', dir === 'SELL');
     const btn = document.getElementById('submit-btn');
@@ -1113,7 +1119,7 @@
   // Numeri clienti — modifica qui con i numeri reali
   // Formato internazionale senza + e senza spazi: 393401234567
   const CLIENTI_WA = [
-    { nome: 'Marco C.',  numero: '393405374097' },
+    { nome: 'Marco C.',  numero: '393401234567' },
     { nome: 'Andrea L.', numero: '393407654321' },
     { nome: 'Giulia R.', numero: '393409876543' },
   ];
@@ -1242,13 +1248,34 @@ ${ibkrLink}`;
   function sendToAll() {
     const msg = buildWAMessage();
     if (!msg) return;
-    // Apre WhatsApp per ogni cliente con 800ms di delay tra uno e l'altro
-    CLIENTI_WA.forEach((c, i) => {
-      setTimeout(() => {
-        const url = 'https://wa.me/' + c.numero + '?text=' + encodeURIComponent(msg);
-        window.open(url, '_blank');
-      }, i * 800);
+
+    // Crea modal con link per ogni cliente — l'utente tocca uno alla volta
+    // (window.open multipli sono bloccati dal browser)
+    let modalHtml = '<div id="wa-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">' +
+      '<div style="background:#13161c;border:1px solid #252d3a;border-radius:16px;padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px;">' +
+      '<div style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.15em;color:#6b7280;margin-bottom:4px">INVIA VIA WHATSAPP</div>';
+
+    CLIENTI_WA.forEach(c => {
+      const url = 'https://wa.me/' + c.numero + '?text=' + encodeURIComponent(msg);
+      modalHtml += '<a href="' + url + '" target="_blank" rel="noopener" ' +
+        'style="display:flex;align-items:center;gap:12px;background:rgba(37,211,102,0.1);' +
+        'border:1px solid rgba(37,211,102,0.25);border-radius:10px;padding:14px 16px;' +
+        'text-decoration:none;color:#25d366;font-family:var(--mono);font-size:13px;font-weight:600;">' +
+        '<span style="font-size:20px">📲</span>' +
+        '<span>' + c.nome + '</span>' +
+        '<span style="margin-left:auto;font-size:11px;opacity:0.7">' + c.numero + '</span>' +
+        '</a>';
     });
+
+    modalHtml += '<button onclick="document.getElementById('wa-modal').remove()" ' +
+      'style="margin-top:4px;background:transparent;border:1px solid #252d3a;border-radius:10px;' +
+      'padding:12px;color:#4a5568;font-family:var(--mono);font-size:12px;cursor:pointer;">Chiudi</button>' +
+      '</div></div>';
+
+    // Rimuovi modal precedente se esiste
+    const existing = document.getElementById('wa-modal');
+    if (existing) existing.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
   }
 
   function renderLog() {
