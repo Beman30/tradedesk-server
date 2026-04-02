@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apri su IBKR</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, sans-serif;
+  background: #0a0c0f;
+  color: #eceef2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.card {
+  background: #111318;
+  border: 1px solid #252d3a;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #00d4aa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: #00d4aa;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ticker { font-size: 40px; font-weight: 800; letter-spacing: -2px; }
+.subtitle { font-size: 13px; color: #6b7280; }
+.levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.level {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 10px;
+}
+.level-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4a5568; margin-bottom: 4px; }
+.level-value { font-size: 15px; font-weight: 700; }
+.entry { color: #eceef2; }
+.stop-val { color: #f59e0b; }
+.target { color: #00d4aa; }
+.divider { height: 1px; background: #1e2430; }
+.open-btn {
+  display: block;
+  background: #00d4aa;
+  color: #061a15;
+  font-size: 17px;
+  font-weight: 800;
+  padding: 18px;
+  border-radius: 14px;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+.fallback {
+  font-size: 12px;
+  color: #4a5568;
+  text-align: center;
+  line-height: 1.5;
+}
+.fallback a { color: #00d4aa; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Segnale TradeDesk</div>
+
+  <div>
+    <div class="ticker" id="ticker">KO</div>
+    <div class="subtitle" id="subtitle">Stock · BUY · LIMIT ORDER</div>
+  </div>
+
+  <div class="levels">
+    <div class="level">
+      <div class="level-label">Entry</div>
+      <div class="level-value entry" id="entry">$60.00</div>
+    </div>
+    <div class="level">
+      <div class="level-label">Stop</div>
+      <div class="level-value stop-val" id="stop">$57.00</div>
+    </div>
+    <div class="level">
+      <div class="level-label">Target</div>
+      <div class="level-value target" id="target">$66.00</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <a id="ibkr-btn" href="#" class="open-btn">▲ Apri su IBKR Mobile</a>
+
+  <div class="fallback">
+    Se IBKR Mobile non si apre, assicurati di averla installata.<br>
+    <a href="https://www.interactivebrokers.com/en/trading/ibkr-mobile.php">Scarica IBKR Mobile</a>
+  </div>
+</div>
+
+<script>
+// Leggi parametri dall'URL
+const p = new URLSearchParams(window.location.search);
+
+const ticker   = p.get('symbol')   || 'KO';
+const action   = p.get('action')   || 'BUY';
+const secType  = p.get('secType')  || 'STK';
+const qty      = p.get('quantity') || '1';
+const orderType = p.get('orderType') || 'LMT';
+const price    = p.get('price')    || '';
+const exchange = p.get('exchange') || 'SMART';
+const currency = p.get('currency') || 'USD';
+const stop     = p.get('stop')     || '';
+const target   = p.get('target')   || '';
+const right    = p.get('right')    || '';
+const strike   = p.get('strike')   || '';
+const expiry   = p.get('expiry')   || '';
+
+// Aggiorna UI
+document.getElementById('ticker').textContent = ticker;
+document.getElementById('entry').textContent  = price ? '$' + price : 'MKT';
+document.getElementById('stop').textContent   = stop ? '$' + stop : '—';
+document.getElementById('target').textContent = target ? '$' + target : '—';
+
+let subtitle = secType === 'OPT'
+  ? `${right} ${strike} · ${expiry} · ${action}`
+  : `${secType === 'STK' ? 'Stock' : secType} · ${action} · ${orderType}`;
+document.getElementById('subtitle').textContent = subtitle;
+
+// Costruisci deep link IBKR
+const ibkrParams = new URLSearchParams({
+  action, symbol: ticker, secType, quantity: qty,
+  orderType, exchange, currency
+});
+if (price)   ibkrParams.set('price', price);
+if (right)   ibkrParams.set('right', right);
+if (strike)  ibkrParams.set('strike', strike);
+if (expiry)  ibkrParams.set('expiry', expiry);
+
+const deepLink = 'ibkr://trade?' + ibkrParams.toString();
+
+document.getElementById('ibkr-btn').href = deepLink;
+
+// Colore bottone in base a direzione
+if (action === 'SELL') {
+  document.getElementById('ibkr-btn').style.background = '#ff4d6d';
+  document.getElementById('ibkr-btn').style.color = '#1a0208';
+  document.getElementById('ibkr-btn').textContent = '▼ Apri su IBKR Mobile';
+}
+</script>
+</body>
+</html>
