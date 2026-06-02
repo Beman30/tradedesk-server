@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIX & AI — Lettera agli Investitori</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg:        #0d0f14;
+      --color-surface:   #13161e;
+      --color-border:    #1e2330;
+      --color-accent:    #4f7df3;
+      --color-accent-lt: #7ba0f7;
+      --color-text:      #e2e6f0;
+      --color-muted:     #8990a8;
+      --color-success:   #3ecf8e;
+      --color-danger:    #f06060;
+      --font:            'Georgia', 'Times New Roman', serif;
+      --font-ui:         -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --radius:          12px;
+      --max-w:           760px;
+      --transition:      0.3s ease;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font);
+      font-size: 18px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================================
+       LAYOUT HELPERS
+    ============================================================ */
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section { padding: 80px 0; }
+
+    h2 {
+      font-family: var(--font-ui);
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 32px;
+    }
+
+    p { margin-bottom: 1.2em; color: var(--color-text); }
+
+    p:last-child { margin-bottom: 0; }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 0;
+    }
+
+    /* ============================================================
+       NAVIGATION
+    ============================================================ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13, 15, 20, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: 0.04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color var(--transition);
+    }
+
+    .nav-links a:hover { color: var(--color-text); }
+
+    @media (max-width: 540px) {
+      .nav-links { display: none; }
+    }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle grid background */
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,125,243,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,125,243,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-label {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-label::before {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 1px;
+      background: var(--color-accent);
+    }
+
+    .hero-title {
+      font-family: var(--font-ui);
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--color-muted);
+      max-width: 520px;
+      line-height: 1.65;
+      margin-bottom: 40px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #fff;
+      background: var(--color-accent);
+      border: none;
+      border-radius: 8px;
+      padding: 14px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-accent-lt);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary svg { flex-shrink: 0; }
+
+    /* ============================================================
+       CHI SONO
+    ============================================================ */
+    #chi-sono { background: var(--color-surface); }
+
+    .letter-block {
+      border-left: 2px solid var(--color-accent);
+      padding-left: 28px;
+    }
+
+    .letter-block p {
+      font-size: 1.05rem;
+      line-height: 1.85;
+    }
+
+    /* ============================================================
+       COME LAVORO
+    ============================================================ */
+    #come-lavoro {}
+
+    .principles {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .principle-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 20px 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      transition: border-color var(--transition);
+    }
+
+    .principle-item:hover { border-color: var(--color-accent); }
+
+    .principle-num {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      background: rgba(79,125,243,0.1);
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .principle-text {
+      font-size: 1rem;
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+
+    .principle-text strong {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    /* ============================================================
+       NUMERI REALI
+    ============================================================ */
+    #numeri { background: var(--color-surface); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+
+    .stat-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-family: var(--font-ui);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-value.positive { color: var(--color-success); }
+    .stat-value.negative { color: var(--color-danger); }
+
+    .stat-label {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ============================================================
+       CURVA DEL CONTO
+    ============================================================ */
+    #curva {}
+
+    .chart-wrapper {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 28px 20px 20px;
+      overflow: hidden;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .chart-badge {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      color: var(--color-success);
+      background: rgba(62,207,142,0.1);
+      border: 1px solid rgba(62,207,142,0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+
+    #equity-chart {
+      width: 100%;
+      height: 220px;
+      display: block;
+    }
+
+    /* ============================================================
+       COSA MI INTERESSA DAVVERO
+    ============================================================ */
+    #valori { background: var(--color-surface); }
+
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .value-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: border-color var(--transition);
+    }
+
+    .value-card:hover { border-color: var(--color-accent); }
+
+    .value-icon {
+      font-size: 1.6rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .value-title {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .value-desc {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       FAQ
+    ============================================================ */
+    #faq {}
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .faq-item {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+
+    .faq-item.open { border-color: var(--color-accent); }
+
+    .faq-question {
+      width: 100%;
+      background: var(--color-surface);
+      border: none;
+      text-align: left;
+      padding: 20px 24px;
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--color-text);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: color var(--transition);
+    }
+
+    .faq-question:hover { color: #fff; }
+
+    .faq-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: var(--color-accent);
+      transition: transform var(--transition);
+    }
+
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      background: var(--color-surface);
+    }
+
+    .faq-answer-inner {
+      padding: 0 24px 20px;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-answer { max-height: 400px; }
+
+    /* ============================================================
+       DISCLAIMER
+    ============================================================ */
+    #disclaimer { background: var(--color-surface); }
+
+    .disclaimer-box {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+    }
+
+    .disclaimer-box p {
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      line-height: 1.7;
+      margin-bottom: 0.8em;
+    }
+
+    .disclaimer-box p:last-child { margin-bottom: 0; }
+
+    .disclaimer-title {
+      font-family: var(--font-ui);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    footer p {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      color: var(--color-muted);
+    }
+
+    /* ============================================================
+       FADE-IN ANIMATION
+    ============================================================ */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* stagger delays */
+    .fade-in:nth-child(1) { transition-delay: 0.05s; }
+    .fade-in:nth-child(2) { transition-delay: 0.12s; }
+    .fade-in:nth-child(3) { transition-delay: 0.19s; }
+    .fade-in:nth-child(4) { transition-delay: 0.26s; }
+    .fade-in:nth-child(5) { transition-delay: 0.33s; }
+    .fade-in:nth-child(6) { transition-delay: 0.40s; }
+    .fade-in:nth-child(7) { transition-delay: 0.47s; }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION
+  ============================================================ -->
+  <nav>
+    <span class="nav-logo">CIX & AI</span>
+    <ul class="nav-links">
+      <li><a href="#chi-sono">Chi sono</a></li>
+      <li><a href="#come-lavoro">Metodo</a></li>
+      <li><a href="#numeri">Numeri</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+
+  <!-- ============================================================
+       1. HERO
+  ============================================================ -->
+  <section id="hero">
+    <div class="container hero-inner">
+      <div class="hero-label">Lettera agli investitori</div>
+      <h1 class="hero-title">CIX & AI</h1>
+      <p class="hero-subtitle">
+        Un approccio al trading costruito intorno al controllo del rischio
+        e alla ricerca di opportunità asimmetriche.
+      </p>
+      <a href="#chi-sono" class="btn-primary">
+        Scopri il progetto
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 3L13 8L8 13M3 8H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       2. CHI SONO
+  ============================================================ -->
+  <section id="chi-sono">
+    <div class="container">
+      <h2>Chi sono</h2>
+      <!--
+        TESTO MODIFICABILE: sostituisci liberamente i paragrafi
+        mantenendo la struttura .letter-block
+      -->
+      <div class="letter-block">
+        <p>
+          Ho iniziato a studiare i mercati finanziari per curiosità, poi per necessità,
+          poi per passione. Nel tempo quella curiosità si è trasformata in un metodo
+          — imperfetto, in continua evoluzione, ma mio.
+        </p>
+        <p>
+          Questo progetto nasce da anni di studio, test su carta, errori reali
+          e operatività concreta. Non da un'intuizione improvvisa o da un software
+          che promette rendimenti automatici.
+        </p>
+        <p>
+          L'obiettivo non è fare scommesse sul mercato. È costruire, operazione dopo
+          operazione, una gestione del rischio razionale. Una in cui so già, prima
+          di entrare, quanto posso perdere — e perché ha senso rischiare quella cifra.
+        </p>
+        <p>
+          Se stai leggendo questa pagina è probabilmente perché ti ho parlato di
+          questo progetto di persona. Non sono qui a venderti niente.
+          Sono qui a spiegarti come ragiono.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       3. COME LAVORO
+  ============================================================ -->
+  <section id="come-lavoro">
+    <div class="container">
+      <h2>Come lavoro</h2>
+      <div class="principles">
+
+        <div class="principle-item fade-in">
+          <div class="principle-num">01</div>
+          <div class="principle-text">
+            <strong>Conosco il rischio prima di entrare</strong>
+            Quando apro una posizione so già quanto posso perdere nel caso peggiore.
+            Non è una stima, non è una speranza: è un limite definito prima che
+            il mercato si muova.
+          </div>
+        </div>
+
+        <div class="principle-item fade-in">
+          <div class="principle-num">02</div>
+          <div class="principle-text">
+            <strong>Riduco il rischio quando posso</strong>
+            Se una posizione si muove nella direzione giusta, spesso è possibile
+            ridurre ulteriormente il rischio iniziale. Lo faccio sistematicamente,
+            non per ottimismo ma per disciplina.
+          </div>
+        </div>
+
+        <div class="principle-item fade-in">
+          <div class="principle-num">03</div>
+          <div class="principle-text">
+            <strong>Lascio correre le opportunità migliori</strong>
+            Non chiudo le posizioni vincenti troppo presto. Cerco di costruire
+            situazioni in cui posso perdere poco e guadagnare molto quando ho ragione.
+            L'asimmetria è il cuore del metodo.
+          </div>
+        </div>
+
+        <div class="principle-item fade-in">
+          <div class="principle-num">04</div>
+          <div class="principle-text">
+            <strong>Accetto che alcune operazioni andranno male</strong>
+            Non cerco di indovinare il mercato ogni volta. Alcune operazioni
+            chiuderanno in perdita. È previsto. È parte del piano.
+          </div>
+        </div>
+
+        <div class="principle-item fade-in">
+          <div class="principle-num">05</div>
+          <div class="principle-text">
+            <strong>Poche operazioni possono compensare molte piccole perdite</strong>
+            Non sempre funziona. Ma quando funziona il guadagno può essere molto
+            superiore alla perdita iniziale. Questo è il motivo per cui
+            il metodo può avere senso nel lungo periodo.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       4. NUMERI REALI
+  ============================================================ -->
+  <section id="numeri">
+    <div class="container">
+      <h2>Numeri reali</h2>
+      <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.9rem; margin-bottom: 32px;">
+        Dati aggiornati al <span id="data-aggiornamento"></span>. I valori riflettono l'operatività reale del conto.
+      </p>
+      <div class="stats-grid" id="stats-grid">
+        <!-- Le card vengono generate via JavaScript — vedi sezione DATI -->
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       5. CURVA DEL CONTO
+  ============================================================ -->
+  <section id="curva">
+    <div class="container">
+      <h2>Curva del conto</h2>
+      <div class="chart-wrapper fade-in">
+        <div class="chart-header">
+          <span class="chart-title">Equity curve</span>
+          <span class="chart-badge" id="chart-badge">+0.0%</span>
+        </div>
+        <canvas id="equity-chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       6. COSA MI INTERESSA DAVVERO
+  ============================================================ -->
+  <section id="valori">
+    <div class="container">
+      <h2>Cosa mi interessa davvero</h2>
+      <div class="values-grid">
+
+        <div class="value-card fade-in">
+          <span class="value-icon">🛡</span>
+          <div class="value-title">Protezione del capitale</div>
+          <div class="value-desc">
+            La priorità numero uno non è guadagnare. È non perdere in modo
+            irrecuperabile. Il capitale va protetto prima ancora di essere
+            fatto crescere.
+          </div>
+        </div>
+
+        <div class="value-card fade-in">
+          <span class="value-icon">📐</span>
+          <div class="value-title">Disciplina</div>
+          <div class="value-desc">
+            Le regole che mi sono dato valgono anche quando le emozioni
+            spingerebbero verso una direzione diversa. La disciplina
+            non è perfetta ma è allenabile.
+          </div>
+        </div>
+
+        <div class="value-card fade-in">
+          <span class="value-icon">⚖️</span>
+          <div class="value-title">Gestione del rischio</div>
+          <div class="value-desc">
+            Ogni operazione ha una dimensione pensata in relazione al
+            capitale totale. Non entro mai con cifre che, se perdute,
+            possano compromettere il progetto.
+          </div>
+        </div>
+
+        <div class="value-card fade-in">
+          <span class="value-icon">🌱</span>
+          <div class="value-title">Crescita nel lungo periodo</div>
+          <div class="value-desc">
+            Non cerco il risultato straordinario del mese. Cerco una
+            progressione costante e sostenibile che abbia senso
+            su un orizzonte di anni, non di settimane.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       7. DOMANDE FREQUENTI
+  ============================================================ -->
+  <section id="faq">
+    <div class="container">
+      <h2>Domande frequenti</h2>
+      <div class="faq-list" id="faq-list">
+        <!-- Generato via JavaScript — vedi sezione DATI -->
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============================================================
+       8. DISCLAIMER
+  ============================================================ -->
+  <section id="disclaimer">
+    <div class="container">
+      <h2>Disclaimer</h2>
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">Informazioni importanti</div>
+        <p>
+          Le performance passate non costituiscono garanzia di risultati futuri.
+          I rendimenti storici mostrati in questa pagina si riferiscono
+          all'operatività reale del conto, ma non possono essere utilizzati
+          come indicazione affidabile di ciò che accadrà in futuro.
+        </p>
+        <p>
+          Il trading su strumenti finanziari comporta un rischio reale di perdita,
+          fino alla totalità del capitale investito. Prima di prendere qualsiasi
+          decisione è necessario valutare attentamente la propria situazione
+          finanziaria, la propria tolleranza al rischio e i propri obiettivi.
+        </p>
+        <p>
+          Questa pagina non costituisce offerta al pubblico, consulenza finanziaria
+          o sollecitazione all'investimento. Ogni persona che valuta di partecipare
+          deve farlo in modo autonomo e consapevole, idealmente dopo aver consultato
+          un professionista abilitato.
+        </p>
+        <p>
+          Le informazioni presenti in questa pagina sono riservate a un numero
+          ristretto di persone conoscenti del gestore e non sono destinate alla
+          diffusione pubblica.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer>
+    <div class="container">
+      <p>CIX & AI &mdash; Uso riservato. Non destinato alla distribuzione pubblica.</p>
+    </div>
+  </footer>
+
+
+  <!-- ============================================================
+       JAVASCRIPT — DATI E LOGICA
+       ============================================================
+       Modifica i valori nelle sezioni DATI_* per aggiornare
+       la pagina senza toccare il resto del codice.
+  ============================================================ -->
+  <script>
+
+    /* ----------------------------------------------------------
+       DATI_STATISTICHE
+       Modifica i campi "value" con i dati reali.
+    ---------------------------------------------------------- */
+    const STATISTICHE = [
+      {
+        label: "Mesi di storico",
+        value: "—",          // es. "14"
+        suffix: "",
+        cssClass: ""
+      },
+      {
+        label: "Capitale iniziale",
+        value: "—",          // es. "10.000"
+        suffix: " €",
+        cssClass: ""
+      },
+      {
+        label: "Capitale attuale",
+        value: "—",          // es. "11.820"
+        suffix: " €",
+        cssClass: ""
+      },
+      {
+        label: "Rendimento totale",
+        value: "—",          // es. "+18,2"
+        suffix: "%",
+        cssClass: "positive" // "positive" | "negative" | ""
+      },
+      {
+        label: "Drawdown massimo",
+        value: "—",          // es. "-6,4"
+        suffix: "%",
+        cssClass: "negative"
+      },
+      {
+        label: "N° operazioni",
+        value: "—",          // es. "87"
+        suffix: "",
+        cssClass: ""
+      },
+      {
+        label: "Operazioni vincenti",
+        value: "—",          // es. "58"
+        suffix: "%",
+        cssClass: ""
+      }
+    ];
+
+    /* ----------------------------------------------------------
+       DATI_DATA_AGGIORNAMENTO
+    ---------------------------------------------------------- */
+    const DATA_AGGIORNAMENTO = "—"; // es. "31 maggio 2026"
+
+    /* ----------------------------------------------------------
+       DATI_EQUITY_CURVE
+       Array di valori del conto nel tempo (uno per settimana/mese).
+       Il primo valore è il capitale iniziale.
+       Aggiungi o rimuovi punti liberamente.
+    ---------------------------------------------------------- */
+    const EQUITY_DATA = [
+      10000, 10000, 10000, 10000, 10000,
+      10000, 10000, 10000, 10000, 10000,
+      10000, 10000, 10000, 10000, 10000,
+      10000, 10000, 10000, 10000, 10000,
+      10000
+    ];
+    // Etichette opzionali (stessa lunghezza di EQUITY_DATA o array vuoto)
+    const EQUITY_LABELS = [];
+
+    /* ----------------------------------------------------------
+       DATI_FAQ
+       Aggiungi, rimuovi o modifica domande e risposte.
+    ---------------------------------------------------------- */
+    const FAQ = [
+      {
+        q: "Quanto posso perdere?",
+        a: "Ogni operazione viene dimensionata in modo da limitare la perdita massima a una percentuale contenuta del capitale totale. Il rischio per singola operazione è definito prima di entrare, non dopo. Detto questo, in scenari estremi il capitale può comunque subire perdite significative."
+      },
+      {
+        q: "Le performance future sono garantite?",
+        a: "No. Le performance passate non garantiscono risultati futuri. I mercati cambiano, le condizioni cambiano, le serie positive si interrompono. Chiunque affermi il contrario ti sta vendendo qualcosa."
+      },
+      {
+        q: "Quanto è liquido l'investimento?",
+        a: "Questa è una domanda importante che affrontiamo direttamente in una conversazione, poiché le condizioni possono variare. In generale l'operatività su mercati regolamentati garantisce un buon livello di liquidità, ma è bene definire insieme le modalità pratiche prima di qualsiasi impegno."
+      },
+      {
+        q: "Come vengono gestiti i rischi nelle fasi di mercato difficili?",
+        a: "In fasi di alta volatilità o incertezza, la prima risposta è ridurre la dimensione delle operazioni o stare fermi. Non è necessario essere sempre sul mercato. Aspettare è un'opzione legittima e spesso quella più sensata."
+      },
+      {
+        q: "Con quale frequenza vengono aperti e chiusi i trade?",
+        a: "L'operatività non è giornaliera nel senso speculativo del termine. Le posizioni vengono aperte quando ci sono condizioni che rispettano i criteri del metodo, non per il gusto di fare qualcosa. Periodi di inattività sono normali e attesi."
+      },
+      {
+        q: "Come posso seguire l'andamento del conto?",
+        a: "Chiunque partecipi ha accesso a una rendicontazione periodica chiara e leggibile. La trasparenza non è un optional: se non capisco qualcosa nella mia stessa operatività, ho un problema. E lo stesso vale per chi investe con me."
+      }
+    ];
+
+
+    /* ==========================================================
+       RENDERING — non è necessario modificare da qui in poi
+    ========================================================== */
+
+    // --- data aggiornamento ---
+    document.getElementById("data-aggiornamento").textContent = DATA_AGGIORNAMENTO;
+
+    // --- statistiche ---
+    const grid = document.getElementById("stats-grid");
+    STATISTICHE.forEach(s => {
+      const card = document.createElement("div");
+      card.className = "stat-card fade-in";
+      card.innerHTML = `
+        <div class="stat-value ${s.cssClass}">${s.value}${s.suffix}</div>
+        <div class="stat-label">${s.label}</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // --- faq accordion ---
+    const faqList = document.getElementById("faq-list");
+    FAQ.forEach((item, i) => {
+      const el = document.createElement("div");
+      el.className = "faq-item";
+      el.innerHTML = `
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-ans-${i}">
+          ${item.q}
+          <svg class="faq-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="10" y1="4" x2="10" y2="16"/>
+            <line x1="4" y1="10" x2="16" y2="10"/>
+          </svg>
+        </button>
+        <div class="faq-answer" id="faq-ans-${i}" role="region">
+          <div class="faq-answer-inner">${item.a}</div>
+        </div>
+      `;
+      el.querySelector(".faq-question").addEventListener("click", () => {
+        const isOpen = el.classList.contains("open");
+        // chiudi tutti
+        document.querySelectorAll(".faq-item.open").forEach(x => {
+          x.classList.remove("open");
+          x.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+        });
+        if (!isOpen) {
+          el.classList.add("open");
+          el.querySelector(".faq-question").setAttribute("aria-expanded", "true");
+        }
+      });
+      faqList.appendChild(el);
+    });
+
+    // --- equity chart ---
+    (function drawChart() {
+      const canvas = document.getElementById("equity-chart");
+      if (!canvas) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const W   = canvas.offsetWidth;
+      const H   = canvas.offsetHeight || 220;
+      canvas.width  = W * dpr;
+      canvas.height = H * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      const data = EQUITY_DATA;
+      if (data.length < 2) return;
+
+      const padL = 12, padR = 12, padT = 20, padB = 28;
+      const chartW = W - padL - padR;
+      const chartH = H - padT - padB;
+
+      const minVal = Math.min(...data);
+      const maxVal = Math.max(...data);
+      const range  = maxVal - minVal || 1;
+
+      const toX = i => padL + (i / (data.length - 1)) * chartW;
+      const toY = v => padT + chartH - ((v - minVal) / range) * chartH;
+
+      // gradient fill
+      const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
+      grad.addColorStop(0,   "rgba(79,125,243,0.22)");
+      grad.addColorStop(1,   "rgba(79,125,243,0)");
+
+      // --- animated draw ---
+      let progress = 0;
+      const STEPS  = 80;
+
+      function frame() {
+        ctx.clearRect(0, 0, W, H);
+        progress = Math.min(progress + 1, STEPS);
+        const visible = Math.max(2, Math.round((progress / STEPS) * data.length));
+
+        // grid lines (3 horizontal)
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
+        for (let t = 0; t <= 2; t++) {
+          const y = padT + (chartH / 2) * t;
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(padL + chartW, y);
+          ctx.stroke();
+        }
+
+        // build path up to `visible` points
+        const sliceData = data.slice(0, visible);
+
+        // fill area
+        ctx.beginPath();
+        ctx.moveTo(toX(0), toY(sliceData[0]));
+        sliceData.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+        ctx.lineTo(toX(sliceData.length - 1), padT + chartH);
+        ctx.lineTo(toX(0), padT + chartH);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // line
+        ctx.beginPath();
+        ctx.moveTo(toX(0), toY(sliceData[0]));
+        sliceData.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+        const lineColor = sliceData[sliceData.length-1] >= sliceData[0]
+          ? "#4f7df3" : "#f06060";
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth   = 2.5;
+        ctx.lineJoin    = "round";
+        ctx.stroke();
+
+        // last dot
+        const lx = toX(sliceData.length - 1);
+        const ly = toY(sliceData[sliceData.length - 1]);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 5, 0, Math.PI * 2);
+        ctx.fillStyle = lineColor;
+        ctx.fill();
+
+        // x-axis labels
+        if (EQUITY_LABELS.length === data.length) {
+          ctx.fillStyle  = "rgba(137,144,168,0.7)";
+          ctx.font       = `${11 * dpr / dpr}px ${getComputedStyle(document.body).getPropertyValue('--font-ui')}`;
+          ctx.textAlign  = "center";
+          const step = Math.max(1, Math.floor(data.length / 6));
+          for (let i = 0; i < sliceData.length; i += step) {
+            ctx.fillText(EQUITY_LABELS[i], toX(i), padT + chartH + 18);
+          }
+        }
+
+        if (progress < STEPS) requestAnimationFrame(frame);
+      }
+
+      requestAnimationFrame(frame);
+
+      // badge
+      const first = data[0];
+      const last  = data[data.length - 1];
+      const pct   = ((last - first) / first * 100).toFixed(1);
+      const badge = document.getElementById("chart-badge");
+      if (badge) {
+        badge.textContent = (pct >= 0 ? "+" : "") + pct + "%";
+        badge.style.color     = pct >= 0 ? "var(--color-success)" : "var(--color-danger)";
+        badge.style.background = pct >= 0 ? "rgba(62,207,142,0.1)" : "rgba(240,96,96,0.1)";
+        badge.style.borderColor = pct >= 0 ? "rgba(62,207,142,0.2)" : "rgba(240,96,96,0.2)";
+      }
+
+      // redraw on resize
+      window.addEventListener("resize", () => {
+        progress = 0;
+        canvas.width  = canvas.offsetWidth  * dpr;
+        canvas.height = canvas.offsetHeight * dpr;
+        ctx.scale(dpr, dpr);
+        requestAnimationFrame(frame);
+      });
+    })();
+
+    // --- intersection observer for fade-in ---
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add("visible");
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
+
+  </script>
+
+</body>
+</html>
