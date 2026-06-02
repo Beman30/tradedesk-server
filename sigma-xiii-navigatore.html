@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07080c">
+<meta name="description" content="Sigma XIII Navigatore — Un percorso guidato per comprendere meglio il proprio approccio agli investimenti.">
+<title>Sigma XIII · Navigatore</title>
+<style>
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root{
+  /* backgrounds */
+  --bg:       #07080c;
+  --surface:  #0d0f15;
+  --surface2: #131620;
+  --surface3: #191d28;
+
+  /* borders */
+  --border:      #1c1f2a;
+  --border2:     #242838;
+  --border-gold: rgba(182,147,74,0.22);
+
+  /* text */
+  --text:       #e4e6ec;
+  --muted:      #737d96;
+  --faint:      #353a4d;
+
+  /* gold */
+  --gold:       #b6934a;
+  --gold-l:     #c9a868;
+  --gold-d:     #8a6e35;
+  --gold-dim:   rgba(182,147,74,0.07);
+  --gold-glow:  rgba(182,147,74,0.15);
+
+  /* blue */
+  --blue-deep:  #0e1624;
+  --blue-mid:   #162040;
+
+  /* type */
+  --serif: Georgia,'Times New Roman',serif;
+  --sans:  -apple-system,'Helvetica Neue',Arial,sans-serif;
+
+  /* layout */
+  --max: 660px;
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-0.02em;line-height:1.15;}
+a{color:inherit;text-decoration:none;}
+button{font-family:var(--sans);cursor:pointer;}
+
+/* ═══════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════ */
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px;}
+.eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:.6;}
+.gold{color:var(--gold);}
+
+/* ═══════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;
+  background:rgba(7,8,12,.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(182,147,74,.07);
+}
+.nav-logo{font-family:var(--serif);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.nav-link{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .2s;}
+.nav-link:hover{color:var(--gold);}
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:110px 24px 80px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;
+  top:-120px;left:50%;transform:translateX(-50%);
+  width:700px;height:700px;
+  background:radial-gradient(circle,rgba(182,147,74,.045) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-eyebrow{margin-bottom:30px;}
+.hero-title{
+  font-size:clamp(48px,9vw,78px);
+  letter-spacing:-.03em;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.hero-title .accent{color:var(--gold);display:block;}
+.hero-sub{
+  font-size:clamp(15px,2.2vw,18px);
+  color:var(--muted);
+  max-width:440px;
+  margin:30px auto 52px;
+  line-height:1.8;
+  font-style:italic;
+}
+.btn-cta{
+  display:inline-flex;align-items:center;gap:11px;
+  padding:16px 38px;
+  background:transparent;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  transition:background .3s,border-color .3s,color .3s;
+}
+.btn-cta:hover{background:var(--gold-dim);border-color:var(--gold-l);color:var(--gold-l);}
+.btn-cta svg{transition:transform .3s;}
+.btn-cta:hover svg{transform:translateY(4px);}
+.hero-scroll{
+  position:absolute;bottom:38px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--faint);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  animation:bob 3.2s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(7px);}}
+
+/* ═══════════════════════════════════════════
+   INTRO
+═══════════════════════════════════════════ */
+.intro{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:90px 0;
+}
+.intro-inner{max-width:520px;margin:0 auto;padding:0 24px;text-align:center;}
+.intro-heading{font-size:clamp(26px,4vw,36px);color:var(--gold);margin:16px 0 32px;}
+.intro-body{font-size:17px;color:var(--muted);line-height:1.95;}
+.intro-body p+p{margin-top:18px;}
+
+/* ═══════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════ */
+.quiz{padding:80px 0 110px;}
+.quiz-head{text-align:center;margin-bottom:56px;}
+.quiz-head h2{font-size:clamp(24px,3.5vw,34px);margin:14px 0 10px;}
+.quiz-head p{color:var(--muted);font-size:14px;}
+
+/* progress */
+.prog{
+  height:1px;background:var(--border2);
+  margin-bottom:48px;position:relative;
+  display:none;
+}
+.prog-fill{height:100%;background:var(--gold);transition:width .55s cubic-bezier(.4,0,.2,1);}
+.prog-lbl{
+  position:absolute;right:0;top:-18px;
+  font-size:10px;color:var(--faint);letter-spacing:.08em;
+}
+
+/* question cards */
+.q-box{position:relative;min-height:280px;}
+.q-card{display:none;}
+.q-card.active{display:block;animation:slideIn .45s cubic-bezier(.4,0,.2,1) forwards;}
+.q-card.out{display:block;animation:slideOut .28s ease forwards;}
+
+@keyframes slideIn{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-14px);}}
+
+.q-num{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.45;margin-bottom:14px;}
+.q-text{
+  font-family:var(--serif);
+  font-size:clamp(19px,3.2vw,25px);
+  color:var(--text);margin-bottom:32px;line-height:1.38;
+}
+.q-opts{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  width:100%;padding:15px 20px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);font-size:15px;text-align:left;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  transition:background .22s,border-color .22s,color .22s;
+}
+.opt:hover{background:var(--gold-dim);border-color:var(--border-gold);color:var(--gold-l);}
+.opt.chosen{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-l);}
+.opt-arr{opacity:0;color:var(--gold);font-size:15px;flex-shrink:0;transition:opacity .2s,transform .2s;}
+.opt:hover .opt-arr{opacity:1;transform:translateX(4px);}
+
+/* analyzing */
+.analyzing{display:none;text-align:center;padding:50px 0;}
+.analyzing p{color:var(--muted);font-size:13px;letter-spacing:.1em;}
+
+/* ═══════════════════════════════════════════
+   RESULT
+═══════════════════════════════════════════ */
+.result{display:none;padding:80px 0;}
+.result.on{display:block;animation:slideIn .6s ease forwards;}
+.result-wrap{max-width:580px;margin:0 auto;padding:0 24px;text-align:center;}
+.result-lbl{margin-bottom:14px;}
+.result-name{
+  font-size:clamp(38px,8vw,58px);
+  color:var(--gold);margin-bottom:20px;
+}
+.result-desc{font-size:17px;color:var(--muted);line-height:1.85;font-style:italic;margin-bottom:40px;}
+.result-panel{
+  background:var(--surface);
+  border:1px solid var(--border-gold);
+  padding:32px;text-align:left;margin-bottom:18px;
+}
+.panel-lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.55;margin-bottom:14px;}
+.panel-body{color:var(--muted);font-size:14px;line-height:1.8;}
+.panel-list{list-style:none;padding:0;}
+.panel-list li{
+  padding:9px 0;border-bottom:1px solid var(--border);
+  color:var(--muted);font-size:14px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.panel-list li:last-child{border-bottom:none;}
+.panel-list li::before{content:'—';color:var(--gold);opacity:.35;flex-shrink:0;}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 30px;background:transparent;
+  border:1px solid var(--border2);color:var(--muted);
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  transition:border-color .25s,color .25s;margin-top:20px;
+}
+.btn-outline:hover{border-color:var(--border-gold);color:var(--gold);}
+.restart-lnk{
+  display:block;margin-top:28px;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);cursor:pointer;transition:color .2s;background:none;border:none;
+}
+.restart-lnk:hover{color:var(--muted);}
+
+/* ═══════════════════════════════════════════
+   FILOSOFIE
+═══════════════════════════════════════════ */
+.filosof{
+  padding:100px 0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.filosof-head{margin-bottom:44px;}
+.filosof-head h2{font-size:clamp(26px,3.8vw,38px);margin-top:14px;}
+.f-grid{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.f-card{background:var(--surface);cursor:pointer;overflow:hidden;}
+.f-top{
+  padding:22px 26px;
+  display:flex;align-items:center;gap:14px;
+  transition:background .2s;
+}
+.f-card:hover .f-top,.f-card.open .f-top{background:var(--gold-dim);}
+.f-n{font-family:var(--serif);font-size:10px;color:var(--gold);opacity:.35;min-width:22px;letter-spacing:.1em;}
+.f-title{flex:1;font-size:16px;color:var(--text);font-family:var(--serif);font-weight:400;}
+.f-ico{color:var(--gold);opacity:.4;font-size:18px;flex-shrink:0;transition:transform .3s,opacity .2s;line-height:1;}
+.f-card.open .f-ico{transform:rotate(45deg);opacity:.9;}
+.f-body{max-height:0;overflow:hidden;transition:max-height .48s cubic-bezier(.4,0,.2,1);}
+.f-card.open .f-body{max-height:260px;}
+.f-txt{padding:0 26px 26px 62px;color:var(--muted);font-size:14px;line-height:1.85;}
+
+/* ═══════════════════════════════════════════
+   RISORSE
+═══════════════════════════════════════════ */
+.risorse{padding:100px 0;}
+.risorse-head{margin-bottom:44px;}
+.risorse-head h2{font-size:clamp(26px,3.8vw,38px);margin-top:14px;}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+.r-card{
+  background:var(--surface);border:1px solid var(--border);
+  padding:34px 26px;
+  display:flex;flex-direction:column;gap:14px;
+  transition:border-color .25s,transform .25s;
+}
+.r-card:hover{border-color:var(--border-gold);transform:translateY(-3px);}
+.r-ico{color:var(--gold);opacity:.55;}
+.r-title{font-size:17px;color:var(--text);font-family:var(--serif);font-weight:400;}
+.r-desc{font-size:13px;color:var(--muted);line-height:1.75;flex:1;}
+.r-lnk{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);background:none;border:none;padding:0;
+  cursor:pointer;transition:gap .2s;
+}
+.r-lnk:hover{gap:11px;}
+
+/* ═══════════════════════════════════════════
+   QUOTE
+═══════════════════════════════════════════ */
+.quote-sec{
+  padding:120px 0;text-align:center;position:relative;overflow:hidden;
+}
+.quote-sec::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(182,147,74,.035) 0%,transparent 68%);
+}
+.quote-inner{max-width:620px;margin:0 auto;padding:0 24px;position:relative;}
+.qmark{font-size:90px;color:var(--gold);opacity:.09;font-family:var(--serif);line-height:1;margin-bottom:-16px;}
+.q-big{
+  font-size:clamp(22px,4vw,34px);
+  color:var(--text);font-family:var(--serif);
+  line-height:1.42;margin-bottom:30px;letter-spacing:-.01em;
+}
+.q-small{font-size:16px;color:var(--muted);line-height:1.8;max-width:460px;margin:0 auto;}
+
+/* ═══════════════════════════════════════════
+   NEXT STEPS
+═══════════════════════════════════════════ */
+.next{
+  padding:100px 0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+}
+.next-head{margin-bottom:44px;}
+.next-head h2{font-size:clamp(26px,3.8vw,38px);margin-top:14px;}
+.n-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;}
+.n-card{
+  background:var(--bg);border:1px solid var(--border);
+  padding:30px 22px;
+  display:flex;flex-direction:column;gap:11px;
+  cursor:pointer;transition:border-color .25s;
+}
+.n-card:hover{border-color:var(--border-gold);}
+.n-num{font-family:var(--serif);font-size:30px;color:var(--gold);opacity:.12;line-height:1;}
+.n-title{font-size:15px;color:var(--text);line-height:1.4;}
+.n-desc{font-size:13px;color:var(--muted);line-height:1.7;flex:1;}
+.n-arr{font-size:16px;color:var(--gold);opacity:.35;align-self:flex-start;transition:opacity .2s,transform .2s;}
+.n-card:hover .n-arr{opacity:.8;transform:translateX(4px);}
+
+/* ═══════════════════════════════════════════
+   DISCLAIMER
+═══════════════════════════════════════════ */
+.disc-wrap{max-width:var(--max);margin:0 auto;padding:56px 24px;}
+.disc{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:2px solid var(--gold);
+  padding:26px 30px;
+}
+.disc-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:.5;margin-bottom:10px;}
+.disc-txt{font-size:13px;color:var(--muted);line-height:1.8;}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+.footer{padding:36px 24px;text-align:center;border-top:1px solid var(--border);}
+.footer-txt{font-family:var(--serif);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);opacity:.3;}
+
+/* ═══════════════════════════════════════════
+   MOBILE
+═══════════════════════════════════════════ */
+@media(max-width:600px){
+  .nav{padding:13px 18px;}
+  .hero-title{font-size:48px;}
+  .filosof,.risorse,.next,.quote-sec{padding:70px 0;}
+  .f-txt{padding-left:26px;}
+  .r-grid,.n-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────────────── -->
+<nav class="nav">
+  <span class="nav-logo">Sigma XIII</span>
+  <a href="sigma-xiii.html" class="nav-link">Investor Guide →</a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────── -->
+<section class="hero" id="top">
+  <p class="eyebrow hero-eyebrow">Guida interattiva</p>
+  <h1 class="hero-title">
+    Sigma XIII
+    <span class="accent">Navigatore</span>
+  </h1>
+  <p class="hero-sub">
+    "Ogni investitore parte da un punto diverso.<br>
+    Prima di guardare i rendimenti, vale la pena capire il proprio percorso."
+  </p>
+  <button class="btn-cta" onclick="startQuiz()">
+    Inizia il percorso
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M6.5 1v11M1 7l5.5 5.5L12 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="hero-scroll" aria-hidden="true">
+    <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+      <rect x=".7" y=".7" width="12.6" height="16.6" rx="6.3" stroke="currentColor" stroke-width=".9" opacity=".3"/>
+      <circle cx="7" cy="5" r="1.3" fill="currentColor" opacity=".35">
+        <animateTransform attributeName="transform" type="translate" values="0,0;0,4;0,0" dur="2.2s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+  </div>
+</section>
+
+<!-- ── INTRO ─────────────────────────────────────── -->
+<section class="intro">
+  <div class="intro-inner">
+    <p class="eyebrow">Prima di tutto</p>
+    <h2 class="intro-heading">Perché iniziare dalle domande</h2>
+    <div class="intro-body">
+      <p>Molte persone iniziano dagli strumenti.</p>
+      <p>Noi preferiamo iniziare dalle domande.</p>
+      <p>Perché due persone con lo stesso capitale possono avere esigenze completamente diverse.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUIZ ──────────────────────────────────────── -->
+<section class="quiz" id="quiz">
+  <div class="wrap">
+
+    <div class="quiz-head">
+      <p class="eyebrow">Percorso guidato</p>
+      <h2>Sei domande.<br>Nessuna risposta sbagliata.</h2>
+      <p>Rispondi con la prima cosa che ti viene in mente.</p>
+    </div>
+
+    <!-- progress bar (shown from Q2 onward) -->
+    <div class="prog" id="prog">
+      <div class="prog-fill" id="progFill"></div>
+      <span class="prog-lbl" id="progLbl"></span>
+    </div>
+
+    <!-- question cards -->
+    <div class="q-box" id="qBox">
+
+      <div class="q-card" id="q1">
+        <p class="q-num">01 / 06</p>
+        <h3 class="q-text">Quanto patrimonio complessivo possiedi?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="1" data-v="<5k">Meno di 5.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="1" data-v="5-20k">5.000 € – 20.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="1" data-v="20-100k">20.000 € – 100.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="1" data-v=">100k">Oltre 100.000 €<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="q-card" id="q2">
+        <p class="q-num">02 / 06</p>
+        <h3 class="q-text">Quanto capitale saresti disposto a destinare?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="2" data-v="500">500 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="2" data-v="2k">2.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="2" data-v="5k">5.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="2" data-v="10k">10.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="2" data-v="25k">25.000 €<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="2" data-v="50k+">50.000 €+<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="q-card" id="q3">
+        <p class="q-num">03 / 06</p>
+        <h3 class="q-text">Per quale motivo stai investendo?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="3" data-v="protezione">Protezione del capitale<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="3" data-v="crescita">Crescita graduale<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="3" data-v="cashflow">Cashflow<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="3" data-v="asimmetria">Opportunità ad alta asimmetria<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="3" data-v="esplorando">Sto ancora cercando di capire<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="q-card" id="q4">
+        <p class="q-num">04 / 06</p>
+        <h3 class="q-text">Come reagiresti ad una perdita temporanea del 15%?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="4" data-v="difficolta">Mi metterebbe in difficoltà<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="4" data-v="preoccupa">Mi preoccuperebbe<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="4" data-v="accetto">La accetterei<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="4" data-v="dipende">Dipende dal piano<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="q-card" id="q5">
+        <p class="q-num">05 / 06</p>
+        <h3 class="q-text">Quanto conosci i mercati finanziari?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="5" data-v="nessuna">Nessuna esperienza<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="5" data-v="principiante">Principiante<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="5" data-v="intermedio">Intermedio<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="5" data-v="avanzato">Avanzato<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="q-card" id="q6">
+        <p class="q-num">06 / 06</p>
+        <h3 class="q-text">Che cosa stai cercando in questo momento?</h3>
+        <div class="q-opts">
+          <button class="opt" data-q="6" data-v="imparare">Imparare<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="6" data-v="rischio">Capire il rischio<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="6" data-v="mercati">Seguire i mercati<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="6" data-v="dati">Vedere dati reali<span class="opt-arr">→</span></button>
+          <button class="opt" data-q="6" data-v="confronto">Confrontarmi con qualcuno<span class="opt-arr">→</span></button>
+        </div>
+      </div>
+
+    </div><!-- /q-box -->
+
+    <!-- analyzing loader -->
+    <div class="analyzing" id="analyzing">
+      <p>Elaborazione del profilo<span id="dots">.</span></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── RESULT ─────────────────────────────────────── -->
+<section class="result" id="resultSec">
+  <div class="result-wrap">
+    <p class="eyebrow result-lbl">Profilo rilevato</p>
+    <h2 class="result-name" id="rName">—</h2>
+    <p class="result-desc" id="rDesc">—</p>
+
+    <div class="result-panel">
+      <p class="panel-lbl">Punti di attenzione</p>
+      <ul class="panel-list" id="rList"></ul>
+    </div>
+
+    <div class="result-panel">
+      <p class="panel-lbl">Filosofia Sigma XIII collegata</p>
+      <p class="panel-body" id="rPhil">—</p>
+    </div>
+
+    <a href="sigma-xiii.html" class="btn-cta" style="margin-top:8px;">
+      Approfondisci la guida completa →
+    </a>
+
+    <button class="restart-lnk" onclick="restartQuiz()">↩ Ricomincia il percorso</button>
+  </div>
+</section>
+
+<!-- ── FILOSOFIE ──────────────────────────────────── -->
+<section class="filosof">
+  <div class="wrap">
+    <div class="filosof-head">
+      <p class="eyebrow">Le filosofie Sigma XIII</p>
+      <h2>I principi che guidano ogni decisione</h2>
+    </div>
+    <div class="f-grid">
+
+      <div class="f-card" onclick="toggleF(this)">
+        <div class="f-top">
+          <span class="f-n">01</span>
+          <span class="f-title">Rischio prima del rendimento</span>
+          <span class="f-ico">+</span>
+        </div>
+        <div class="f-body">
+          <p class="f-txt">Prima di chiedersi quanto si può guadagnare, la domanda corretta è: quale rischio si sta assumendo? Il rendimento è la conseguenza di un processo ben strutturato, non il punto di partenza. Ogni operazione nasce da una valutazione del rischio massimo tollerabile.</p>
+        </div>
+      </div>
+
+      <div class="f-card" onclick="toggleF(this)">
+        <div class="f-top">
+          <span class="f-n">02</span>
+          <span class="f-title">Asimmetria</span>
+          <span class="f-ico">+</span>
+        </div>
+        <div class="f-body">
+          <p class="f-txt">Cercare situazioni in cui il potenziale guadagno è strutturalmente superiore al rischio assunto. Non si tratta di prevedere il mercato, ma di posizionarsi in modo che la dimensione dei movimenti favorevoli superi quella dei movimenti avversi.</p>
+        </div>
+      </div>
+
+      <div class="f-card" onclick="toggleF(this)">
+        <div class="f-top">
+          <span class="f-n">03</span>
+          <span class="f-title">Disciplina</span>
+          <span class="f-ico">+</span>
+        </div>
+        <div class="f-body">
+          <p class="f-txt">Seguire un metodo con coerenza, indipendentemente dall'umore del mercato o dalle proprie emozioni. La disciplina non è rigidità: è la capacità di mantenere il processo anche quando è scomodo, soprattutto quando è scomodo.</p>
+        </div>
+      </div>
+
+      <div class="f-card" onclick="toggleF(this)">
+        <div class="f-top">
+          <span class="f-n">04</span>
+          <span class="f-title">Trasparenza</span>
+          <span class="f-ico">+</span>
+        </div>
+        <div class="f-body">
+          <p class="f-txt">I dati reali e verificabili sono l'unico linguaggio credibile. Le perdite vengono mostrate con la stessa chiarezza dei guadagni. Non esiste comunicazione selettiva: tutto ciò che conta viene condiviso, incluso quello che non è andato come previsto.</p>
+        </div>
+      </div>
+
+      <div class="f-card" onclick="toggleF(this)">
+        <div class="f-top">
+          <span class="f-n">05</span>
+          <span class="f-title">Pazienza</span>
+          <span class="f-ico">+</span>
+        </div>
+        <div class="f-body">
+          <p class="f-txt">I mercati premiano chi sa aspettare. La pazienza non è passività: è la capacità di non agire quando non ci sono le condizioni giuste. Aspettare la propria occasione, con il capitale intatto, è spesso la mossa più intelligente.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── RISORSE ────────────────────────────────────── -->
+<section class="risorse">
+  <div class="wrap">
+    <div class="risorse-head">
+      <p class="eyebrow">Risorse gratuite</p>
+      <h2>Da dove vuoi continuare?</h2>
+    </div>
+    <div class="r-grid">
+
+      <div class="r-card">
+        <svg class="r-ico" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="1" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M1 7h20M7 1v20" stroke="currentColor" stroke-width="1.1"/>
+        </svg>
+        <h3 class="r-title">Guida Sigma XIII</h3>
+        <p class="r-desc">Comprendere il progetto, il metodo e il rischio. Storico operazioni, equity curve e struttura completa.</p>
+        <a href="sigma-xiii.html" class="r-lnk">
+          Apri Investor Guide
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1 10L10 1M10 1H3M10 1v7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="r-card">
+        <svg class="r-ico" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M2 11h18M2 5h18M2 17h10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        <h3 class="r-title">Market Notes</h3>
+        <p class="r-desc">Aggiornamenti e riflessioni sui mercati. Analisi periodiche, contesto macro e commenti operativi.</p>
+        <button class="r-lnk" onclick="comingSoon()">
+          Esplora
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1 10L10 1M10 1H3M10 1v7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="r-card">
+        <svg class="r-ico" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="9.5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M11 7v4.5l3 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        <h3 class="r-title">Academy</h3>
+        <p class="r-desc">Percorso educativo sui principi che guidano Sigma XIII. Rischio, struttura, asimmetria e metodo.</p>
+        <button class="r-lnk" onclick="comingSoon()">
+          Accedi
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1 10L10 1M10 1H3M10 1v7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ──────────────────────────────────────── -->
+<section class="quote-sec">
+  <div class="quote-inner">
+    <div class="qmark">"</div>
+    <h2 class="q-big">Un rendimento senza contesto<br>non significa nulla.</h2>
+    <p class="q-small">
+      La domanda corretta non è quanto si può guadagnare.<br>
+      La domanda corretta è quale rischio è stato assunto<br>per ottenere quel risultato.
+    </p>
+  </div>
+</section>
+
+<!-- ── NEXT ───────────────────────────────────────── -->
+<section class="next">
+  <div class="wrap">
+    <div class="next-head">
+      <p class="eyebrow">E adesso?</p>
+      <h2>Scegli il tuo passo successivo</h2>
+    </div>
+    <div class="n-grid">
+
+      <div class="n-card" onclick="document.getElementById('quiz').scrollIntoView({behavior:'smooth'});">
+        <span class="n-num">01</span>
+        <h3 class="n-title">Continua ad esplorare autonomamente</h3>
+        <p class="n-desc">Torna al percorso guidato o rileggi le filosofie Sigma XIII al tuo ritmo.</p>
+        <span class="n-arr">↑</span>
+      </div>
+
+      <a href="sigma-xiii.html" class="n-card">
+        <span class="n-num">02</span>
+        <h3 class="n-title">Approfondisci la guida completa</h3>
+        <p class="n-desc">Dati reali, storico operazioni, equity curve e struttura del progetto Sigma XIII.</p>
+        <span class="n-arr">→</span>
+      </a>
+
+      <div class="n-card" onclick="comingSoon()">
+        <span class="n-num">03</span>
+        <h3 class="n-title">Richiedi un confronto</h3>
+        <p class="n-desc">Se hai domande specifiche o vuoi capire meglio il progetto, puoi richiedere una conversazione.</p>
+        <span class="n-arr">↗</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── DISCLAIMER ─────────────────────────────────── -->
+<div class="disc-wrap">
+  <div class="disc">
+    <p class="disc-lbl">Nota importante</p>
+    <p class="disc-txt">
+      Questo strumento ha finalità esclusivamente informative e di orientamento. Non costituisce consulenza finanziaria personalizzata. Non rappresenta una raccomandazione di investimento. Le decisioni finanziarie devono essere valutate autonomamente, tenendo conto del proprio profilo di rischio, degli obiettivi personali e, se necessario, con il supporto di un consulente finanziario indipendente.
+    </p>
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────── -->
+<footer class="footer">
+  <p class="footer-txt">Sigma XIII · Navigatore</p>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+/* ── state ─────────────────────────────────────── */
+const ans = {};        // answers keyed by question number
+let cur = 0;           // current question index (0 = none shown)
+const TOTAL = 6;
+
+/* ── profiles data ─────────────────────────────── */
+const PROFILES = {
+  OSSERVATORE: {
+    name: 'Osservatore',
+    desc: 'Per chi vuole comprendere prima di decidere.',
+    attention: [
+      'Non c\'è fretta: la chiarezza vale più della velocità.',
+      'Osservare senza agire è già un\'attività preziosa.',
+      'Costruisci una mappa prima di tracciare un percorso.',
+    ],
+    phil: 'Rischio prima del rendimento — prima di capire dove si vuole arrivare, bisogna capire cosa si è disposti a perdere lungo il percorso. L\'osservazione attenta è il fondamento di ogni decisione consapevole.',
+  },
+  ACADEMY: {
+    name: 'Academy',
+    desc: 'Per chi desidera approfondire metodo, rischio e mercati.',
+    attention: [
+      'La formazione è il primo investimento.',
+      'Comprendere il rischio è più importante che inseguire i rendimenti.',
+      'Un linguaggio comune aiuta a prendere decisioni più lucide.',
+    ],
+    phil: 'Disciplina e Trasparenza — il metodo si costruisce nel tempo, con coerenza. Capire come funzionano i mercati è la base per non farsi sorprendere da essi.',
+  },
+  CRESCITA: {
+    name: 'Crescita',
+    desc: 'Per chi ragiona con orizzonti medio-lunghi.',
+    attention: [
+      'La crescita graduale richiede pazienza strutturale.',
+      'La volatilità è il prezzo del rendimento nel lungo periodo.',
+      'La continuità è più potente dell\'intensità.',
+    ],
+    phil: 'Pazienza — i mercati premiano chi sa aspettare. La crescita composta richiede tempo e la capacità di non reagire ai rumori di breve termine.',
+  },
+  CASHFLOW: {
+    name: 'Cashflow',
+    desc: 'Per chi è interessato a flussi periodici e continuità.',
+    attention: [
+      'La regolarità ha un valore che va oltre il rendimento puntuale.',
+      'La prevedibilità è una forma di sicurezza.',
+      'Ogni strategia di cashflow ha una struttura di rischio sottostante.',
+    ],
+    phil: 'Rischio prima del rendimento — un flusso periodico stabile è costruito su fondamenta solide. La costanza del metodo genera la costanza dei risultati.',
+  },
+  ASIMMETRIA: {
+    name: 'Asimmetria',
+    desc: 'Per chi è attratto da opportunità ad alto rapporto rischio/rendimento.',
+    attention: [
+      'L\'asimmetria richiede una comprensione precisa del rischio assunto.',
+      'Non tutte le opportunità asimmetriche sono equivalenti.',
+      'Il sizing è critico: posizioni calibrate proteggono il portafoglio.',
+    ],
+    phil: 'Asimmetria — cercare strutturalmente situazioni in cui il potenziale upside supera in modo significativo il rischio di downside. Non previsione, ma posizionamento intelligente.',
+  },
+  INVESTOR_PATH: {
+    name: 'Investor Path',
+    desc: 'Per chi desidera approfondire dati, storico e struttura del progetto.',
+    attention: [
+      'I dati reali sono la base di ogni valutazione credibile.',
+      'Lo storico racconta più di qualsiasi dichiarazione.',
+      'La struttura del progetto è più importante del singolo trade.',
+    ],
+    phil: 'Trasparenza — i numeri parlano da soli. La credibilità si costruisce mostrando tutto: i risultati positivi e quelli negativi, le operazioni riuscite e quelle che non lo sono state.',
+  },
+};
+
+/* ── start ──────────────────────────────────────── */
+function startQuiz() {
+  const quizEl = document.getElementById('quiz');
+  quizEl.scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => showQ(1), 480);
+}
+
+/* ── show question n ────────────────────────────── */
+function showQ(n) {
+  document.querySelectorAll('.q-card').forEach(c => {
+    c.classList.remove('active', 'out');
+  });
+
+  if (n >= 2) {
+    document.getElementById('prog').style.display = 'block';
+  }
+  const pct = ((n - 1) / TOTAL) * 100;
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLbl').textContent = (n - 1) + ' / ' + TOTAL;
+
+  const card = document.getElementById('q' + n);
+  if (!card) return;
+  card.classList.add('active');
+  cur = n;
+
+  setTimeout(() => {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 60);
+}
+
+/* ── option click ───────────────────────────────── */
+document.querySelectorAll('.opt').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const q = parseInt(this.dataset.q);
+    const v = this.dataset.v;
+    ans[q] = v;
+
+    // visual feedback
+    document.querySelectorAll('.opt').forEach(b => {
+      if (parseInt(b.dataset.q) === q) b.classList.remove('chosen');
+    });
+    this.classList.add('chosen');
+
+    // transition to next or result
+    setTimeout(() => {
+      const card = document.getElementById('q' + q);
+      card.classList.add('out');
+      setTimeout(() => {
+        card.classList.remove('active', 'out');
+        if (q < TOTAL) {
+          showQ(q + 1);
+        } else {
+          showAnalyzing();
+        }
+      }, 300);
+    }, 260);
+  });
+});
+
+/* ── analyzing loader ───────────────────────────── */
+function showAnalyzing() {
+  document.getElementById('qBox').style.display = 'none';
+  document.getElementById('prog').style.display = 'none';
+  document.getElementById('analyzing').style.display = 'block';
+
+  let d = 1;
+  const iv = setInterval(() => {
+    d = (d % 3) + 1;
+    document.getElementById('dots').textContent = '.'.repeat(d);
+  }, 380);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    document.getElementById('analyzing').style.display = 'none';
+    computeResult();
+  }, 1900);
+}
+
+/* ── score computation ──────────────────────────── */
+function computeResult() {
+  const s = { OSSERVATORE:0, ACADEMY:0, CRESCITA:0, CASHFLOW:0, ASIMMETRIA:0, INVESTOR_PATH:0 };
+
+  // Q1 patrimonio
+  const q1 = ans[1];
+  if (q1 === '<5k')      { s.ACADEMY += 2; }
+  else if (q1 === '5-20k')   { s.OSSERVATORE++; s.ACADEMY++; }
+  else if (q1 === '20-100k') { s.CRESCITA++; s.CASHFLOW++; }
+  else if (q1 === '>100k')   { s.INVESTOR_PATH += 2; s.ASIMMETRIA++; }
+
+  // Q2 capitale
+  const q2 = ans[2];
+  if (q2 === '500')  { s.ACADEMY += 2; }
+  else if (q2 === '2k')  { s.OSSERVATORE++; s.ACADEMY++; }
+  else if (q2 === '5k')  { s.CRESCITA++; }
+  else if (q2 === '10k') { s.CRESCITA++; s.CASHFLOW++; }
+  else if (q2 === '25k') { s.CASHFLOW++; s.ASIMMETRIA++; }
+  else if (q2 === '50k+') { s.INVESTOR_PATH += 2; s.ASIMMETRIA++; }
+
+  // Q3 motivo
+  const q3 = ans[3];
+  if (q3 === 'protezione') { s.CRESCITA++; s.CASHFLOW += 2; }
+  else if (q3 === 'crescita')  { s.CRESCITA += 3; }
+  else if (q3 === 'cashflow')  { s.CASHFLOW += 3; }
+  else if (q3 === 'asimmetria') { s.ASIMMETRIA += 3; }
+  else if (q3 === 'esplorando') { s.OSSERVATORE += 2; s.ACADEMY += 2; }
+
+  // Q4 perdita
+  const q4 = ans[4];
+  if (q4 === 'difficolta') { s.CASHFLOW += 2; s.CRESCITA++; }
+  else if (q4 === 'preoccupa') { s.CRESCITA += 2; s.CASHFLOW++; }
+  else if (q4 === 'accetto')   { s.ASIMMETRIA++; s.INVESTOR_PATH++; }
+  else if (q4 === 'dipende')   { s.INVESTOR_PATH += 2; }
+
+  // Q5 conoscenza
+  const q5 = ans[5];
+  if (q5 === 'nessuna')       { s.ACADEMY += 3; }
+  else if (q5 === 'principiante') { s.ACADEMY += 2; s.OSSERVATORE++; }
+  else if (q5 === 'intermedio')   { s.CRESCITA++; s.INVESTOR_PATH++; }
+  else if (q5 === 'avanzato')     { s.INVESTOR_PATH += 2; s.ASIMMETRIA++; }
+
+  // Q6 cercando
+  const q6 = ans[6];
+  if (q6 === 'imparare')   { s.ACADEMY += 3; }
+  else if (q6 === 'rischio')   { s.OSSERVATORE += 2; s.ACADEMY++; }
+  else if (q6 === 'mercati')   { s.INVESTOR_PATH += 2; s.CRESCITA++; }
+  else if (q6 === 'dati')      { s.INVESTOR_PATH += 3; }
+  else if (q6 === 'confronto') { s.INVESTOR_PATH += 2; }
+
+  // pick winner
+  let top = 'OSSERVATORE', best = -1;
+  for (const [k, v] of Object.entries(s)) {
+    if (v > best) { best = v; top = k; }
+  }
+
+  renderResult(top);
+}
+
+/* ── render result ──────────────────────────────── */
+function renderResult(key) {
+  const p = PROFILES[key];
+
+  document.getElementById('rName').textContent = p.name;
+  document.getElementById('rDesc').textContent = p.desc;
+  document.getElementById('rPhil').textContent = p.phil;
+
+  const ul = document.getElementById('rList');
+  ul.innerHTML = '';
+  p.attention.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    ul.appendChild(li);
+  });
+
+  const sec = document.getElementById('resultSec');
+  sec.style.display = 'block';
+  sec.classList.add('on');
+  setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+}
+
+/* ── restart ────────────────────────────────────── */
+function restartQuiz() {
+  for (const k in ans) delete ans[k];
+  cur = 0;
+
+  document.getElementById('resultSec').style.display = 'none';
+  document.getElementById('resultSec').classList.remove('on');
+  document.getElementById('qBox').style.display = 'block';
+  document.getElementById('prog').style.display = 'none';
+  document.getElementById('progFill').style.width = '0%';
+
+  document.querySelectorAll('.q-card').forEach(c => c.classList.remove('active', 'out'));
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('chosen'));
+
+  document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => showQ(1), 550);
+}
+
+/* ── filosofie accordion ────────────────────────── */
+function toggleF(card) {
+  const was = card.classList.contains('open');
+  document.querySelectorAll('.f-card').forEach(c => c.classList.remove('open'));
+  if (!was) card.classList.add('open');
+}
+
+/* ── coming soon placeholder ────────────────────── */
+function comingSoon() {
+  /* replace with actual routing when sections are ready */
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border-gold);color:var(--muted);font-size:13px;letter-spacing:.06em;padding:14px 28px;z-index:999;animation:slideIn .3s ease;';
+  msg.textContent = 'Sezione in arrivo.';
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 2400);
+}
+</script>
+</body>
+</html>
