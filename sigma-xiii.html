@@ -1982,13 +1982,21 @@
   /* ============================================================
      DASHBOARD DATI
   ============================================================ */
+  /* Formatta la data di avvio dal primo punto della equity curve */
+  function formatStartDate() {
+    if (!equityRawData || equityRawData.length === 0) return '—';
+    const [y, m] = equityRawData[0].date.split('-');
+    return '01/' + m + '/' + y;
+  }
+
   /* Genera le card sintetiche leggendo sempre projectData corrente */
   function getSyntheticMetrics() {
     return [
-      { key: 'mesi', label: 'Mesi di storico',  value: projectData.monthsOfHistory, suffix: ' mesi', sub: 'dall\'avvio del progetto',   type: 'neutral'  },
-      { key: 'ret',  label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
-      { key: 'dd',   label: 'Drawdown max',      value: projectData.maxDrawdown + '%', sub: 'picco al minimo storico', type: 'negative' },
-      { key: 'ops',  label: 'Operazioni tot.',   value: projectData.totalOperations,   sub: 'dallo storico',           type: 'neutral'  },
+      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),             sub: 'avvio del progetto',      type: 'neutral'  },
+      { key: 'mesi',  label: 'Mesi di storico',  value: projectData.monthsOfHistory,   suffix: ' mesi', sub: 'dall\'avvio del progetto', type: 'neutral' },
+      { key: 'ret',   label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
+      { key: 'dd',    label: 'Drawdown max',      value: projectData.maxDrawdown + '%', sub: 'picco al minimo storico', type: 'negative' },
+      { key: 'ops',   label: 'Operazioni tot.',   value: projectData.totalOperations,   sub: 'dallo storico',           type: 'neutral'  },
     ];
   }
 
@@ -1996,6 +2004,7 @@
   function getDetailMetrics() {
     const sym = projectData.currency === 'USD' ? '$ ' : '€ ';
     return [
+      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),                                               sub: 'avvio del progetto',      type: 'neutral'  },
       { key: 'cap0',  label: 'Capitale iniziale', value: sym + Number(projectData.initialCapital).toLocaleString('it-IT'), sub: 'al lancio del progetto',  type: 'neutral'  },
       { key: 'capN',  label: 'Capitale attuale',  value: sym + Number(projectData.currentCapital).toLocaleString('it-IT'),  sub: 'alla data più recente',   type: 'positive' },
       { key: 'win',   label: 'Op. positive',      value: projectData.profitableOperations, suffix: '', sub: Number(projectData.winRate).toFixed(1) + '% del totale',         type: 'positive' },
