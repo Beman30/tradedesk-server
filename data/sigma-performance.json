@@ -1,22 +1,15 @@
 {
-  "lastUpdate": "2026-06-03 12:00",
+  "lastUpdate": "2026-06-03 08:03",
   "currency": "USD",
   "summary": {
-    "currentValue": 12495,
-    "initialValue": 9862,
-    "netProfit": 2633,
-    "returnPct": 26.7,
-    "maxDrawdownPct": -8.4,
-    "trades": 42,
-    "winningTrades": 24,
-    "losingTrades": 18
+    "currentValue": 12704.82,
+    "initialValue": 9861.77,
+    "netProfit": 2843.05,
+    "returnPct": 28.83,
+    "maxDrawdownPct": null,
+    "trades": null,
+    "winningTrades": null,
+    "losingTrades": null
   },
-  "equityCurve": [
-    {"date": "2026-01-01", "value": 9862},
-    {"date": "2026-02-01", "value": 10420},
-    {"date": "2026-03-01", "value": 11100},
-    {"date": "2026-04-01", "value": 10850},
-    {"date": "2026-05-01", "value": 11840},
-    {"date": "2026-06-03", "value": 12495}
-  ]
+  "equityCurve": []
 }
