@@ -1991,27 +1991,32 @@
 
   /* Genera le card sintetiche leggendo sempre projectData corrente */
   function getSyntheticMetrics() {
+    const dd = projectData.maxDrawdown;
     return [
-      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),             sub: 'avvio del progetto',      type: 'neutral'  },
-      { key: 'mesi',  label: 'Mesi di storico',  value: projectData.monthsOfHistory,   suffix: ' mesi', sub: 'dall\'avvio del progetto', type: 'neutral' },
+      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),           sub: 'avvio del progetto',      type: 'neutral'  },
+      { key: 'mesi',  label: 'Mesi di storico',  value: projectData.monthsOfHistory, suffix: ' mesi', sub: "dall'avvio del progetto", type: 'neutral' },
       { key: 'ret',   label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
-      { key: 'dd',    label: 'Drawdown max',      value: projectData.maxDrawdown + '%', sub: 'picco al minimo storico', type: 'negative' },
-      { key: 'ops',   label: 'Operazioni tot.',   value: projectData.totalOperations,   sub: 'dallo storico',           type: 'neutral'  },
+      ...(dd != null ? [{ key: 'dd', label: 'Drawdown max', value: dd + '%', sub: 'picco al minimo storico', type: 'negative' }] : []),
     ];
   }
 
   /* Genera le card dettagliate leggendo sempre projectData corrente */
   function getDetailMetrics() {
-    const sym = projectData.currency === 'USD' ? '$ ' : '€ ';
+    const sym       = projectData.currency === 'USD' ? '$ ' : '\u20ac ';
+    const dd        = projectData.maxDrawdown;
+    const hasTrades = projectData.totalOperations != null;
     return [
-      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),                                               sub: 'avvio del progetto',      type: 'neutral'  },
-      { key: 'cap0',  label: 'Capitale iniziale', value: sym + Number(projectData.initialCapital).toLocaleString('it-IT'), sub: 'al lancio del progetto',  type: 'neutral'  },
-      { key: 'capN',  label: 'Capitale attuale',  value: sym + Number(projectData.currentCapital).toLocaleString('it-IT'),  sub: 'alla data più recente',   type: 'positive' },
-      { key: 'win',   label: 'Op. positive',      value: projectData.profitableOperations, suffix: '', sub: Number(projectData.winRate).toFixed(1) + '% del totale',         type: 'positive' },
-      { key: 'loss',  label: 'Op. negative',      value: projectData.losingOperations,     suffix: '', sub: (100 - projectData.winRate).toFixed(1) + '% del totale',          type: 'negative' },
-      { key: 'avgW',  label: 'Media guadagno',    value: '+' + projectData.avgWin + '%',  sub: 'per operazione vincente',  type: 'positive' },
-      { key: 'avgL',  label: 'Media perdita',     value: projectData.avgLoss + '%',       sub: 'per operazione perdente',  type: 'negative' },
-      { key: 'mesi2', label: 'Mesi di storico',   value: projectData.monthsOfHistory,     suffix: ' mesi', sub: 'dall\'avvio del progetto', type: 'neutral'  },
+      { key: 'start', label: 'Data di avvio',    value: formatStartDate(),                                               sub: 'avvio del progetto',     type: 'neutral'  },
+      { key: 'cap0',  label: 'Capitale iniziale', value: sym + Number(projectData.initialCapital).toLocaleString('it-IT'), sub: 'al lancio del progetto', type: 'neutral'  },
+      { key: 'capN',  label: 'Capitale attuale',  value: sym + Number(projectData.currentCapital).toLocaleString('it-IT'),  sub: 'alla data pi\u00f9 recente',  type: 'positive' },
+      ...(dd != null ? [{ key: 'dd', label: 'Drawdown max', value: dd + '%', sub: 'picco al minimo storico', type: 'negative' }] : []),
+      ...(hasTrades ? [
+        { key: 'win',  label: 'Op. positive',   value: projectData.profitableOperations, suffix: '', sub: Number(projectData.winRate).toFixed(1) + '% del totale',        type: 'positive' },
+        { key: 'loss', label: 'Op. negative',   value: projectData.losingOperations,     suffix: '', sub: (100 - projectData.winRate).toFixed(1) + '% del totale',         type: 'negative' },
+        { key: 'avgW', label: 'Media guadagno', value: '+' + projectData.avgWin + '%',  sub: 'per operazione vincente', type: 'positive' },
+        { key: 'avgL', label: 'Media perdita',  value: projectData.avgLoss + '%',       sub: 'per operazione perdente', type: 'negative' },
+      ] : []),
+      { key: 'mesi2', label: 'Mesi di storico',   value: projectData.monthsOfHistory, suffix: ' mesi', sub: "dall'avvio del progetto", type: 'neutral'  },
       { key: 'ret2',  label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
     ];
   }
