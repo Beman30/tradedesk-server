@@ -1130,6 +1130,32 @@
     .disclaimer-text strong { color: var(--text-secondary); }
 
     /* ============================================================
+       DATA STATUS BAR
+    ============================================================ */
+    .data-status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-family: var(--font-mono);
+      font-size: 0.67rem;
+      letter-spacing: 0.1em;
+    }
+    .data-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background var(--t) var(--ease);
+    }
+    .data-status-bar.live .data-status-dot { background: var(--green); box-shadow: 0 0 6px rgba(74,158,106,0.45); }
+    .data-status-bar.demo .data-status-dot { background: var(--gold-dim); }
+    .data-status-bar.loading .data-status-dot { background: var(--text-muted); }
+    .data-status-bar.live span { color: var(--text-secondary); }
+    .data-status-bar.demo span { color: var(--gold-dim); }
+    .data-status-bar.loading span { color: var(--text-muted); }
+
+    /* ============================================================
        FOOTER
     ============================================================ */
     footer {
@@ -1421,6 +1447,11 @@
     <div class="dashboard-toggle reveal reveal-delay-3" role="group" aria-label="Visualizzazione dati">
       <button class="toggle-btn active" onclick="switchDashboard('sintetica')" aria-pressed="true">Vista Sintetica</button>
       <button class="toggle-btn" onclick="switchDashboard('dettagliata')" aria-pressed="false">Vista Dettagliata</button>
+    </div>
+
+    <div class="data-status-bar loading" id="data-status-bar" aria-live="polite" aria-atomic="true">
+      <span class="data-status-dot"></span>
+      <span id="data-status-text">Caricamento dati…</span>
     </div>
 
     <div class="metrics-grid reveal reveal-delay-4" id="metrics-container" role="list">
@@ -1854,44 +1885,39 @@
 ================================================================ -->
 <script>
   /* ============================================================
-     DATI DEL PROGETTO — modificare qui per aggiornare le metriche
+     DATI DEMO — usati come fallback se /data/sigma-performance.json
+     non è raggiungibile. Non modificare: aggiornare il JSON esterno.
+     I dati verranno aggiornati automaticamente 1-2 volte al giorno
+     da uno script collegato a IBKR Flex Query.
+     Non inserire credenziali IBKR nel frontend.
   ============================================================ */
-  const projectData = {
-    monthsOfHistory:       18,
-    initialCapital:        50000,
-    currentCapital:        67430,
-    returnPercent:         34.86,
-    maxDrawdown:           -12.3,
-    totalOperations:       47,
-    profitableOperations:  31,
-    losingOperations:      16,
-    winRate:               65.9,   // calcolato automaticamente se vuoi
-    avgWin:                2.8,    // rendimento medio operazione vincente %
-    avgLoss:               -1.2,   // rendimento medio operazione perdente %
+  const DEMO_PROJECT_DATA = {
+    monthsOfHistory:       6,
+    initialCapital:        9862,
+    currentCapital:        12495,
+    returnPercent:         26.7,
+    maxDrawdown:           -8.4,
+    totalOperations:       42,
+    profitableOperations:  24,
+    losingOperations:      18,
+    winRate:               57.1,
+    avgWin:                2.8,
+    avgLoss:               -1.2,
+    currency:              'USD',
   };
 
-  /* Dati equity curve — ogni punto: { date: 'YYYY-MM', value: numero indicizzato a 100 }
-     Modificare per aggiornare il grafico. */
-  const equityRawData = [
-    { date: '2024-01', value: 100.0  },
-    { date: '2024-02', value: 103.8  },
-    { date: '2024-03', value: 102.1  },
-    { date: '2024-04', value: 107.4  },
-    { date: '2024-05', value: 111.2  },
-    { date: '2024-06', value: 108.9  },
-    { date: '2024-07', value: 114.6  },
-    { date: '2024-08', value: 118.3  },
-    { date: '2024-09', value: 115.7  },
-    { date: '2024-10', value: 120.4  },
-    { date: '2024-11', value: 124.8  },
-    { date: '2024-12', value: 121.5  },
-    { date: '2025-01', value: 126.9  },
-    { date: '2025-02', value: 131.2  },
-    { date: '2025-03', value: 129.0  },
-    { date: '2025-04', value: 133.7  },
-    { date: '2025-05', value: 136.1  },
-    { date: '2025-06', value: 134.86 },
+  const DEMO_EQUITY_DATA = [
+    { date: '2026-01', value: 9862  },
+    { date: '2026-02', value: 10420 },
+    { date: '2026-03', value: 11100 },
+    { date: '2026-04', value: 10850 },
+    { date: '2026-05', value: 11840 },
+    { date: '2026-06', value: 12495 },
   ];
+
+  /* Variabili mutabili — aggiornate da loadPerformanceData() */
+  let projectData   = { ...DEMO_PROJECT_DATA };
+  let equityRawData = DEMO_EQUITY_DATA.map(d => ({ ...d }));
 
   /* ============================================================
      NAVIGAZIONE SCROLL
@@ -1956,28 +1982,35 @@
   /* ============================================================
      DASHBOARD DATI
   ============================================================ */
-  const syntheticMetrics = [
-    { key: 'mesi',    label: 'Mesi di storico', value: projectData.monthsOfHistory, suffix: ' mesi',  sub: 'dall\'avvio del progetto',    type: 'neutral', detail: false },
-    { key: 'ret',     label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + projectData.returnPercent.toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive', detail: false },
-    { key: 'dd',      label: 'Drawdown max',    value: projectData.maxDrawdown + '%', sub: 'picco al minimo storico',    type: 'negative', detail: false },
-    { key: 'ops',     label: 'Operazioni tot.', value: projectData.totalOperations,   sub: 'dallo storico',              type: 'neutral',  detail: false },
-  ];
+  /* Genera le card sintetiche leggendo sempre projectData corrente */
+  function getSyntheticMetrics() {
+    return [
+      { key: 'mesi', label: 'Mesi di storico',  value: projectData.monthsOfHistory, suffix: ' mesi', sub: 'dall\'avvio del progetto',   type: 'neutral'  },
+      { key: 'ret',  label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
+      { key: 'dd',   label: 'Drawdown max',      value: projectData.maxDrawdown + '%', sub: 'picco al minimo storico', type: 'negative' },
+      { key: 'ops',  label: 'Operazioni tot.',   value: projectData.totalOperations,   sub: 'dallo storico',           type: 'neutral'  },
+    ];
+  }
 
-  const detailMetrics = [
-    { key: 'cap0',    label: 'Capitale iniziale', value: '€ ' + projectData.initialCapital.toLocaleString('it-IT'), sub: 'al lancio del progetto', type: 'neutral', detail: true },
-    { key: 'capN',    label: 'Capitale attuale',  value: '€ ' + projectData.currentCapital.toLocaleString('it-IT'), sub: 'alla data più recente',  type: 'positive', detail: true },
-    { key: 'win',     label: 'Op. positive',      value: projectData.profitableOperations, suffix: '', sub: projectData.winRate.toFixed(1) + '% del totale', type: 'positive', detail: true },
-    { key: 'loss',    label: 'Op. negative',      value: projectData.losingOperations,     suffix: '', sub: (100 - projectData.winRate).toFixed(1) + '% del totale', type: 'negative', detail: true },
-    { key: 'avgW',    label: 'Media guadagno',    value: '+' + projectData.avgWin + '%',   sub: 'per operazione vincente',  type: 'positive', detail: true },
-    { key: 'avgL',    label: 'Media perdita',     value: projectData.avgLoss + '%',        sub: 'per operazione perdente',  type: 'negative', detail: true },
-    { key: 'mesi2',   label: 'Mesi di storico',   value: projectData.monthsOfHistory,      suffix: ' mesi', sub: 'dall\'avvio del progetto', type: 'neutral', detail: true },
-    { key: 'ret2',    label: 'Rendimento totale',  value: (projectData.returnPercent > 0 ? '+' : '') + projectData.returnPercent.toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive', detail: true },
-  ];
+  /* Genera le card dettagliate leggendo sempre projectData corrente */
+  function getDetailMetrics() {
+    const sym = projectData.currency === 'USD' ? '$ ' : '€ ';
+    return [
+      { key: 'cap0',  label: 'Capitale iniziale', value: sym + Number(projectData.initialCapital).toLocaleString('it-IT'), sub: 'al lancio del progetto',  type: 'neutral'  },
+      { key: 'capN',  label: 'Capitale attuale',  value: sym + Number(projectData.currentCapital).toLocaleString('it-IT'),  sub: 'alla data più recente',   type: 'positive' },
+      { key: 'win',   label: 'Op. positive',      value: projectData.profitableOperations, suffix: '', sub: Number(projectData.winRate).toFixed(1) + '% del totale',         type: 'positive' },
+      { key: 'loss',  label: 'Op. negative',      value: projectData.losingOperations,     suffix: '', sub: (100 - projectData.winRate).toFixed(1) + '% del totale',          type: 'negative' },
+      { key: 'avgW',  label: 'Media guadagno',    value: '+' + projectData.avgWin + '%',  sub: 'per operazione vincente',  type: 'positive' },
+      { key: 'avgL',  label: 'Media perdita',     value: projectData.avgLoss + '%',       sub: 'per operazione perdente',  type: 'negative' },
+      { key: 'mesi2', label: 'Mesi di storico',   value: projectData.monthsOfHistory,     suffix: ' mesi', sub: 'dall\'avvio del progetto', type: 'neutral'  },
+      { key: 'ret2',  label: 'Rendimento totale', value: (projectData.returnPercent > 0 ? '+' : '') + Number(projectData.returnPercent).toFixed(2) + '%', sub: 'sul capitale iniziale', type: 'positive' },
+    ];
+  }
 
   let currentView = 'sintetica';
 
   function renderMetrics(view) {
-    const metrics = view === 'sintetica' ? syntheticMetrics : detailMetrics;
+    const metrics = view === 'sintetica' ? getSyntheticMetrics() : getDetailMetrics();
     const container = document.getElementById('metrics-container');
     container.innerHTML = '';
     metrics.forEach((m, i) => {
@@ -2296,6 +2329,95 @@
       btn.setAttribute('aria-expanded', 'true');
     }
   }
+
+  /* ============================================================
+     STATO DATI — aggiorna la label sotto il toggle dashboard
+  ============================================================ */
+  function showDataStatus(lastUpdate, isDemo) {
+    const bar  = document.getElementById('data-status-bar');
+    const text = document.getElementById('data-status-text');
+    if (!bar || !text) return;
+
+    if (isDemo) {
+      bar.className = 'data-status-bar demo';
+      text.textContent = 'Dati dimostrativi — aggiornamento non disponibile';
+    } else {
+      bar.className = 'data-status-bar live';
+      let dateStr = lastUpdate || '';
+      // Formatta "2026-06-03 12:00" → "03/06/2026 12:00"
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+        const [datePart, timePart] = dateStr.split(' ');
+        const [y, m, d] = datePart.split('-');
+        dateStr = d + '/' + m + '/' + y + (timePart ? ' ' + timePart : '');
+      }
+      text.textContent = 'Ultimo aggiornamento: ' + dateStr;
+    }
+  }
+
+  /* ============================================================
+     CARICAMENTO DATI DA JSON ESTERNO
+     I dati verranno aggiornati automaticamente 1-2 volte al giorno
+     da uno script collegato a IBKR Flex Query.
+     Non inserire credenziali IBKR nel frontend.
+  ============================================================ */
+  async function loadPerformanceData() {
+    try {
+      const res = await fetch('/data/sigma-performance.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+
+      const s = json.summary;
+      const winRate = s.trades > 0 ? (s.winningTrades / s.trades * 100) : 0;
+
+      // Calcola mesi di storico dall'intervallo della equity curve
+      let months = 0;
+      if (json.equityCurve && json.equityCurve.length >= 2) {
+        const t0 = new Date(json.equityCurve[0].date).getTime();
+        const t1 = new Date(json.equityCurve[json.equityCurve.length - 1].date).getTime();
+        months = Math.max(1, Math.round((t1 - t0) / (1000 * 60 * 60 * 24 * 30.44)));
+      }
+
+      // Aggiorna projectData con i valori dal JSON
+      projectData = {
+        monthsOfHistory:       months,
+        initialCapital:        s.initialValue,
+        currentCapital:        s.currentValue,
+        returnPercent:         parseFloat(Number(s.returnPct).toFixed(2)),
+        maxDrawdown:           parseFloat(Number(s.maxDrawdownPct).toFixed(1)),
+        totalOperations:       s.trades,
+        profitableOperations:  s.winningTrades,
+        losingOperations:      s.losingTrades,
+        winRate:               parseFloat(winRate.toFixed(1)),
+        avgWin:                DEMO_PROJECT_DATA.avgWin,   // non nel JSON, mantieni demo
+        avgLoss:               DEMO_PROJECT_DATA.avgLoss,  // non nel JSON, mantieni demo
+        currency:              json.currency || 'USD',
+      };
+
+      // Aggiorna equityRawData — usa YYYY-MM come chiave data
+      equityRawData = json.equityCurve.map(p => ({
+        date:  p.date.substring(0, 7),
+        value: p.value,
+      }));
+
+      showDataStatus(json.lastUpdate, false);
+
+    } catch (err) {
+      // Fallback su dati demo già caricati
+      showDataStatus(null, true);
+    }
+
+    // Aggiorna dashboard (demo o live)
+    renderMetrics(currentView);
+
+    // Se il canvas è già visibile, ridisegna il grafico con i nuovi dati
+    const canvas = document.getElementById('equityCanvas');
+    if (canvas && canvas.getBoundingClientRect().top < window.innerHeight) {
+      setChartFilter(currentFilter);
+    }
+  }
+
+  // Avvia caricamento dati all'avvio della pagina
+  loadPerformanceData();
 
   /* ============================================================
      KEYBOARD SUPPORT (Step timeline)
