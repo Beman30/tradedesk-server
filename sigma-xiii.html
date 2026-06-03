@@ -185,6 +185,69 @@
     .nav-links a:hover { color: var(--text-primary); }
     @media (max-width: 640px) { .nav-links { display: none; } }
 
+    /* Hamburger button */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 6px;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--text-secondary);
+      border-radius: 2px;
+      transition: all 0.3s var(--ease);
+      transform-origin: center;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); background: var(--gold); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); background: var(--gold); }
+    @media (max-width: 640px) { .nav-hamburger { display: flex; } }
+
+    /* Mobile menu overlay */
+    #mobile-menu {
+      position: fixed;
+      top: 60px; left: 0; right: 0; bottom: 0;
+      background: rgba(7,7,12,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease);
+    }
+    #mobile-menu.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #mobile-menu a {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+      padding: 12px 24px;
+      transition: color 0.2s var(--ease);
+      text-align: center;
+    }
+    #mobile-menu a:hover,
+    #mobile-menu a:active { color: var(--gold); }
+    #mobile-menu .menu-divider {
+      width: 30px;
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
     /* ============================================================
        HERO
     ============================================================ */
@@ -1207,7 +1270,25 @@
     <li><a href="#team">Team</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Apri menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Mobile menu overlay -->
+<div id="mobile-menu" role="dialog" aria-label="Menu di navigazione">
+  <a href="#progetto" onclick="closeMobileMenu()">Progetto</a>
+  <div class="menu-divider"></div>
+  <a href="#metodo"   onclick="closeMobileMenu()">Metodo</a>
+  <div class="menu-divider"></div>
+  <a href="#dati"     onclick="closeMobileMenu()">Dati</a>
+  <div class="menu-divider"></div>
+  <a href="#rischio"  onclick="closeMobileMenu()">Rischio</a>
+  <div class="menu-divider"></div>
+  <a href="#team"     onclick="closeMobileMenu()">Team</a>
+  <div class="menu-divider"></div>
+  <a href="#faq"      onclick="closeMobileMenu()">FAQ</a>
+</div>
 
 <!-- ================================================================
      HERO
@@ -2432,6 +2513,35 @@
 
   // Avvia caricamento dati all'avvio della pagina
   loadPerformanceData();
+
+  /* ============================================================
+     HAMBURGER MENU MOBILE
+  ============================================================ */
+  const hamburger   = document.getElementById('nav-hamburger');
+  const mobileMenu  = document.getElementById('mobile-menu');
+
+  function openMobileMenu() {
+    hamburger.classList.add('open');
+    mobileMenu.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    hamburger.classList.remove('open');
+    mobileMenu.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', () => {
+    mobileMenu.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+  });
+
+  /* Chiude il menu premendo Escape */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeMobileMenu();
+  });
 
   /* ============================================================
      KEYBOARD SUPPORT (Step timeline)
