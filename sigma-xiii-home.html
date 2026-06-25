@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sigma XIII — Qual è il tuo problema oggi? Ti guidiamo passo dopo passo.">
+  <title>Sigma XIII</title>
+  <style>
+    :root {
+      --bg:             #07070c;
+      --bg-card:        #0e0e16;
+      --bg-card-hover:  #12121c;
+      --bg-elevated:    #161622;
+      --bg-input:       #0b0b14;
+
+      --text:           #eae6dd;
+      --text-dim:       #9896a8;
+      --text-muted:     #4e4e62;
+
+      --gold:           #c7a86c;
+      --gold-light:     #ddbf8a;
+      --gold-dim:       #7a6540;
+      --gold-glow:      rgba(199,168,108,0.07);
+
+      --green:          #4a9e6a;
+      --green-dim:      rgba(74,158,106,0.12);
+      --blue:           #4a7fd4;
+      --blue-dim:       rgba(74,127,212,0.12);
+
+      --border:         rgba(199,168,108,0.1);
+      --border-hover:   rgba(199,168,108,0.25);
+
+      --r:    12px;
+      --r-lg: 20px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    input { font: inherit; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .app {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .site-header {
+      padding: 32px 0 0;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.8;
+    }
+
+    /* ============================================================
+       SCREENS
+    ============================================================ */
+    .screen {
+      display: none;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 40px 0 60px;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: screenIn 0.55s var(--ease-out);
+    }
+
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen-content {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    /* ============================================================
+       HOME SCREEN
+    ============================================================ */
+    .home-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .home-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto 56px;
+      line-height: 1.7;
+    }
+
+    .path-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .path-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 36px 28px;
+      cursor: pointer;
+      transition: all 0.35s var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .path-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(199,168,108,0.04), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.35s var(--ease);
+    }
+
+    .path-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.4), 0 0 40px rgba(199,168,108,0.04);
+    }
+
+    .path-card:hover::before {
+      opacity: 1;
+    }
+
+    .path-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r);
+      background: var(--gold-glow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      transition: all 0.35s var(--ease);
+    }
+
+    .path-card:hover .path-icon {
+      border-color: var(--gold-dim);
+      background: rgba(199,168,108,0.1);
+    }
+
+    .path-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.35;
+      position: relative;
+    }
+
+    .path-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* ============================================================
+       QUESTION SCREEN
+    ============================================================ */
+    .question-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .question-progress {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 40px;
+    }
+
+    .progress-pip {
+      width: 32px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--bg-elevated);
+      transition: all 0.4s var(--ease);
+    }
+
+    .progress-pip.done {
+      background: var(--gold);
+    }
+
+    .progress-pip.current {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(199,168,108,0.4);
+    }
+
+    .question-text {
+      font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.35;
+      margin-bottom: 40px;
+      letter-spacing: -0.01em;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .option-btn {
+      width: 100%;
+      padding: 18px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      font-size: 0.95rem;
+      text-align: left;
+      transition: all 0.3s var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--gold);
+      opacity: 0;
+      transition: opacity 0.3s var(--ease);
+    }
+
+    .option-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+      padding-left: 28px;
+    }
+
+    .option-btn:hover::before {
+      opacity: 1;
+    }
+
+    .option-btn.selected {
+      background: rgba(199,168,108,0.08);
+      border-color: var(--gold);
+    }
+
+    .option-btn.selected::before {
+      opacity: 1;
+    }
+
+    /* Input field for text questions */
+    .input-field {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .input-field input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 24px;
+      font-size: 1.05rem;
+      transition: border-color 0.3s var(--ease);
+    }
+
+    .input-field input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .input-field input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .input-next {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .btn-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--r);
+      transition: all 0.3s var(--ease);
+      letter-spacing: 0.01em;
+    }
+
+    .btn-next:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(199,168,108,0.3);
+    }
+
+    .btn-next:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-next svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Back button */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      padding: 4px 0;
+      transition: color 0.25s var(--ease);
+      align-self: flex-start;
+    }
+
+    .back-link:hover {
+      color: var(--gold);
+    }
+
+    .back-link svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* ============================================================
+       RESULT SCREEN
+    ============================================================ */
+    .result-diagnosis {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 40px 36px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .result-diagnosis-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--gold-glow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 1.5rem;
+    }
+
+    .result-diagnosis-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 14px;
+    }
+
+    .result-diagnosis-text {
+      font-size: 1.1rem;
+      line-height: 1.75;
+      color: var(--text-dim);
+    }
+
+    .result-diagnosis-text strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .result-diagnosis-text em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    .result-path-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .path-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .path-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px 24px;
+      transition: border-color 0.3s var(--ease);
+      cursor: pointer;
+    }
+
+    .path-step:hover {
+      border-color: var(--border-hover);
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gold-glow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-type {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 4px;
+    }
+
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .step-reason {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .step-arrow {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 8px;
+      transition: color 0.25s var(--ease);
+    }
+
+    .path-step:hover .step-arrow {
+      color: var(--gold);
+    }
+
+    /* CTA */
+    .result-cta {
+      text-align: center;
+      padding: 48px 32px;
+      background: linear-gradient(180deg, rgba(199,168,108,0.04), transparent);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+
+    .result-cta h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .result-cta p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      line-height: 1.65;
+    }
+
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--bg);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: var(--r);
+      transition: all 0.3s var(--ease);
+      letter-spacing: 0.01em;
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(199,168,108,0.35);
+    }
+
+    .restart-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+      transition: color 0.25s var(--ease);
+    }
+
+    .restart-link:hover {
+      color: var(--gold);
+    }
+
+    .restart-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .site-footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 600px) {
+      .path-grid {
+        grid-template-columns: 1fr;
+      }
+      .path-card {
+        padding: 28px 22px;
+      }
+      .result-diagnosis {
+        padding: 32px 24px;
+      }
+      .result-cta {
+        padding: 36px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <header class="site-header">
+      <div class="logo">Sigma XIII</div>
+    </header>
+
+    <!-- ============================================================
+         SCREEN: HOME
+    ============================================================ -->
+    <div class="screen active" id="screen-home">
+      <div class="screen-content">
+        <h1 class="home-title">Qual è il tuo problema oggi?</h1>
+        <p class="home-subtitle">Dimmi qual è il tuo problema.<br>Ti guiderò passo dopo passo verso il percorso più adatto.</p>
+
+        <div class="path-grid">
+          <div class="path-card" onclick="startPath('gestire')">
+            <div class="path-icon">📊</div>
+            <h3>Gestire una posizione esistente</h3>
+            <p>Ho già azioni o ETF e voglio capire come gestirli.</p>
+          </div>
+
+          <div class="path-card" onclick="startPath('aprire')">
+            <div class="path-icon">🧭</div>
+            <h3>Aprire una nuova posizione</h3>
+            <p>Sto valutando un nuovo investimento e voglio capire il rischio.</p>
+          </div>
+
+          <div class="path-card" onclick="startPath('mercato')">
+            <div class="path-icon">🌊</div>
+            <h3>Il mercato mi preoccupa</h3>
+            <p>Temo un ribasso, una crisi o un aumento della volatilità.</p>
+          </div>
+
+          <div class="path-card" onclick="startPath('imparare')">
+            <div class="path-icon">📖</div>
+            <h3>Voglio imparare</h3>
+            <p>Non ho un problema urgente. Voglio costruire un metodo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SCREEN: CONVERSATION
+    ============================================================ -->
+    <div class="screen" id="screen-conversation">
+      <button class="back-link" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Indietro
+      </button>
+      <div class="screen-content">
+        <div class="question-progress" id="question-progress"></div>
+        <div class="question-label" id="question-label"></div>
+        <h2 class="question-text" id="question-text"></h2>
+        <div id="question-body"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SCREEN: RESULT
+    ============================================================ -->
+    <div class="screen" id="screen-result">
+      <button class="back-link" onclick="goBackFromResult()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Torna alle domande
+      </button>
+      <div class="screen-content" id="result-content"></div>
+    </div>
+
+    <footer class="site-footer">
+      Sigma XIII è una piattaforma educativa. Non fornisce consulenza finanziaria.
+    </footer>
+
+  </div>
+
+  <script>
+    // ============================================================
+    // CONVERSATION DATA
+    // ============================================================
+
+    const flows = {
+      gestire: {
+        label: 'Gestire una posizione',
+        questions: [
+          {
+            text: 'Che cosa possiedi?',
+            type: 'options',
+            key: 'asset',
+            options: ['Azioni', 'ETF', 'Entrambi']
+          },
+          {
+            text: 'Quale titolo possiedi?',
+            type: 'input',
+            key: 'ticker',
+            placeholder: 'Es. Apple, Tesla, S&P 500...',
+            hint: 'Il nome dell\'azienda o dell\'ETF, come preferisci.'
+          },
+          {
+            text: 'Qual è la tua preoccupazione?',
+            type: 'options',
+            key: 'concern',
+            options: [
+              'Ho paura di un ribasso',
+              'Voglio proteggere un guadagno',
+              'Non so se vendere',
+              'Voglio ridurre il rischio',
+              'Altro'
+            ]
+          },
+          {
+            text: 'Qual è il tuo obiettivo?',
+            type: 'options',
+            key: 'goal',
+            options: [
+              'Proteggere il capitale',
+              'Continuare a investire con meno ansia',
+              'Dormire più tranquillo',
+              'Capire le possibilità che ho'
+            ]
+          },
+          {
+            text: 'Quanto tempo vuoi dedicare per capire il problema?',
+            type: 'options',
+            key: 'time',
+            options: ['5 minuti', '15 minuti', 'Voglio approfondire']
+          }
+        ]
+      },
+      aprire: {
+        label: 'Nuova posizione',
+        questions: [
+          {
+            text: 'Cosa stai valutando?',
+            type: 'options',
+            key: 'asset',
+            options: ['Azioni singole', 'ETF', 'Non ho ancora deciso']
+          },
+          {
+            text: 'Quale titolo o settore ti interessa?',
+            type: 'input',
+            key: 'ticker',
+            placeholder: 'Es. Tecnologia, Tesla, Oro...',
+            hint: 'Anche un settore generico va bene.'
+          },
+          {
+            text: 'Cosa ti preoccupa di più?',
+            type: 'options',
+            key: 'concern',
+            options: [
+              'Comprare al momento sbagliato',
+              'Perdere subito dopo l\'acquisto',
+              'Non sapere quanto rischio',
+              'Non avere un piano di uscita'
+            ]
+          },
+          {
+            text: 'Come descriveresti la tua esperienza?',
+            type: 'options',
+            key: 'experience',
+            options: [
+              'Sono agli inizi',
+              'Ho qualche esperienza',
+              'Investo da anni ma voglio migliorare'
+            ]
+          },
+          {
+            text: 'Quanto tempo vuoi dedicare per capire il problema?',
+            type: 'options',
+            key: 'time',
+            options: ['5 minuti', '15 minuti', 'Voglio approfondire']
+          }
+        ]
+      },
+      mercato: {
+        label: 'Preoccupazione mercato',
+        questions: [
+          {
+            text: 'Cosa ti preoccupa in questo momento?',
+            type: 'options',
+            key: 'worry',
+            options: [
+              'Un possibile crollo del mercato',
+              'L\'inflazione e i tassi di interesse',
+              'Una crisi geopolitica',
+              'La volatilità generale',
+              'Non so, ho solo una sensazione negativa'
+            ]
+          },
+          {
+            text: 'Hai già investimenti esposti?',
+            type: 'options',
+            key: 'exposed',
+            options: [
+              'Sì, ho azioni e/o ETF',
+              'Ho solo liquidità e vorrei capire',
+              'Ho un portafoglio diversificato ma sono preoccupato'
+            ]
+          },
+          {
+            text: 'Come ti sentiresti se il mercato scendesse del 20%?',
+            type: 'options',
+            key: 'tolerance',
+            options: [
+              'Lo accetterei, fa parte del gioco',
+              'Mi preoccuperei molto',
+              'Sarebbe un problema serio per me',
+              'Non lo so, non ci ho mai pensato'
+            ]
+          },
+          {
+            text: 'Cosa vorresti fare?',
+            type: 'options',
+            key: 'action',
+            options: [
+              'Capire come proteggermi',
+              'Capire se devo fare qualcosa o restare fermo',
+              'Imparare a gestire l\'ansia',
+              'Avere un piano per ogni scenario'
+            ]
+          },
+          {
+            text: 'Quanto tempo vuoi dedicare per capire il problema?',
+            type: 'options',
+            key: 'time',
+            options: ['5 minuti', '15 minuti', 'Voglio approfondire']
+          }
+        ]
+      },
+      imparare: {
+        label: 'Percorso di apprendimento',
+        questions: [
+          {
+            text: 'Da dove parti?',
+            type: 'options',
+            key: 'level',
+            options: [
+              'Sono completamente alle prime armi',
+              'Conosco le basi ma voglio approfondire',
+              'Ho esperienza e voglio specializzarmi'
+            ]
+          },
+          {
+            text: 'Cosa ti interessa di più?',
+            type: 'options',
+            key: 'interest',
+            options: [
+              'Capire come proteggere un portafoglio',
+              'Capire come funzionano le opzioni',
+              'Capire la gestione del rischio',
+              'Capire la psicologia dell\'investitore'
+            ]
+          },
+          {
+            text: 'Come preferisci imparare?',
+            type: 'options',
+            key: 'style',
+            options: [
+              'Guardare video',
+              'Leggere articoli e casi studio',
+              'Imparare facendo, con esempi pratici',
+              'Un mix di tutto'
+            ]
+          },
+          {
+            text: 'Quanto tempo vuoi dedicare per capire il problema?',
+            type: 'options',
+            key: 'time',
+            options: ['5 minuti', '15 minuti', 'Voglio approfondire']
+          }
+        ]
+      }
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+
+    let currentPath = null;
+    let currentStep = 0;
+    let answers = {};
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const screen = document.getElementById(id);
+      screen.classList.remove('active');
+      void screen.offsetWidth;
+      screen.classList.add('active');
+    }
+
+    function startPath(path) {
+      currentPath = path;
+      currentStep = 0;
+      answers = {};
+      showScreen('screen-conversation');
+      renderQuestion();
+    }
+
+    function goBack() {
+      if (currentStep > 0) {
+        currentStep--;
+        renderQuestion();
+      } else {
+        currentPath = null;
+        showScreen('screen-home');
+      }
+    }
+
+    function goBackFromResult() {
+      showScreen('screen-conversation');
+    }
+
+    function restart() {
+      currentPath = null;
+      currentStep = 0;
+      answers = {};
+      showScreen('screen-home');
+    }
+
+    // ============================================================
+    // RENDER QUESTION
+    // ============================================================
+
+    function renderQuestion() {
+      const flow = flows[currentPath];
+      const q = flow.questions[currentStep];
+      const total = flow.questions.length;
+
+      document.getElementById('question-label').textContent = flow.label;
+      document.getElementById('question-text').textContent = q.text;
+
+      // Progress pips
+      const progressHtml = flow.questions.map((_, i) => {
+        let cls = 'progress-pip';
+        if (i < currentStep) cls += ' done';
+        else if (i === currentStep) cls += ' current';
+        return `<div class="${cls}"></div>`;
+      }).join('');
+      document.getElementById('question-progress').innerHTML = progressHtml;
+
+      const body = document.getElementById('question-body');
+
+      if (q.type === 'options') {
+        body.innerHTML = `
+          <div class="options-list">
+            ${q.options.map((opt, i) => `
+              <button class="option-btn" onclick="selectOption('${q.key}', '${opt.replace(/'/g, "\\'")}', this)">${opt}</button>
+            `).join('')}
+          </div>
+        `;
+      } else if (q.type === 'input') {
+        body.innerHTML = `
+          <div class="input-field">
+            <input type="text" id="conv-input" placeholder="${q.placeholder || ''}" value="${answers[q.key] || ''}" onkeydown="if(event.key==='Enter')submitInput('${q.key}')">
+            ${q.hint ? `<div class="input-hint">${q.hint}</div>` : ''}
+          </div>
+          <div class="input-next">
+            <button class="btn-next" id="input-next-btn" onclick="submitInput('${q.key}')">
+              Continua
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        `;
+        setTimeout(() => {
+          const input = document.getElementById('conv-input');
+          if (input) input.focus();
+        }, 100);
+      }
+
+      // Re-trigger animation
+      const content = document.querySelector('#screen-conversation .screen-content');
+      content.style.animation = 'none';
+      void content.offsetWidth;
+      content.style.animation = 'screenIn 0.45s var(--ease-out)';
+    }
+
+    function selectOption(key, value, btn) {
+      answers[key] = value;
+
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      setTimeout(() => {
+        advanceOrFinish();
+      }, 350);
+    }
+
+    function submitInput(key) {
+      const input = document.getElementById('conv-input');
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+      answers[key] = val;
+      advanceOrFinish();
+    }
+
+    function advanceOrFinish() {
+      const flow = flows[currentPath];
+      if (currentStep < flow.questions.length - 1) {
+        currentStep++;
+        renderQuestion();
+      } else {
+        buildResult();
+      }
+    }
+
+    // ============================================================
+    // BUILD RESULT
+    // ============================================================
+
+    function buildResult() {
+      const ticker = answers.ticker || 'il tuo investimento';
+
+      const diagnosisMap = {
+        gestire: buildGestireDiagnosis,
+        aprire: buildAprireDiagnosis,
+        mercato: buildMercatoDiagnosis,
+        imparare: buildImparareDiagnosis
+      };
+
+      const builder = diagnosisMap[currentPath] || diagnosisMap.gestire;
+      const { diagnosis, steps } = builder(answers, ticker);
+
+      const resultContent = document.getElementById('result-content');
+      resultContent.innerHTML = `
+        <div class="result-diagnosis">
+          <div class="result-diagnosis-icon">🔍</div>
+          <div class="result-diagnosis-label">In base alle tue risposte</div>
+          <div class="result-diagnosis-text">${diagnosis}</div>
+        </div>
+
+        <div class="result-path-label">Il percorso che ti consigliamo</div>
+
+        <div class="path-steps">
+          ${steps.map((s, i) => `
+            <div class="path-step">
+              <div class="step-number">${i + 1}</div>
+              <div class="step-content">
+                <div class="step-type">${s.type}</div>
+                <div class="step-title">${s.title}</div>
+                <div class="step-reason">${s.reason}</div>
+              </div>
+              <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="result-cta">
+          <h3>Vuoi iniziare questo percorso con la guida dei nostri mentor?</h3>
+          <p>Nel Sigma XIII Club troverai video, casi studio, discussioni, sessioni live e mentoring personalizzato. Tutto pensato per accompagnarti dal problema alla comprensione.</p>
+          <button class="btn-cta" onclick="restart()">
+            Accedi gratuitamente al Sigma XIII Club per 30 giorni
+          </button>
+          <br>
+          <button class="restart-link" onclick="restart()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Ricomincia da capo
+          </button>
+        </div>
+      `;
+
+      showScreen('screen-result');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================================
+    // DIAGNOSIS BUILDERS
+    // ============================================================
+
+    function buildGestireDiagnosis(a, ticker) {
+      let diagParts = [];
+
+      if (a.concern === 'Ho paura di un ribasso') {
+        diagParts.push(`<strong>Il tuo problema principale non è che ${ticker} possa scendere.</strong>`);
+        diagParts.push(`Il tuo problema è che <em>possiedi qualcosa che ha valore per te</em>, e l'incertezza su cosa potrebbe succedere ti crea ansia.`);
+      } else if (a.concern === 'Voglio proteggere un guadagno') {
+        diagParts.push(`<strong>Hai un guadagno su ${ticker} e hai paura che sparisca.</strong>`);
+        diagParts.push(`Questo è un problema più psicologico che tecnico. <em>La paura di perdere un guadagno è più forte della paura di una perdita.</em>`);
+      } else if (a.concern === 'Non so se vendere') {
+        diagParts.push(`<strong>Il dubbio è il tuo problema principale.</strong>`);
+        diagParts.push(`Hai paura di vendere ${ticker} e vederlo salire. Ma hai anche paura di tenere e vederlo scendere. <em>Questa paralisi è molto comune.</em>`);
+      } else if (a.concern === 'Voglio ridurre il rischio') {
+        diagParts.push(`<strong>Senti che la tua esposizione su ${ticker} è troppo grande.</strong>`);
+        diagParts.push(`Il problema non è il titolo in sé. <em>Il problema è che se qualcosa va storto, l'impatto sarebbe sproporzionato.</em>`);
+      } else {
+        diagParts.push(`<strong>Hai una preoccupazione su ${ticker} che non riesci a definire con precisione.</strong>`);
+        diagParts.push(`<em>Questo è perfettamente normale.</em> A volte il primo passo è proprio dare un nome al problema.`);
+      }
+
+      if (a.goal === 'Dormire più tranquillo') {
+        diagParts.push(`Quello che cerchi non è una strategia tecnica. <strong>Cerchi serenità.</strong>`);
+      }
+
+      const diagnosis = diagParts.join('<br><br>');
+
+      const steps = [
+        { type: 'Video', title: 'Capire il proprio rischio senza tecnicismi', reason: 'Perché prima di agire serve capire. Questo video spiega in modo semplice cosa significa realmente "rischio" per chi possiede azioni.' },
+        { type: 'Caso studio', title: 'Un investitore con un problema simile al tuo', reason: `Perché vedere come qualcuno nella tua stessa situazione ha affrontato il problema rende tutto più concreto.` },
+        { type: 'Discussione', title: 'Cosa hanno fatto gli altri in questa situazione', reason: 'Perché scoprirai che non sei solo. Altri hanno avuto la stessa preoccupazione e condividono la loro esperienza.' },
+        { type: 'Simulatore', title: 'Visualizza gli effetti delle diverse scelte', reason: 'Per comprendere in modo intuitivo cosa succede al tuo investimento nei diversi scenari, senza dover fare calcoli.' },
+        { type: 'Live della settimana', title: 'Sessione Q&A con i mentor', reason: 'Per fare domande e ricevere risposte personalizzate in un ambiente educativo e senza pressione.' }
+      ];
+
+      return { diagnosis, steps };
+    }
+
+    function buildAprireDiagnosis(a, ticker) {
+      let diagParts = [];
+
+      if (a.concern === 'Comprare al momento sbagliato') {
+        diagParts.push(`<strong>La tua paura non è ${ticker} in sé. È il timing.</strong>`);
+        diagParts.push(`Hai paura che domani lo stesso titolo costerà meno. <em>Questo dubbio blocca molti investitori.</em>`);
+      } else if (a.concern === 'Perdere subito dopo l\'acquisto') {
+        diagParts.push(`<strong>La paura di perdere immediatamente è una delle più comuni.</strong>`);
+        diagParts.push(`Non è irrazionale. <em>Esistono modi per entrare in una posizione riducendo il rischio iniziale.</em>`);
+      } else if (a.concern === 'Non sapere quanto rischio') {
+        diagParts.push(`<strong>Il tuo problema è che non riesci a misurare il rischio.</strong>`);
+        diagParts.push(`Questo è il primo passo più importante. <em>Prima di investire, devi sapere cosa puoi perdere.</em>`);
+      } else {
+        diagParts.push(`<strong>Vuoi investire in ${ticker} ma non hai un piano di uscita.</strong>`);
+        diagParts.push(`<em>Sapere quando uscire è più importante di sapere quando entrare.</em>`);
+      }
+
+      const diagnosis = diagParts.join('<br><br>');
+
+      const steps = [
+        { type: 'Video', title: 'Come valutare il rischio prima di investire', reason: 'Perché prima di comprare qualsiasi cosa, serve capire quanto puoi perdere e se puoi accettarlo.' },
+        { type: 'Caso studio', title: 'Entrata in posizione con gestione del rischio', reason: 'Un esempio concreto di come un investitore ha pianificato un acquisto pensando anche all\'uscita.' },
+        { type: 'Discussione', title: 'Le domande che dovresti farti prima di comprare', reason: 'Una checklist costruita dalla community per non dimenticare nulla di importante.' },
+        { type: 'Simulatore', title: 'Cosa succede al tuo capitale nei diversi scenari', reason: 'Per vedere concretamente l\'impatto di una perdita del 10%, 20% o 30% sul tuo investimento.' },
+        { type: 'Live della settimana', title: 'Sessione Q&A con i mentor', reason: 'Per fare le tue domande prima di prendere qualsiasi decisione.' }
+      ];
+
+      return { diagnosis, steps };
+    }
+
+    function buildMercatoDiagnosis(a, ticker) {
+      let diagParts = [];
+
+      if (a.worry === 'Un possibile crollo del mercato') {
+        diagParts.push(`<strong>Hai la sensazione che il mercato stia per crollare.</strong>`);
+        diagParts.push(`Questa paura è comprensibile, soprattutto in periodi di incertezza. <em>La domanda vera non è "crollerà?", ma "sono preparato se succede?"</em>`);
+      } else if (a.worry === 'Non so, ho solo una sensazione negativa') {
+        diagParts.push(`<strong>Non riesci a dare un nome alla tua preoccupazione. E questo è il problema più grande.</strong>`);
+        diagParts.push(`<em>L'ansia senza una causa definita è più difficile da gestire di un problema concreto.</em> Il primo passo è trasformare la sensazione in comprensione.`);
+      } else {
+        diagParts.push(`<strong>La tua preoccupazione riguarda il mercato nel suo insieme.</strong>`);
+        diagParts.push(`Non è un singolo titolo a preoccuparti. <em>È il contesto generale.</em> Questo richiede un approccio diverso rispetto alla gestione di una singola posizione.`);
+      }
+
+      if (a.tolerance === 'Sarebbe un problema serio per me' || a.tolerance === 'Mi preoccuperei molto') {
+        diagParts.push(`Hai anche indicato che una perdita significativa <strong>avrebbe un impatto reale sulla tua vita</strong>. Questo rende ancora più importante avere un piano.`);
+      }
+
+      const diagnosis = diagParts.join('<br><br>');
+
+      const steps = [
+        { type: 'Video', title: 'Cosa fare quando il mercato fa paura', reason: 'Perché la prima cosa da capire è che l\'ansia non è una buona consigliera. Questo video ti aiuterà a distinguere la paura dalla realtà.' },
+        { type: 'Caso studio', title: 'Come altri investitori hanno affrontato periodi difficili', reason: 'Perché nei momenti di crisi, vedere cosa ha funzionato per altri è più utile di qualsiasi teoria.' },
+        { type: 'Discussione', title: 'Paure di mercato: sei in buona compagnia', reason: 'Perché condividere la preoccupazione con altri investitori riduce l\'ansia e apre prospettive che non avevi considerato.' },
+        { type: 'Simulatore', title: 'Il tuo portafoglio in diversi scenari di mercato', reason: 'Per capire concretamente cosa succederebbe ai tuoi investimenti in caso di ribasso.' },
+        { type: 'Live della settimana', title: 'Analisi del contesto di mercato con i mentor', reason: 'Per ricevere una lettura educativa del momento attuale, senza allarmismi e senza falsi ottimismi.' }
+      ];
+
+      return { diagnosis, steps };
+    }
+
+    function buildImparareDiagnosis(a, ticker) {
+      let diagParts = [];
+
+      if (a.level === 'Sono completamente alle prime armi') {
+        diagParts.push(`<strong>Sei all'inizio del tuo percorso. E questo è il momento migliore per imparare.</strong>`);
+        diagParts.push(`<em>Chi parte con un metodo sbaglia meno di chi parte con l'istinto.</em> Costruiremo insieme le fondamenta.`);
+      } else if (a.level === 'Conosco le basi ma voglio approfondire') {
+        diagParts.push(`<strong>Hai le basi ma senti che manca qualcosa.</strong>`);
+        diagParts.push(`<em>Il passaggio da principiante a investitore consapevole richiede un metodo strutturato.</em> Non basta sapere cosa fare — serve capire perché.`);
+      } else {
+        diagParts.push(`<strong>Hai esperienza ma vuoi un metodo più strutturato.</strong>`);
+        diagParts.push(`<em>Anche gli investitori esperti hanno punti ciechi.</em> Il nostro percorso ti aiuterà a identificarli e a colmarli.`);
+      }
+
+      const interestMap = {
+        'Capire come proteggere un portafoglio': 'protezione del portafoglio',
+        'Capire come funzionano le opzioni': 'funzionamento delle opzioni',
+        'Capire la gestione del rischio': 'gestione del rischio',
+        'Capire la psicologia dell\'investitore': 'psicologia dell\'investitore'
+      };
+      const interestLabel = interestMap[a.interest] || 'gestione del rischio';
+      diagParts.push(`Partiremo dal tema che ti interessa di più: <strong>${interestLabel}</strong>.`);
+
+      const diagnosis = diagParts.join('<br><br>');
+
+      const styleMap = {
+        'Guardare video': 'Video',
+        'Leggere articoli e casi studio': 'Articolo',
+        'Imparare facendo, con esempi pratici': 'Simulatore',
+        'Un mix di tutto': 'Video'
+      };
+      const primaryFormat = styleMap[a.style] || 'Video';
+
+      const steps = [
+        { type: primaryFormat, title: `Introduzione alla ${interestLabel}`, reason: `Il punto di partenza ideale per il tuo livello. Spiega i concetti fondamentali senza dare nulla per scontato.` },
+        { type: 'Caso studio', title: `Un esempio reale di ${interestLabel}`, reason: 'Perché la teoria diventa chiara solo quando vedi come si applica nella pratica.' },
+        { type: 'Discussione', title: 'Domande frequenti dei principianti', reason: 'Perché le domande degli altri ti faranno scoprire cose che non sapevi di non sapere.' },
+        { type: 'Simulatore', title: 'Sperimenta senza rischio', reason: 'Per mettere in pratica quello che hai imparato in un ambiente sicuro, senza conseguenze reali.' },
+        { type: 'Live della settimana', title: 'Sessione Q&A con i mentor', reason: 'Per fare domande, chiarire dubbi e ricevere indicazioni su come proseguire il tuo percorso.' }
+      ];
+
+      return { diagnosis, steps };
+    }
+  </script>
+</body>
+</html>

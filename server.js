@@ -94,6 +94,8 @@ function broadcastSignal(signal) {
 }
 
 // ─── STATIC HTML PAGES ──────────────────────────────────────
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'sigma-xiii-home.html')));
+app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'sigma-xiii-home.html')));
 app.get('/beta', (req, res) => res.sendFile(path.join(__dirname, 'sigma-xiii-beta.html')));
 
 // ─── ENDPOINTS ───────────────────────────────────────────────
