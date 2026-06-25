@@ -1031,233 +1031,484 @@
     }
 
     /* ============================================================
-       RISK DASHBOARD
+       IL TUO PROBLEMA — PERCORSO GUIDATO
     ============================================================ */
-    .risk-form-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
+    .journey-container {
+      max-width: 720px;
+      margin: 0 auto;
     }
 
-    .risk-form {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
+    .journey-step {
+      display: none;
+      animation: journeyFadeIn 0.5s var(--ease-out);
     }
 
-    .risk-form h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--gold);
+    .journey-step.active {
+      display: block;
     }
 
-    .risk-results {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
+    @keyframes journeyFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .risk-results h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--gold);
-    }
-
-    .risk-empty-state {
+    .journey-progress {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 300px;
-      color: var(--text-muted);
-      text-align: center;
+      gap: 0;
+      margin-bottom: 48px;
     }
 
-    .risk-empty-state svg {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 16px;
-      color: var(--gold-dim);
-    }
-
-    .risk-empty-state p {
-      font-size: 0.88rem;
-    }
-
-    .strategy-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      margin-bottom: 14px;
-    }
-
-    .strategy-card h4 {
-      font-size: 0.92rem;
-      font-weight: 600;
-      margin-bottom: 12px;
+    .journey-progress-step {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color var(--t) var(--ease);
     }
 
-    .complexity-badge {
+    .journey-progress-step.active {
+      color: var(--gold);
+    }
+
+    .journey-progress-step.completed {
+      color: var(--green);
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 2px solid var(--text-muted);
+      transition: all var(--t) var(--ease);
+      flex-shrink: 0;
+    }
+
+    .journey-progress-step.active .progress-dot {
+      border-color: var(--gold);
+      background: var(--gold);
+      box-shadow: 0 0 12px rgba(199,168,108,0.4);
+    }
+
+    .journey-progress-step.completed .progress-dot {
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .progress-line {
+      flex: 1;
+      height: 2px;
+      background: var(--bg-elevated);
+      margin: 0 6px;
+      transition: background var(--t) var(--ease);
+    }
+
+    .progress-line.completed {
+      background: var(--green);
+    }
+
+    .journey-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .journey-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      line-height: 1.65;
+    }
+
+    .concern-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .concern-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .concern-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-gold), 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .concern-card.selected {
+      border-color: var(--gold);
+      background: rgba(199,168,108,0.06);
+    }
+
+    .concern-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--gold-glow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.3rem;
+      transition: all var(--t) var(--ease);
+    }
+
+    .concern-card:hover .concern-icon {
+      background: rgba(199,168,108,0.12);
+      border-color: var(--gold);
+    }
+
+    .concern-text {
+      font-size: 0.92rem;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .situation-form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .situation-field {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+    }
+
+    .situation-field label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .situation-field input,
+    .situation-field select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: border-color var(--t) var(--ease);
+    }
+
+    .situation-field input:focus,
+    .situation-field select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .situation-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%239896a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .situation-field .field-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .journey-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .journey-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 10px 0;
+      transition: color var(--t) var(--ease);
+    }
+
+    .journey-back:hover {
+      color: var(--gold);
+    }
+
+    .journey-back svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .journey-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-primary);
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      transition: all var(--t) var(--ease);
+    }
+
+    .journey-next:hover {
+      box-shadow: 0 4px 20px rgba(199,168,108,0.3);
+      transform: translateY(-1px);
+    }
+
+    .journey-next:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .journey-next svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .diagnosis-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin-bottom: 32px;
+    }
+
+    .diagnosis-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(199,168,108,0.1), rgba(199,168,108,0.05));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 1.6rem;
+    }
+
+    .diagnosis-text {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .diagnosis-text strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .diagnosis-text em {
+      color: var(--gold);
+      font-style: normal;
+      font-weight: 500;
+    }
+
+    .diagnosis-reassurance {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .strategy-family {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 16px;
+      transition: border-color var(--t) var(--ease);
+    }
+
+    .strategy-family:hover {
+      border-color: var(--border-hover);
+    }
+
+    .strategy-family-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .strategy-family-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .strategy-family-name {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .complexity-label {
+      display: inline-block;
       font-size: 0.65rem;
       font-weight: 600;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
+      margin-left: 10px;
     }
 
-    .complexity-badge.beginner {
+    .complexity-label.easy {
       background: var(--green-dim);
       color: var(--green);
     }
 
-    .complexity-badge.intermediate {
+    .complexity-label.medium {
       background: rgba(199,168,108,0.15);
       color: var(--gold);
     }
 
-    .complexity-badge.advanced {
+    .complexity-label.hard {
       background: var(--red-dim);
       color: var(--red);
     }
 
-    .strategy-detail {
-      font-size: 0.82rem;
+    .strategy-family-description {
+      font-size: 0.88rem;
       color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 8px;
+      line-height: 1.7;
+      margin-bottom: 16px;
     }
 
-    .strategy-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 6px;
-    }
-
-    .strategy-label {
-      font-size: 0.76rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      min-width: 100px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .strategy-value {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-    }
-
-    .strategy-pros-cons {
+    .strategy-family-detail {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
+      gap: 16px;
     }
 
-    .pros-list, .cons-list {
-      font-size: 0.78rem;
-    }
-
-    .pros-list h5, .cons-list h5 {
-      font-size: 0.68rem;
+    .detail-block h5 {
+      font-size: 0.72rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .pros-list h5 { color: var(--green); }
-    .cons-list h5 { color: var(--red); }
+    .detail-block.when-block h5 { color: var(--blue-light); }
+    .detail-block.why-block h5 { color: var(--gold); }
+    .detail-block.pro-block h5 { color: var(--green); }
+    .detail-block.con-block h5 { color: var(--red); }
 
-    .pros-list li, .cons-list li {
+    .detail-block p, .detail-block li {
+      font-size: 0.82rem;
       color: var(--text-secondary);
-      padding: 2px 0;
-      padding-left: 14px;
+      line-height: 1.6;
+    }
+
+    .detail-block li {
+      padding: 3px 0 3px 14px;
       position: relative;
     }
 
-    .pros-list li::before {
+    .detail-block.pro-block li::before {
       content: '+';
       position: absolute;
       left: 0;
       color: var(--green);
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    .cons-list li::before {
+    .detail-block.con-block li::before {
       content: '−';
       position: absolute;
       left: 0;
       color: var(--red);
-      font-weight: 600;
-    }
-
-    .questions-section {
-      background: var(--blue-deep);
-      border: 1px solid var(--border-blue);
-      border-radius: var(--radius-sm);
-      padding: 18px;
-      margin-top: 20px;
-    }
-
-    .questions-section h4 {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--blue-light);
-      margin-bottom: 10px;
-    }
-
-    .questions-section li {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      padding: 4px 0;
-      padding-left: 18px;
-      position: relative;
-    }
-
-    .questions-section li::before {
-      content: '?';
-      position: absolute;
-      left: 0;
-      color: var(--blue-light);
       font-weight: 700;
     }
 
-    .cta-banner {
-      margin-top: 40px;
-      background: linear-gradient(135deg, rgba(199,168,108,0.08), rgba(58,107,196,0.08));
+    .journey-cta {
+      margin-top: 48px;
+      background: linear-gradient(135deg, rgba(199,168,108,0.06), rgba(58,107,196,0.06));
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 40px;
+      padding: 48px 40px;
       text-align: center;
     }
 
-    .cta-banner h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 10px;
+    .journey-cta h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+      line-height: 1.5;
     }
 
-    .cta-banner p {
+    .journey-cta p {
       font-size: 0.88rem;
       color: var(--text-secondary);
-      margin-bottom: 24px;
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+
+    .journey-cta .club-features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 24px 0 32px;
+    }
+
+    .club-feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 7px 16px;
+      border-radius: 20px;
+    }
+
+    .club-feature svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gold);
     }
 
     .btn-cta {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 14px 36px;
+      padding: 16px 40px;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
       color: var(--bg-primary);
       font-size: 0.95rem;
@@ -1270,6 +1521,39 @@
     .btn-cta:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 32px rgba(199,168,108,0.35);
+    }
+
+    .journey-restart {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+      padding: 6px 0;
+      transition: color var(--t) var(--ease);
+    }
+
+    .journey-restart:hover {
+      color: var(--gold);
+    }
+
+    @media (max-width: 768px) {
+      .concern-grid {
+        grid-template-columns: 1fr;
+      }
+      .strategy-family-detail {
+        grid-template-columns: 1fr;
+      }
+      .journey-title {
+        font-size: 1.3rem;
+      }
+      .diagnosis-card {
+        padding: 28px 22px;
+      }
+      .journey-cta {
+        padding: 32px 22px;
+      }
     }
 
     /* ============================================================
@@ -1544,9 +1828,6 @@
       .dashboard-grid {
         grid-template-columns: 1fr;
       }
-      .risk-form-container {
-        grid-template-columns: 1fr;
-      }
       .live-grid {
         grid-template-columns: 1fr;
       }
@@ -1594,9 +1875,6 @@
         align-items: stretch;
       }
 
-      .strategy-pros-cons {
-        grid-template-columns: 1fr;
-      }
     }
 
     @media (max-width: 480px) {
@@ -1605,28 +1883,6 @@
       }
     }
 
-    /* ============================================================
-       EDUCATIONAL DISCLAIMER
-    ============================================================ */
-    .edu-disclaimer {
-      background: var(--blue-deep);
-      border: 1px solid var(--border-blue);
-      border-radius: var(--radius-sm);
-      padding: 14px 18px;
-      font-size: 0.76rem;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .edu-disclaimer svg {
-      width: 18px;
-      height: 18px;
-      color: var(--blue-light);
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
@@ -1670,8 +1926,8 @@
         <div class="sidebar-nav-label">Strumenti</div>
 
         <button class="nav-item" onclick="navigate('risk')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Risk Dashboard
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Il tuo problema
         </button>
 
         <button class="nav-item" onclick="navigate('live')">
@@ -1713,8 +1969,8 @@
             <span>Discussioni</span>
           </div>
           <div class="quick-link" onclick="navigate('risk')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Risk Dashboard</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Il tuo problema</span>
           </div>
           <div class="quick-link" onclick="navigate('live')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1822,77 +2078,206 @@
       </section>
 
       <!-- ============================================================
-           PAGE: RISK DASHBOARD
+           PAGE: IL TUO PROBLEMA — PERCORSO GUIDATO
       ============================================================ -->
       <section class="page" id="page-risk">
-        <div class="page-header">
-          <h2>Risk Dashboard</h2>
-          <p>Esplora possibili strategie educative per la gestione del rischio</p>
-        </div>
+        <div class="journey-container">
 
-        <div class="edu-disclaimer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          <span>Questa sezione ha finalità esclusivamente educative. Le informazioni fornite non costituiscono consulenza finanziaria, raccomandazioni operative o sollecitazioni all'investimento.</span>
-        </div>
-
-        <div class="risk-form-container">
-          <div class="risk-form">
-            <h3>Inserisci i dati della posizione</h3>
-            <div class="form-group">
-              <label>Nome del titolo</label>
-              <input type="text" id="risk-ticker" placeholder="Es. AAPL, MSFT, NVDA...">
+          <!-- Progress bar -->
+          <div class="journey-progress" id="journey-progress">
+            <div class="journey-progress-step active" data-step="1">
+              <div class="progress-dot"></div>
+              <span>Preoccupazione</span>
             </div>
-            <div class="form-group">
-              <label>Numero di azioni</label>
-              <input type="number" id="risk-shares" placeholder="Es. 100">
+            <div class="progress-line"></div>
+            <div class="journey-progress-step" data-step="2">
+              <div class="progress-dot"></div>
+              <span>Situazione</span>
             </div>
-            <div class="form-group">
-              <label>Prezzo medio di carico</label>
-              <input type="number" id="risk-avg-price" placeholder="Es. 150.00" step="0.01">
+            <div class="progress-line"></div>
+            <div class="journey-progress-step" data-step="3">
+              <div class="progress-dot"></div>
+              <span>Diagnosi</span>
             </div>
-            <div class="form-group">
-              <label>Obiettivo</label>
-              <select id="risk-objective">
-                <option value="">Seleziona un obiettivo</option>
-                <option value="protezione-ribasso">Protezione da ribasso</option>
-                <option value="riduzione-costo">Riduzione costo di protezione</option>
-                <option value="generare-reddito">Generare reddito dalla posizione</option>
-                <option value="limitare-perdita">Limitare la perdita massima</option>
-              </select>
+            <div class="progress-line"></div>
+            <div class="journey-progress-step" data-step="4">
+              <div class="progress-dot"></div>
+              <span>Percorsi</span>
             </div>
-            <div class="form-group">
-              <label>Timore principale</label>
-              <select id="risk-fear">
-                <option value="">Seleziona il tuo timore</option>
-                <option value="crollo">Crollo improvviso del mercato</option>
-                <option value="erosione">Erosione lenta del valore</option>
-                <option value="volatilita">Aumento della volatilità</option>
-                <option value="earnings">Rischio trimestrali</option>
-                <option value="settoriale">Rischio settoriale</option>
-              </select>
-            </div>
-            <button class="btn-primary" onclick="analyzeRisk()" style="width:100%;justify-content:center;margin-top:8px">
-              Esplora strategie educative
-            </button>
           </div>
 
-          <div class="risk-results" id="risk-results">
-            <h3>Strategie educative</h3>
-            <div class="risk-empty-state" id="risk-empty">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <p>Compila il form per esplorare<br>possibili famiglie di strategie</p>
-            </div>
-            <div id="risk-strategies" style="display:none">
+          <!-- STEP 1: Qual è la tua preoccupazione? -->
+          <div class="journey-step active" id="journey-step-1">
+            <h2 class="journey-title">Qual è la tua preoccupazione oggi?</h2>
+            <p class="journey-subtitle">Non servono termini tecnici. Scegli semplicemente quella che si avvicina di più a come ti senti.</p>
+
+            <div class="concern-grid">
+              <div class="concern-card" onclick="selectConcern(this, 'titolo-scenda')">
+                <div class="concern-icon">📉</div>
+                <div class="concern-text">Ho paura che il mio titolo scenda.</div>
+              </div>
+              <div class="concern-card" onclick="selectConcern(this, 'crollo-mercato')">
+                <div class="concern-icon">🌊</div>
+                <div class="concern-text">Ho paura di un crollo del mercato.</div>
+              </div>
+              <div class="concern-card" onclick="selectConcern(this, 'concentrazione')">
+                <div class="concern-icon">⚖️</div>
+                <div class="concern-text">Ho troppe azioni concentrate.</div>
+              </div>
+              <div class="concern-card" onclick="selectConcern(this, 'proteggere-guadagno')">
+                <div class="concern-icon">🔒</div>
+                <div class="concern-text">Voglio proteggere un guadagno.</div>
+              </div>
+              <div class="concern-card" onclick="selectConcern(this, 'dormire-tranquillo')">
+                <div class="concern-icon">🌙</div>
+                <div class="concern-text">Voglio dormire tranquillo.</div>
+              </div>
+              <div class="concern-card" onclick="selectConcern(this, 'vendere-dubbio')">
+                <div class="concern-icon">🤔</div>
+                <div class="concern-text">Non so se vendere.</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="cta-banner">
-          <h3>Vuoi approfondire con i nostri mentor?</h3>
-          <p>Accedi a sessioni live, casi studio avanzati e supporto personalizzato dalla community.</p>
-          <button class="btn-cta" onclick="openAuthModal()">
-            Entra nel Sigma XIII Club — 30 giorni gratuiti
-          </button>
+          <!-- STEP 2: Parlami della tua situazione -->
+          <div class="journey-step" id="journey-step-2">
+            <h2 class="journey-title">Parlami della tua situazione.</h2>
+            <p class="journey-subtitle">Rispondi con calma. Non ci sono risposte giuste o sbagliate. Serve solo a capire meglio il tuo contesto.</p>
+
+            <div class="situation-form">
+              <div class="situation-field">
+                <label>Quale titolo possiedi?</label>
+                <input type="text" id="j-ticker" placeholder="Es. Apple, Tesla, Amazon...">
+                <div class="field-hint">Il nome dell'azienda o il ticker, come preferisci.</div>
+              </div>
+
+              <div class="situation-field">
+                <label>Quante azioni hai?</label>
+                <input type="number" id="j-shares" placeholder="Es. 50, 100, 200...">
+              </div>
+
+              <div class="situation-field">
+                <label>Da quanto tempo le possiedi?</label>
+                <select id="j-holding-time">
+                  <option value="">Seleziona...</option>
+                  <option value="meno-1-mese">Meno di un mese</option>
+                  <option value="1-6-mesi">Da 1 a 6 mesi</option>
+                  <option value="6-12-mesi">Da 6 mesi a un anno</option>
+                  <option value="piu-1-anno">Più di un anno</option>
+                  <option value="piu-3-anni">Più di tre anni</option>
+                </select>
+              </div>
+
+              <div class="situation-field">
+                <label>Vuoi continuare a possederle?</label>
+                <select id="j-keep">
+                  <option value="">Seleziona...</option>
+                  <option value="si-lungo">Sì, le voglio tenere a lungo termine</option>
+                  <option value="si-ma">Sì, ma vorrei dormire più tranquillo</option>
+                  <option value="non-so">Non lo so, dipende da cosa succede</option>
+                  <option value="vorrei-uscire">Vorrei uscire ma ho paura di sbagliare il momento</option>
+                </select>
+              </div>
+
+              <div class="situation-field">
+                <label>Quanto sei disposto a spendere per proteggerti?</label>
+                <select id="j-budget">
+                  <option value="">Seleziona...</option>
+                  <option value="nulla">Nulla, se possibile</option>
+                  <option value="poco">Poco, il minimo indispensabile</option>
+                  <option value="ragionevole">Una cifra ragionevole, se ne vale la pena</option>
+                  <option value="quello-che-serve">Quello che serve, la tranquillità non ha prezzo</option>
+                </select>
+              </div>
+
+              <div class="situation-field">
+                <label>Quanto ti farebbe stare male una perdita?</label>
+                <select id="j-pain">
+                  <option value="">Seleziona...</option>
+                  <option value="piccola-ok">Una piccola perdita è accettabile, fa parte del gioco</option>
+                  <option value="moderata">Una perdita moderata mi preoccuperebbe ma la gestirei</option>
+                  <option value="forte-male">Una perdita forte mi farebbe stare davvero male</option>
+                  <option value="non-posso">Non posso permettermi di perdere significativamente</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="journey-nav">
+              <button class="journey-back" onclick="journeyGoTo(1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Indietro
+              </button>
+              <button class="journey-next" id="j-next-2" onclick="journeyGoTo(3)" disabled>
+                Continua
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Diagnosi -->
+          <div class="journey-step" id="journey-step-3">
+            <h2 class="journey-title">Abbiamo capito il tuo problema.</h2>
+            <p class="journey-subtitle">Ecco quello che abbiamo compreso dalla tua situazione.</p>
+
+            <div class="diagnosis-card" id="diagnosis-card">
+            </div>
+
+            <div class="journey-nav">
+              <button class="journey-back" onclick="journeyGoTo(2)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Indietro
+              </button>
+              <button class="journey-next" onclick="journeyGoTo(4)">
+                Scopri le possibili strade
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Possibili strade -->
+          <div class="journey-step" id="journey-step-4">
+            <h2 class="journey-title">Esistono diversi modi per affrontare questo problema.</h2>
+            <p class="journey-subtitle">Non esiste una risposta giusta per tutti. Ogni approccio ha vantaggi e limiti. Ecco le famiglie di strategie che potrebbero essere rilevanti per la tua situazione.</p>
+
+            <div id="journey-strategies">
+            </div>
+
+            <div class="journey-cta">
+              <h3>Vuoi capire quale di queste strade potrebbe adattarsi meglio al tuo modo di investire?</h3>
+              <p>Nel Club troverai tutto ciò che serve per approfondire con calma, al tuo ritmo, accompagnato dalla community.</p>
+              <div class="club-features">
+                <span class="club-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Video
+                </span>
+                <span class="club-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Casi studio
+                </span>
+                <span class="club-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                  Discussioni
+                </span>
+                <span class="club-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Live
+                </span>
+                <span class="club-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                  Mentoring sul metodo
+                </span>
+              </div>
+              <button class="btn-cta" onclick="openAuthModal()">
+                Accedi gratuitamente al Sigma XIII Club per 30 giorni
+              </button>
+              <br>
+              <button class="journey-restart" onclick="journeyReset()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                Ricomincia il percorso
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -2071,139 +2456,8 @@
       { id: 5, title: 'Q&A: gestione psicologica delle perdite', date: '28 Mag 2025', duration: '55:20' },
     ];
 
-    const strategyDatabase = {
-      'protezione-ribasso': {
-        'crollo': [
-          {
-            name: 'Protective Put',
-            complexity: 'beginner',
-            cost: 'Medio-alto (premio della put)',
-            description: 'Acquisto di una opzione put sullo stesso titolo detenuto. Offre una protezione completa sotto lo strike scelto.',
-            pros: ['Protezione illimitata sotto lo strike', 'Mantieni tutto il potenziale rialzo', 'Semplice da implementare'],
-            cons: ['Costo del premio può essere elevato', 'Theta decay erode il valore nel tempo', 'Richiede rinnovo periodico'],
-          },
-          {
-            name: 'Collar Strategy',
-            complexity: 'intermediate',
-            cost: 'Basso o nullo (finanziato dalla call)',
-            description: 'Combinazione di protective put e covered call. La vendita della call finanzia parzialmente o totalmente la put.',
-            pros: ['Costo ridotto o nullo', 'Protezione definita al ribasso', 'Buono per orizzonti temporali definiti'],
-            cons: ['Limita il guadagno al rialzo', 'Richiede gestione attiva', 'Possibile assegnazione della call'],
-          }
-        ],
-        'erosione': [
-          {
-            name: 'Put Spread (Bear Put Spread)',
-            complexity: 'intermediate',
-            cost: 'Medio (differenza tra i premi)',
-            description: 'Acquisto put ATM e vendita put OTM. Protezione parziale a costo ridotto rispetto alla protective put singola.',
-            pros: ['Costo inferiore alla put singola', 'Protezione definita in un range', 'Theta decay parzialmente compensato'],
-            cons: ['Protezione limitata al range dello spread', 'Non protegge da crolli estremi', 'Profitto massimo limitato'],
-          }
-        ],
-        'volatilita': [
-          {
-            name: 'Protective Put (con timing sulla IV)',
-            complexity: 'intermediate',
-            cost: 'Variabile (dipende dalla IV)',
-            description: 'Acquisto di put quando la volatilità implicita è relativamente bassa, per ridurre il costo della protezione.',
-            pros: ['Protezione completa', 'Beneficia se la IV aumenta', 'Mantieni il rialzo'],
-            cons: ['Timing della IV è difficile', 'Premio elevato se IV già alta', 'Richiede comprensione della volatilità'],
-          }
-        ],
-        'earnings': [
-          {
-            name: 'Protective Put a breve scadenza',
-            complexity: 'beginner',
-            cost: 'Medio (premio per breve periodo)',
-            description: 'Put con scadenza subito dopo la data degli earnings. Protezione mirata per l\'evento specifico.',
-            pros: ['Protezione mirata all\'evento', 'Durata breve = meno theta decay totale', 'Semplice da gestire'],
-            cons: ['IV pre-earnings gonfia il premio', 'IV crush post-earnings erode il valore', 'Protezione solo per l\'evento'],
-          },
-          {
-            name: 'Collar pre-Earnings',
-            complexity: 'intermediate',
-            cost: 'Basso (finanziato dalla call)',
-            description: 'Collar implementato prima delle trimestrali. La call venduta sfrutta l\'alta IV pre-earnings.',
-            pros: ['Costo ridotto grazie a IV elevata', 'Protezione per l\'evento', 'Beneficia dalla vendita di IV alta'],
-            cons: ['Limita il rialzo post-earnings', 'Gestione dell\'assegnazione', 'Richiede decisioni rapide post-evento'],
-          }
-        ],
-        'settoriale': [
-          {
-            name: 'Put su ETF settoriale',
-            complexity: 'intermediate',
-            cost: 'Medio (premio sulla put ETF)',
-            description: 'Acquisto di put sull\'ETF del settore anziché sul singolo titolo. Protegge dal rischio settoriale complessivo.',
-            pros: ['Protegge dal rischio di settore', 'Costo potenzialmente inferiore', 'Copertura più ampia'],
-            cons: ['Correlazione imperfetta col singolo titolo', 'Non protegge da rischi company-specific', 'Richiede selezione ETF corretto'],
-          }
-        ]
-      },
-      'riduzione-costo': {
-        'crollo': [
-          {
-            name: 'Collar Strategy',
-            complexity: 'intermediate',
-            cost: 'Basso o nullo',
-            description: 'Finanzia la put vendendo una call. Il costo netto della protezione può essere portato vicino a zero.',
-            pros: ['Costo della protezione ridotto', 'Protezione al ribasso mantenuta', 'Strategia autofinanziata'],
-            cons: ['Rialzo limitato allo strike della call', 'Rischio di assegnazione', 'Richiede scelta attenta degli strike'],
-          },
-          {
-            name: 'Put Spread',
-            complexity: 'intermediate',
-            cost: 'Ridotto rispetto alla put singola',
-            description: 'Acquisto e vendita di put a strike diversi. Riduce il costo ma anche il range di protezione.',
-            pros: ['Costo significativamente ridotto', 'Protezione in un range definito', 'Facile da calcolare il rischio/beneficio'],
-            cons: ['Protezione limitata', 'Non copre crolli estremi', 'Break-even più vicino al prezzo corrente'],
-          }
-        ]
-      },
-      'generare-reddito': {
-        'erosione': [
-          {
-            name: 'Covered Call',
-            complexity: 'beginner',
-            cost: 'Nessuno (genera premio)',
-            description: 'Vendita di call sul titolo detenuto. Genera reddito periodico ma limita il rialzo potenziale.',
-            pros: ['Genera reddito periodico', 'Riduce il prezzo medio di carico', 'Semplice da implementare'],
-            cons: ['Limita il potenziale rialzo', 'Non protegge da ribassi significativi', 'Rischio di assegnazione'],
-          }
-        ]
-      },
-      'limitare-perdita': {
-        'crollo': [
-          {
-            name: 'Stop Loss + Protective Put',
-            complexity: 'beginner',
-            cost: 'Medio',
-            description: 'Combinazione di stop loss mentale e protective put. Doppio livello di protezione.',
-            pros: ['Perdita massima definita', 'Protezione completa', 'Tranquillità psicologica'],
-            cons: ['Costo del premio', 'Lo stop loss può scattare in gap', 'Richiede gestione attiva'],
-          }
-        ]
-      }
-    };
-
-    const defaultStrategies = [
-      {
-        name: 'Protective Put',
-        complexity: 'beginner',
-        cost: 'Medio-alto',
-        description: 'Acquisto di una opzione put per proteggere una posizione azionaria esistente.',
-        pros: ['Protezione al ribasso illimitata', 'Mantiene il potenziale rialzo', 'Facile da comprendere'],
-        cons: ['Costo del premio', 'Theta decay', 'Richiede rinnovo'],
-      },
-      {
-        name: 'Collar Strategy',
-        complexity: 'intermediate',
-        cost: 'Basso o nullo',
-        description: 'Combinazione di protective put e covered call per protezione a costo ridotto.',
-        pros: ['Protezione a basso costo', 'Autofinanziata', 'Rischio definito'],
-        cons: ['Rialzo limitato', 'Richiede gestione', 'Complessità moderata'],
-      }
-    ];
+    // Journey state
+    let journeyData = { concern: null };
 
     // ============================================================
     // NAVIGATION
@@ -2443,118 +2697,245 @@
     }
 
     // ============================================================
-    // RISK DASHBOARD
+    // IL TUO PROBLEMA — PERCORSO GUIDATO
     // ============================================================
 
-    function analyzeRisk() {
-      const ticker = document.getElementById('risk-ticker').value.trim();
-      const shares = document.getElementById('risk-shares').value;
-      const avgPrice = document.getElementById('risk-avg-price').value;
-      const objective = document.getElementById('risk-objective').value;
-      const fear = document.getElementById('risk-fear').value;
+    function selectConcern(card, concern) {
+      document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      journeyData.concern = concern;
+      setTimeout(() => journeyGoTo(2), 400);
+    }
 
-      if (!ticker || !shares || !avgPrice || !objective || !fear) {
-        alert('Compila tutti i campi per esplorare le strategie educative.');
-        return;
+    function journeyGoTo(step) {
+      if (step === 3) {
+        const fields = ['j-ticker', 'j-shares', 'j-holding-time', 'j-keep', 'j-budget', 'j-pain'];
+        const allFilled = fields.every(id => document.getElementById(id).value.trim() !== '');
+        if (!allFilled) return;
+        buildDiagnosis();
+      }
+      if (step === 4) {
+        buildStrategies();
       }
 
-      const positionValue = (shares * avgPrice).toFixed(2);
+      document.querySelectorAll('.journey-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('journey-step-' + step).classList.add('active');
 
-      let strategies = [];
-      if (strategyDatabase[objective] && strategyDatabase[objective][fear]) {
-        strategies = strategyDatabase[objective][fear];
-      } else if (strategyDatabase[objective]) {
-        const firstKey = Object.keys(strategyDatabase[objective])[0];
-        strategies = strategyDatabase[objective][firstKey] || defaultStrategies;
-      } else {
-        strategies = defaultStrategies;
+      document.querySelectorAll('.journey-progress-step').forEach(ps => {
+        const psStep = parseInt(ps.dataset.step);
+        ps.classList.remove('active', 'completed');
+        if (psStep === step) ps.classList.add('active');
+        else if (psStep < step) ps.classList.add('completed');
+      });
+
+      document.querySelectorAll('.progress-line').forEach((line, i) => {
+        line.classList.toggle('completed', i < step - 1);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function journeyReset() {
+      journeyData = { concern: null };
+      document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('selected'));
+      ['j-ticker', 'j-shares'].forEach(id => document.getElementById(id).value = '');
+      ['j-holding-time', 'j-keep', 'j-budget', 'j-pain'].forEach(id => document.getElementById(id).selectedIndex = 0);
+      journeyGoTo(1);
+    }
+
+    function checkStep2() {
+      const fields = ['j-ticker', 'j-shares', 'j-holding-time', 'j-keep', 'j-budget', 'j-pain'];
+      const allFilled = fields.every(id => document.getElementById(id).value.trim() !== '');
+      document.getElementById('j-next-2').disabled = !allFilled;
+    }
+
+    ['j-ticker', 'j-shares', 'j-holding-time', 'j-keep', 'j-budget', 'j-pain'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', checkStep2);
+      if (el) el.addEventListener('change', checkStep2);
+    });
+
+    function buildDiagnosis() {
+      const concern = journeyData.concern;
+      const ticker = document.getElementById('j-ticker').value.trim();
+      const keep = document.getElementById('j-keep').value;
+      const pain = document.getElementById('j-pain').value;
+      const budget = document.getElementById('j-budget').value;
+      const holdTime = document.getElementById('j-holding-time').value;
+
+      const holdLabel = {
+        'meno-1-mese': 'da poco tempo',
+        '1-6-mesi': 'da alcuni mesi',
+        '6-12-mesi': 'da quasi un anno',
+        'piu-1-anno': 'da più di un anno',
+        'piu-3-anni': 'da diversi anni'
+      }[holdTime] || '';
+
+      const diagnosisMap = {
+        'titolo-scenda': {
+          icon: '🔍',
+          text: `Il tuo problema principale <strong>non è solo che ${ticker} possa scendere.</strong><br><br>Il tuo problema è che <em>possiedi qualcosa a cui tieni ${holdLabel}</em>, e l'idea che il suo valore possa diminuire ti crea ansia.<br><br>${keep === 'si-lungo' || keep === 'si-ma' ? 'Vuoi continuare a possedere questo titolo, ma <strong>vorresti farlo senza la paura costante di un calo.</strong>' : 'Non sei nemmeno sicuro di volerlo tenere, e questo <strong>rende tutto più difficile</strong> — perché il dubbio stesso è fonte di stress.'}`,
+          reassurance: 'È una situazione molto comune. La maggior parte degli investitori passa per questo momento. Il primo passo è capire che esistono modi per continuare a investire con più serenità.'
+        },
+        'crollo-mercato': {
+          icon: '🔍',
+          text: `La tua paura non riguarda solo ${ticker}. <strong>Riguarda tutto il mercato.</strong><br><br>Hai la sensazione che qualcosa di grosso possa succedere, e che <em>il tuo portafoglio non sia preparato.</em><br><br>${pain === 'forte-male' || pain === 'non-posso' ? 'Quello che ti preoccupa davvero è che <strong>una perdita importante potrebbe avere conseguenze reali sulla tua vita</strong>, non solo sui numeri.' : 'Sai che i mercati possono scendere, ma <strong>vorresti sapere come affrontare quel momento senza farsi prendere dal panico.</strong>'}`,
+          reassurance: 'I crolli di mercato fanno paura a tutti. Ma è proprio in questi momenti che chi ha un piano si distingue da chi agisce d\'istinto. E un piano si costruisce prima, non durante.'
+        },
+        'concentrazione': {
+          icon: '🔍',
+          text: `Sai già qual è il problema: <strong>hai troppe uova nello stesso paniere.</strong><br><br>Possiedi ${ticker} ${holdLabel}, e una parte significativa del tuo patrimonio dipende da come andrà questo singolo titolo.<br><br><em>Non è il titolo il problema. Il problema è che se qualcosa va storto, l'impatto sarebbe sproporzionato.</em>`,
+          reassurance: 'Riconoscere il problema della concentrazione è già un grande passo. Molti investitori ci arrivano solo dopo aver subito una perdita. Tu ci stai pensando prima.'
+        },
+        'proteggere-guadagno': {
+          icon: '🔍',
+          text: `Hai comprato ${ticker} ${holdLabel} e adesso <strong>sei in guadagno.</strong> Ed è proprio questo che ti preoccupa.<br><br>Il tuo problema non è il mercato. <em>Il tuo problema è che hai paura di vedere sparire un guadagno che consideri già tuo.</em><br><br>${keep === 'si-lungo' ? 'Vuoi tenere il titolo, ma vorresti <strong>mettere al sicuro almeno una parte di quello che hai già guadagnato.</strong>' : 'Non sei sicuro se incassare o restare, e <strong>questa indecisione è essa stessa fonte di stress.</strong>'}`,
+          reassurance: 'La paura di perdere un guadagno è psicologicamente più forte della paura di una perdita. È un meccanismo conosciuto. E ci sono modi per gestirlo.'
+        },
+        'dormire-tranquillo': {
+          icon: '🔍',
+          text: `A volte il problema non è tecnico. <strong>Il problema è che non riesci a smettere di pensarci.</strong><br><br>Possiedi ${ticker} e <em>l'investimento ha smesso di essere qualcosa di positivo ed è diventato una fonte di preoccupazione.</em><br><br>${pain === 'forte-male' || pain === 'non-posso' ? 'Il peso emotivo che porti è reale. <strong>Nessun rendimento vale la tua serenità.</strong>' : 'Vorresti poter investire senza che questo condizioni il tuo umore quotidiano.'}`,
+          reassurance: 'Se un investimento ti toglie il sonno, è un segnale che qualcosa va cambiato. Non necessariamente l\'investimento — a volte basta cambiare come lo gestisci.'
+        },
+        'vendere-dubbio': {
+          icon: '🔍',
+          text: `Non sai se vendere ${ticker}. E <strong>il dubbio stesso è il tuo problema più grande.</strong><br><br><em>Hai paura di vendere e poi vedere il titolo salire. Ma hai anche paura di restare e vederlo scendere.</em><br><br>${keep === 'vorrei-uscire' ? 'In fondo, <strong>vorresti uscire ma hai paura di sbagliare il momento.</strong> E questa paralisi ti tiene bloccato.' : keep === 'non-so' ? 'Non hai ancora deciso cosa vuoi fare, e <strong>prendere decisioni nell\'incertezza è la cosa più difficile per un investitore.</strong>' : 'Vuoi tenere il titolo ma <strong>l\'indecisione continua a tornarti in mente.</strong>'}`,
+          reassurance: 'Il dubbio tra vendere e tenere è uno dei momenti più difficili per qualsiasi investitore. Non sei solo. E non è un problema che si risolve con un\'azione impulsiva.'
+        }
+      };
+
+      const d = diagnosisMap[concern] || diagnosisMap['titolo-scenda'];
+
+      document.getElementById('diagnosis-card').innerHTML = `
+        <div class="diagnosis-icon">${d.icon}</div>
+        <div class="diagnosis-text">${d.text}</div>
+        <div class="diagnosis-reassurance">${d.reassurance}</div>
+      `;
+    }
+
+    function buildStrategies() {
+      const concern = journeyData.concern;
+      const keep = document.getElementById('j-keep').value;
+      const budget = document.getElementById('j-budget').value;
+      const pain = document.getElementById('j-pain').value;
+
+      const allStrategies = {
+        'assicurazione': {
+          icon: '🛡️',
+          iconBg: 'var(--green-dim)',
+          name: 'La strada dell\'assicurazione',
+          complexity: 'easy',
+          complexityLabel: 'Accessibile',
+          description: 'Come un\'assicurazione sulla casa, puoi pagare un costo periodico per avere la certezza che, se le cose vanno male, il danno sarà limitato. Continui a possedere le tue azioni e mantieni tutto il potenziale di guadagno.',
+          when: 'Quando vuoi continuare a possedere il titolo ma vuoi dormire tranquillo, sapendo che esiste un limite alla perdita.',
+          why: 'Perché dà tranquillità senza costringerti a vendere. È la scelta di chi dice: "Preferisco pagare per la mia serenità."',
+          pros: ['Sai in anticipo qual è la tua perdita massima', 'Mantieni tutto il potenziale di guadagno', 'Puoi continuare a possedere le azioni con più calma'],
+          cons: ['Ha un costo, come ogni assicurazione', 'Il costo va rinnovato periodicamente', 'Se non succede nulla, il costo è "perso" (come un premio assicurativo)']
+        },
+        'scambio': {
+          icon: '⚖️',
+          iconBg: 'rgba(199,168,108,0.15)',
+          name: 'La strada dello scambio',
+          complexity: 'medium',
+          complexityLabel: 'Intermedio',
+          description: 'Invece di pagare per la protezione, accetti uno scambio: ottieni protezione al ribasso rinunciando a una parte del guadagno futuro. In pratica, dici: "Non mi interessa guadagnare oltre un certo livello, se questo mi protegge sotto un certo livello."',
+          when: 'Quando vuoi proteggerti ma non vuoi spendere nulla o quasi. Sei disposto a rinunciare a guadagni eccezionali in cambio di sicurezza.',
+          why: 'Perché è la scelta di chi preferisce un risultato prevedibile: non il migliore possibile, ma nemmeno il peggiore.',
+          pros: ['La protezione può costare poco o nulla', 'Sai in anticipo sia il guadagno massimo che la perdita massima', 'Ottima per chi ha un obiettivo di uscita definito'],
+          cons: ['Se il titolo sale molto, non partecipi a tutto il rialzo', 'Richiede di accettare un compromesso', 'Meno intuitivo della semplice assicurazione']
+        },
+        'reddito': {
+          icon: '💰',
+          iconBg: 'rgba(58,107,196,0.15)',
+          name: 'La strada del reddito',
+          complexity: 'easy',
+          complexityLabel: 'Accessibile',
+          description: 'Invece di proteggerti direttamente, generi un reddito periodico dalle tue azioni. Questo reddito riduce il tuo costo nel tempo e crea un cuscinetto naturale contro piccole perdite.',
+          when: 'Quando il titolo è stabile o in leggera crescita e vuoi ridurre il tuo costo di possesso nel tempo.',
+          why: 'Perché è la scelta di chi dice: "Se il titolo non si muove molto, almeno faccio lavorare le mie azioni."',
+          pros: ['Generi un\'entrata periodica', 'Riduci il prezzo medio di carico nel tempo', 'Semplice da comprendere e gestire'],
+          cons: ['Non ti protegge da un calo forte e improvviso', 'Limita il tuo guadagno se il titolo sale molto', 'Funziona meglio in mercati stabili']
+        },
+        'graduale': {
+          icon: '📐',
+          iconBg: 'rgba(199,168,108,0.1)',
+          name: 'La strada dell\'uscita graduale',
+          complexity: 'easy',
+          complexityLabel: 'Accessibile',
+          description: 'Invece di decidere tutto in un momento, pianifichi un\'uscita graduale dalla posizione. Vendi una parte ora, tieni una parte, e decidi il resto in base a quello che succede. Riduci la concentrazione senza il trauma di una decisione secca.',
+          when: 'Quando hai troppe azioni concentrate o non sai se vendere. Quando il problema non è il ribasso ma il peso della decisione.',
+          why: 'Perché è la scelta di chi dice: "Non voglio decidere tutto ora. Preferisco procedere un passo alla volta."',
+          pros: ['Elimina la pressione di una decisione unica', 'Riduci progressivamente il rischio di concentrazione', 'Se il titolo sale, hai ancora una parte investita'],
+          cons: ['Se il titolo crolla, hai ancora una parte esposta', 'Richiede disciplina per seguire il piano', 'Non è una protezione attiva, è una riduzione del rischio']
+        },
+        'parziale': {
+          icon: '🎯',
+          iconBg: 'rgba(74,158,106,0.1)',
+          name: 'La strada della protezione parziale',
+          complexity: 'medium',
+          complexityLabel: 'Intermedio',
+          description: 'Non proteggi tutto. Proteggi solo la parte che ti fa più male. Definisci un livello sotto il quale non vuoi scendere e paghi per proteggere solo quel tratto. Costa meno di una protezione completa.',
+          when: 'Quando vuoi proteggerti ma vuoi contenere il costo. Accetti un certo livello di perdita, ma vuoi un limite oltre il quale non andare.',
+          why: 'Perché è la scelta di chi dice: "Posso accettare una piccola perdita, ma non una catastrofe."',
+          pros: ['Costa meno di una protezione completa', 'Protegge dalla parte più dolorosa della perdita', 'Buon compromesso tra costo e sicurezza'],
+          cons: ['Le prime perdite non sono coperte', 'Richiede di decidere quale livello proteggere', 'Leggermente più complesso da comprendere']
+        }
+      };
+
+      const strategyPicks = {
+        'titolo-scenda': ['assicurazione', 'scambio', 'parziale'],
+        'crollo-mercato': ['assicurazione', 'scambio', 'parziale'],
+        'concentrazione': ['graduale', 'scambio', 'assicurazione'],
+        'proteggere-guadagno': ['scambio', 'assicurazione', 'graduale'],
+        'dormire-tranquillo': ['assicurazione', 'scambio', 'reddito'],
+        'vendere-dubbio': ['graduale', 'scambio', 'reddito']
+      };
+
+      if (budget === 'nulla' && (concern === 'titolo-scenda' || concern === 'crollo-mercato' || concern === 'dormire-tranquillo')) {
+        strategyPicks[concern] = ['scambio', 'reddito', 'graduale'];
+      }
+      if (pain === 'piccola-ok' && concern !== 'concentrazione') {
+        if (!strategyPicks[concern].includes('reddito')) {
+          strategyPicks[concern][2] = 'reddito';
+        }
       }
 
-      const fearLabels = {
-        'crollo': 'crollo improvviso',
-        'erosione': 'erosione lenta',
-        'volatilita': 'aumento della volatilità',
-        'earnings': 'rischio trimestrali',
-        'settoriale': 'rischio settoriale'
-      };
+      const picks = (strategyPicks[concern] || ['assicurazione', 'scambio', 'graduale']).slice(0, 3);
+      const container = document.getElementById('journey-strategies');
 
-      const questionsForObjective = {
-        'protezione-ribasso': [
-          'Qual è la perdita massima che sei disposto ad accettare in percentuale?',
-          'Per quanto tempo hai bisogno della protezione?',
-          'Sei disposto a rinunciare a parte del rialzo per ridurre il costo?',
-          'Hai considerato l\'impatto del theta decay sulla tua strategia?',
-          'Qual è il tuo orizzonte temporale di investimento complessivo?',
-        ],
-        'riduzione-costo': [
-          'A quale livello di prezzo saresti disposto a vendere le azioni?',
-          'Quanto rialzo sei disposto a sacrificare?',
-          'Preferisci protezione completa a costo ridotto o protezione parziale a costo nullo?',
-          'Con quale frequenza saresti disposto a rinnovare la strategia?',
-        ],
-        'generare-reddito': [
-          'Qual è il rendimento periodico che considereresti soddisfacente?',
-          'Sei disposto a cedere le azioni se vengono assegnate?',
-          'A quale distanza dal prezzo corrente ti sentiresti sicuro di vendere la call?',
-          'Stai considerando anche la tassazione dei premi incassati?',
-        ],
-        'limitare-perdita': [
-          'Hai definito in anticipo la tua perdita massima accettabile?',
-          'Cosa faresti se il titolo scendesse del 20% in un giorno?',
-          'Hai un piano scritto per la gestione delle perdite?',
-          'Stai considerando sia le perdite realizzate che quelle latenti?',
-        ],
-      };
-
-      const questions = questionsForObjective[objective] || questionsForObjective['protezione-ribasso'];
-
-      document.getElementById('risk-empty').style.display = 'none';
-      const container = document.getElementById('risk-strategies');
-      container.style.display = 'block';
-
-      container.innerHTML = `
-        <div style="margin-bottom:20px;padding:14px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm)">
-          <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Analisi educativa per</div>
-          <div style="font-size:1rem;font-weight:600">${ticker.toUpperCase()} · ${shares} azioni · $${avgPrice}</div>
-          <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px">Valore posizione: $${Number(positionValue).toLocaleString()} · Timore: ${fearLabels[fear] || fear}</div>
-        </div>
-
-        ${strategies.map(s => `
-          <div class="strategy-card">
-            <h4>
-              ${s.name}
-              <span class="complexity-badge ${s.complexity}">${s.complexity === 'beginner' ? 'Base' : s.complexity === 'intermediate' ? 'Intermedio' : 'Avanzato'}</span>
-            </h4>
-            <div class="strategy-detail">${s.description}</div>
-            <div class="strategy-row">
-              <span class="strategy-label">Costo</span>
-              <span class="strategy-value">${s.cost}</span>
-            </div>
-            <div class="strategy-pros-cons">
-              <div class="pros-list">
-                <h5>Vantaggi</h5>
-                <ul>${s.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+      container.innerHTML = picks.map(key => {
+        const s = allStrategies[key];
+        return `
+          <div class="strategy-family">
+            <div class="strategy-family-header">
+              <div class="strategy-family-icon" style="background:${s.iconBg}">${s.icon}</div>
+              <div>
+                <span class="strategy-family-name">${s.name}</span>
+                <span class="complexity-label ${s.complexity}">${s.complexityLabel}</span>
               </div>
-              <div class="cons-list">
+            </div>
+            <div class="strategy-family-description">${s.description}</div>
+            <div class="strategy-family-detail">
+              <div class="detail-block when-block">
+                <h5>Quando viene usata</h5>
+                <p>${s.when}</p>
+              </div>
+              <div class="detail-block why-block">
+                <h5>Perché qualcuno la sceglie</h5>
+                <p>${s.why}</p>
+              </div>
+              <div class="detail-block pro-block">
+                <h5>Vantaggi</h5>
+                <ul>${s.pros.map(p => '<li>' + p + '</li>').join('')}</ul>
+              </div>
+              <div class="detail-block con-block">
                 <h5>Svantaggi</h5>
-                <ul>${s.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+                <ul>${s.cons.map(c => '<li>' + c + '</li>').join('')}</ul>
               </div>
             </div>
           </div>
-        `).join('')}
-
-        <div class="questions-section">
-          <h4>Domande da porsi prima di agire</h4>
-          <ul>
-            ${questions.map(q => `<li>${q}</li>`).join('')}
-          </ul>
-        </div>
-
-        <div class="edu-disclaimer" style="margin-top:20px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          <span>Queste informazioni sono esclusivamente educative. Non rappresentano raccomandazioni operative personalizzate. Consulta un professionista prima di operare.</span>
-        </div>
-      `;
+        `;
+      }).join('');
     }
 
     // ============================================================
