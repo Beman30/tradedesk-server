@@ -530,6 +530,187 @@
     .restart-btn:hover { color: var(--text-dim); }
     .restart-btn svg { width: 13px; height: 13px; }
 
+    /* ── ENGINE RESULT ──────────────────────── */
+    .engine-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .metric-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .metric-value {
+      font-size: 1.1rem;
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+    .metric-value.green { color: var(--green); }
+    .metric-value.red { color: var(--red); }
+    .metric-value.gold { color: var(--gold-light); }
+
+    .engine-warning {
+      background: var(--red-dim);
+      border: 1px solid rgba(199,80,80,0.2);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 0.86rem;
+      color: var(--red);
+      line-height: 1.5;
+    }
+
+    .families-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .family-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .family-card:hover { border-color: var(--border-hover); }
+    .family-card.recommended {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 24px rgba(199,168,108,0.06);
+    }
+    .family-card.recommended .family-badge { display: inline-flex; }
+
+    .family-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .family-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      flex: 1;
+    }
+    .family-badge {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: rgba(199,168,108,0.1);
+      border: 1px solid var(--gold-dim);
+      border-radius: 14px;
+      padding: 3px 10px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .compat-bar {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .compat-dot {
+      width: 22px;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .compat-dot.filled { background: var(--gold); }
+    .compat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+      font-family: var(--mono);
+      font-weight: 500;
+    }
+
+    .family-reason {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin: 12px 0 16px;
+      padding-left: 0;
+    }
+
+    .family-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .family-detail-col h4 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .family-detail-col.pro h4 { color: var(--green); }
+    .family-detail-col.con h4 { color: var(--red); }
+    .family-detail-col ul {
+      list-style: none;
+      padding: 0;
+    }
+    .family-detail-col li {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+    .family-detail-col li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .family-detail-col.pro li::before { background: var(--green); }
+    .family-detail-col.con li::before { background: var(--red); }
+
+    .family-study {
+      background: var(--bg-elevated);
+      border-radius: var(--r);
+      padding: 12px 16px;
+    }
+    .family-study h4 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .family-study p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin: 0;
+    }
+
     /* ── LEARN ───────────────────────────────── */
     .learn-list {
       display: flex;
@@ -763,6 +944,9 @@
       .step { padding: 14px 16px; }
       .ratio-grid { grid-template-columns: 1fr 1fr; }
       .np-input-row { flex-wrap: wrap; }
+      .engine-metrics { grid-template-columns: 1fr 1fr; }
+      .family-details { grid-template-columns: 1fr; }
+      .family-card { padding: 18px; }
     }
   </style>
 </head>
@@ -1356,56 +1540,286 @@
 
   document.getElementById('np-horizon').addEventListener('change', computeRatio);
 
+  // ── STRATEGY FAMILIES DATABASE ──
+  const families = {
+    debitSpread: {
+      name: 'Debit Spread Direzionale',
+      reason: 'Questo approccio potrebbe essere coerente con i tuoi vincoli perché permette di definire in anticipo sia il guadagno massimo sia la perdita massima, con un orizzonte temporale preciso.',
+      pro: [
+        'Rischio definito fin dall\'inizio',
+        'Non serve un grande movimento del mercato',
+        'Costo inferiore rispetto all\'acquisto diretto'
+      ],
+      con: [
+        'Guadagno massimo limitato',
+        'Richiede una visione direzionale',
+        'Ha una scadenza temporale'
+      ],
+      study: 'Prima di esplorare questo approccio, è importante capire cosa sono le opzioni, come funziona il concetto di spread e perché il rischio è limitato. Il percorso formativo parte dalle basi.'
+    },
+    azioniStopLoss: {
+      name: 'Azioni + Gestione del Rischio',
+      reason: 'Questo approccio potrebbe essere adatto a chi preferisce la semplicità. Si acquistano azioni e si definisce un livello di uscita in caso di perdita.',
+      pro: [
+        'Approccio semplice e intuitivo',
+        'Nessun limite al guadagno potenziale',
+        'Nessuna scadenza temporale'
+      ],
+      con: [
+        'Lo stop loss non garantisce il prezzo di uscita',
+        'Richiede disciplina nell\'esecuzione',
+        'Il capitale è interamente esposto'
+      ],
+      study: 'Prima di utilizzare questo approccio, è importante capire come funziona uno stop loss, i suoi limiti (gap di mercato, slippage) e come dimensionare la posizione in base alla perdita massima accettabile.'
+    },
+    bullPutSpread: {
+      name: 'Strategia a Credito',
+      reason: 'Questo approccio potrebbe essere interessante perché permette di generare un rendimento anche se il mercato non si muove nella direzione attesa, a patto che non scenda oltre un certo livello.',
+      pro: [
+        'Si incassa un premio subito',
+        'Funziona anche con mercato laterale',
+        'Rischio definito'
+      ],
+      con: [
+        'Guadagno limitato al premio incassato',
+        'Richiede comprensione delle opzioni',
+        'Ha una scadenza temporale'
+      ],
+      study: 'Questo approccio richiede una comprensione di base delle opzioni put, del concetto di premio e di come si costruisce uno spread a credito. Il percorso formativo copre tutti questi aspetti.'
+    },
+    protective: {
+      name: 'Struttura Protettiva',
+      reason: 'Questo approccio potrebbe essere adatto se la priorità è limitare la perdita massima. Si acquista l\'asset e contemporaneamente si acquista una protezione.',
+      pro: [
+        'Perdita massima nota fin dall\'inizio',
+        'Mantieni il potenziale di rialzo',
+        'Ideale per chi vuole dormire tranquillo'
+      ],
+      con: [
+        'Il costo della protezione riduce il rendimento',
+        'Richiede comprensione delle opzioni',
+        'La protezione ha una scadenza'
+      ],
+      study: 'Prima di esplorare questo approccio, è importante capire il concetto di "assicurazione" applicata agli investimenti, quanto costa e quando ha senso utilizzarla.'
+    },
+    attesa: {
+      name: 'Attesa / Nessuna Operazione',
+      reason: 'In base ai vincoli inseriti, potrebbe avere senso non agire immediatamente. A volte la migliore operazione è aspettare di avere più chiarezza.',
+      pro: [
+        'Nessun rischio di perdita',
+        'Tempo per studiare e prepararsi',
+        'Nessun costo'
+      ],
+      con: [
+        'Nessun rendimento',
+        'Rischio di perdere un\'opportunità',
+        'L\'attesa non è sempre la scelta migliore'
+      ],
+      study: 'Anche la decisione di non agire richiede metodo. Il percorso formativo ti aiuterà a capire quando aspettare è una strategia e quando è solo procrastinazione.'
+    }
+  };
+
+  // ── SCORING ENGINE ──
+  function scoreFamilies(gainPct, lossPct, ratio, horizonDays) {
+    let scores = {
+      debitSpread: 3,
+      azioniStopLoss: 3,
+      bullPutSpread: 3,
+      protective: 3,
+      attesa: 2
+    };
+
+    // Rule 1: obiettivo > perdita e orizzonte breve → debit spread
+    if (gainPct > lossPct && horizonDays <= 90) {
+      scores.debitSpread += 1;
+    }
+
+    // Rule 2: obiettivo <= perdita e orizzonte lungo → azioni + gestione
+    if (gainPct <= lossPct && horizonDays > 180) {
+      scores.azioniStopLoss += 1;
+    }
+
+    // Rule 3: rendimento moderato e perdita contenuta → spread
+    if (gainPct <= 20 && lossPct <= 10) {
+      scores.bullPutSpread += 1;
+      scores.debitSpread += 1;
+    }
+
+    // Rule 4: rapporto troppo alto → warning, boost attesa
+    if (ratio > 3) {
+      scores.attesa += 2;
+      scores.debitSpread -= 1;
+      scores.azioniStopLoss -= 1;
+    }
+
+    // Rule 5: perdita molto bassa → boost protective
+    if (lossPct <= 5) {
+      scores.protective += 1;
+      scores.azioniStopLoss -= 1;
+    }
+
+    // Orizzonte corto favorisce opzioni
+    if (horizonDays <= 60) {
+      scores.debitSpread += 1;
+      scores.bullPutSpread += 1;
+      scores.azioniStopLoss -= 1;
+    }
+
+    // Orizzonte lungo favorisce azioni e protective
+    if (horizonDays >= 365) {
+      scores.azioniStopLoss += 1;
+      scores.protective += 1;
+      scores.debitSpread -= 1;
+      scores.bullPutSpread -= 1;
+    }
+
+    // Alto rendimento atteso → debit spread e azioni
+    if (gainPct > 20) {
+      scores.debitSpread += 1;
+      scores.azioniStopLoss += 1;
+      scores.bullPutSpread -= 1;
+    }
+
+    // Rendimento basso → strategie a credito
+    if (gainPct <= 8) {
+      scores.bullPutSpread += 1;
+      scores.debitSpread -= 1;
+    }
+
+    // Perdita alta accettata → azioni
+    if (lossPct >= 15) {
+      scores.azioniStopLoss += 1;
+      scores.protective -= 1;
+    }
+
+    // Rapporto equilibrato (1-2) e orizzonte medio → tutti gli approcci validi
+    if (ratio >= 1 && ratio <= 2 && horizonDays >= 60 && horizonDays <= 180) {
+      scores.bullPutSpread += 1;
+    }
+
+    // Clamp 1-5
+    Object.keys(scores).forEach(k => {
+      scores[k] = Math.max(1, Math.min(5, scores[k]));
+    });
+
+    return scores;
+  }
+
   function analyzeNewPos() {
     resultOrigin = 'newpos';
 
-    const invest  = parseFloat(document.getElementById('np-invest').value) || 0;
-    const gainEur = getGainEur();
-    const lossEur = getLossEur();
-    const gainPct = getGainPct();
-    const lossPct = getLossPct();
-    const horizon = document.getElementById('np-horizon').value;
-    const ratio   = lossEur > 0 ? gainEur / lossEur : 0;
+    const invest    = parseFloat(document.getElementById('np-invest').value) || 0;
+    const gainEur   = getGainEur();
+    const lossEur   = getLossEur();
+    const gainPct   = getGainPct();
+    const lossPct   = getLossPct();
+    const horizon   = parseInt(document.getElementById('np-horizon').value) || 0;
+    const ratio     = lossEur > 0 ? gainEur / lossEur : 0;
 
-    const horizonLabels = { '30': '30 giorni', '60': '60 giorni', '90': '90 giorni', '180': '6 mesi', '365': '1 anno', '999': 'più di un anno' };
-    const hLabel = horizonLabels[horizon] || '';
+    const horizonLabels = { 30: '30 giorni', 60: '60 giorni', 90: '90 giorni', 180: '6 mesi', 365: '1 anno', 999: 'Più di un anno' };
+    const hLabel = horizonLabels[horizon] || '—';
 
-    let d = [];
+    let hCategory = 'medio';
+    if (horizon <= 90) hCategory = 'breve';
+    else if (horizon >= 365) hCategory = 'lungo';
 
-    d.push('<strong>Abbiamo analizzato il tuo obiettivo di investimento.</strong>');
+    // Score families
+    const scores = scoreFamilies(gainPct, lossPct, ratio, horizon);
 
-    if (invest > 0) {
-      d.push('Vuoi investire <strong>' + fmtEur(invest) + '</strong>' + (hLabel ? ' con un orizzonte di <strong>' + hLabel + '</strong>' : '') + '.');
+    // Sort by score descending
+    const sorted = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+
+    const bestKey = sorted[0][0];
+
+    // Warning
+    let warning = '';
+    if (ratio > 3) {
+      warning = 'L\'obiettivo di rendimento è molto alto rispetto alla perdita massima accettata. Le aspettative potrebbero essere difficili da raggiungere con un rischio così contenuto. Ti consigliamo di approfondire prima di agire.';
+    } else if (lossPct < 3 && gainPct > 10) {
+      warning = 'Una perdita massima così bassa (' + lossPct.toFixed(1) + '%) con un obiettivo del ' + gainPct.toFixed(1) + '% potrebbe essere difficile da ottenere. Il percorso ti aiuterà a capire se è realistico.';
     }
 
-    if (gainEur > 0 && lossEur > 0) {
-      d.push('Il tuo obiettivo è guadagnare <strong>+' + fmtEur(gainEur) + ' (+' + gainPct.toFixed(1) + '%)</strong>, accettando una perdita massima di <strong>-' + fmtEur(lossEur) + ' (-' + lossPct.toFixed(1) + '%)</strong>.');
+    // Build metrics HTML
+    let html = `
+      <div class="engine-metrics">
+        <div class="metric-card">
+          <div class="metric-label">Rendimento obiettivo</div>
+          <div class="metric-value green">+${gainPct.toFixed(1)}%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Perdita massima</div>
+          <div class="metric-value red">-${lossPct.toFixed(1)}%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Rapporto rend/rischio</div>
+          <div class="metric-value gold">${ratio.toFixed(1)}:1</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Orizzonte</div>
+          <div class="metric-value gold">${hCategory}</div>
+        </div>
+      </div>
+    `;
 
-      if (ratio >= 2) {
-        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) è favorevole.</em> Questo ti permette di esplorare diverse famiglie di approcci.');
-      } else if (ratio >= 1) {
-        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) è equilibrato ma non offre molto margine.</em> È importante capire come gestire il rischio in modo attivo.');
-      } else {
-        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) suggerisce che l\'obiettivo è ambizioso rispetto alla perdita accettata.</em> Prima di investire, è fondamentale capire se le aspettative sono realistiche.');
-      }
+    if (warning) {
+      html += `<div class="engine-warning">${warning}</div>`;
     }
 
-    if (horizon && parseInt(horizon) <= 60) {
-      d.push('Con un orizzonte così breve, <strong>la gestione del timing diventa cruciale</strong>. Il percorso includerà contenuti specifici su come gestire il rischio nel breve termine.');
-    }
+    html += `<div class="families-label">Famiglie di approccio compatibili</div>`;
 
-    const diagnosis = d.join('<br><br>');
+    sorted.forEach(([key, score]) => {
+      const fam = families[key];
+      const isRec = key === bestKey;
+      const dots = [1,2,3,4,5].map(i =>
+        '<div class="compat-dot' + (i <= score ? ' filled' : '') + '"></div>'
+      ).join('');
 
-    const steps = [
-      { type: '🎥 Video', title: 'Quanto rischio stai prendendo realmente?', why: 'Perché il primo passo è capire se il tuo obiettivo di rendimento è compatibile con la perdita che sei disposto ad accettare.' },
-      { type: '📚 Caso studio', title: 'Un investitore che ha pianificato prima di entrare', why: 'Un esempio concreto di come si costruisce un piano di investimento partendo dagli obiettivi, non dal titolo.' },
-      { type: '🧠 Tutorial', title: 'Le famiglie di approcci per il tuo profilo', why: 'Non una strategia specifica, ma le categorie di approccio che si adattano al tuo rapporto rischio/rendimento.' },
-      { type: '💬 Discussione', title: 'Come altri investitori hanno costruito il loro piano', why: 'Esperienze reali di chi è partito dalla stessa domanda che ti stai facendo tu.' },
-      { type: '📊 Simulatore', title: 'Simula il tuo investimento nei diversi scenari', why: 'Per visualizzare cosa succede al tuo capitale nei diversi scenari di mercato, prima di investire un solo euro.' },
-      { type: '🎙️ Live', title: 'Sessione Q&A con i mentor', why: 'Per fare le tue domande prima di prendere qualsiasi decisione.' }
-    ];
+      html += `
+        <div class="family-card${isRec ? ' recommended' : ''}">
+          <div class="family-header">
+            <div class="family-name">${fam.name}</div>
+            <div class="family-badge">Percorso consigliato</div>
+          </div>
+          <div class="compat-bar">
+            ${dots}
+            <span class="compat-label">${score}/5</span>
+          </div>
+          <div class="family-reason">${fam.reason}</div>
+          <div class="family-details">
+            <div class="family-detail-col pro">
+              <h4>Pro</h4>
+              <ul>${fam.pro.map(p => '<li>' + p + '</li>').join('')}</ul>
+            </div>
+            <div class="family-detail-col con">
+              <h4>Contro</h4>
+              <ul>${fam.con.map(c => '<li>' + c + '</li>').join('')}</ul>
+            </div>
+          </div>
+          <div class="family-study">
+            <h4>Cosa studiare prima</h4>
+            <p>${fam.study}</p>
+          </div>
+        </div>
+      `;
+    });
 
-    renderResult(diagnosis, steps);
+    html += `
+      <div class="result-cta">
+        <h3>Vuoi approfondire il percorso consigliato?</h3>
+        <p>Nel Sigma XIII Club troverai video, casi studio, tutorial, simulatori e sessioni live per ogni famiglia di approccio. Tutto pensato per accompagnarti dalla comprensione alla decisione consapevole.</p>
+        <button class="btn-cta" onclick="goHome()">Accedi gratuitamente al Sigma XIII Club per 30 giorni</button>
+        <br>
+        <button class="restart-btn" onclick="goHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Ricomincia da capo
+        </button>
+      </div>
+    `;
+
+    document.getElementById('result-content').innerHTML = html;
+    show('screen-result');
   }
 
   // ── LEARN ──
