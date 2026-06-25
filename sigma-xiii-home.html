@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Sigma XIII — Il sistema ti accompagna automaticamente verso i contenuti giusti.">
+  <meta name="description" content="Sigma XIII — Risk Navigator. Analizza una posizione e trova il percorso più adatto.">
   <title>Sigma XIII</title>
   <style>
     :root {
@@ -22,20 +22,21 @@
       --gold-dim:       #7a6540;
       --gold-glow:      rgba(199,168,108,0.07);
 
+      --red:            #c75050;
+      --red-dim:        rgba(199,80,80,0.10);
       --green:          #4a9e6a;
-      --green-dim:      rgba(74,158,106,0.12);
-      --blue:           #4a7fd4;
-      --blue-dim:       rgba(74,127,212,0.12);
+      --green-dim:      rgba(74,158,106,0.10);
 
-      --border:         rgba(199,168,108,0.1);
-      --border-hover:   rgba(199,168,108,0.25);
+      --border:         rgba(199,168,108,0.08);
+      --border-hover:   rgba(199,168,108,0.22);
 
-      --r:    12px;
-      --r-lg: 20px;
+      --r:    10px;
+      --r-lg: 16px;
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
       --ease-out: cubic-bezier(0, 0, 0.2, 1);
 
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,90 +51,81 @@
       min-height: 100vh;
     }
 
-    /* ── LAYOUT ─────────────────────────────────── */
     .container {
-      max-width: 800px;
+      max-width: 840px;
       margin: 0 auto;
       padding: 0 24px;
     }
 
-    /* ── HEADER ─────────────────────────────────── */
+    /* ── HEADER ─────────────────────────────── */
     .header {
       text-align: center;
-      padding: 40px 0 16px;
+      padding: 36px 0 12px;
     }
-    .header .brand {
-      font-size: 0.72rem;
+    .brand {
+      font-size: 0.7rem;
       letter-spacing: 3.5px;
       text-transform: uppercase;
       color: var(--gold);
       font-weight: 600;
     }
 
-    /* ── SCREENS ────────────────────────────────── */
-    .screen {
-      display: none;
-      min-height: calc(100vh - 100px);
-    }
+    /* ── SCREENS ────────────────────────────── */
+    .screen { display: none; }
     .screen.active {
       display: block;
-      animation: screenIn 0.5s var(--ease-out);
+      animation: fadeIn 0.4s var(--ease-out);
     }
-
-    @keyframes screenIn {
-      from { opacity: 0; transform: translateY(24px); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── HOME SCREEN ────────────────────────────── */
+    /* ── HOME ───────────────────────────────── */
     .home-content {
-      padding: 48px 0 60px;
+      padding: 44px 0 60px;
       text-align: center;
     }
     .home-title {
-      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-size: clamp(1.7rem, 4.5vw, 2.4rem);
       font-weight: 700;
       line-height: 1.2;
-      margin-bottom: 12px;
-      color: var(--text);
+      margin-bottom: 10px;
     }
-    .home-subtitle {
-      font-size: 1rem;
+    .home-sub {
+      font-size: 0.95rem;
       color: var(--text-dim);
-      margin-bottom: 52px;
+      margin-bottom: 48px;
       line-height: 1.5;
     }
 
-    .cards-grid {
+    .cards {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
-
     .home-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 32px 28px;
+      padding: 28px 24px;
       cursor: pointer;
-      transition: all 0.3s var(--ease);
+      transition: all 0.25s var(--ease);
       text-align: left;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
       position: relative;
       overflow: hidden;
     }
     .home-card::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
+      left: 0; top: 0; bottom: 0;
       width: 3px;
       background: var(--gold);
       opacity: 0;
-      transition: opacity 0.3s var(--ease);
+      transition: opacity 0.25s;
     }
     .home-card:hover {
       border-color: var(--border-hover);
@@ -141,111 +133,92 @@
       transform: translateY(-2px);
     }
     .home-card:hover::before { opacity: 1; }
-
     .card-icon {
-      width: 48px;
-      height: 48px;
+      width: 44px; height: 44px;
       border-radius: var(--r);
       background: var(--gold-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem;
       flex-shrink: 0;
     }
     .card-body { flex: 1; }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .card-desc {
-      font-size: 0.88rem;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
+    .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 2px; }
+    .card-desc { font-size: 0.84rem; color: var(--text-dim); line-height: 1.4; }
     .card-arrow {
-      width: 20px;
-      height: 20px;
+      width: 18px; height: 18px;
       color: var(--text-muted);
       flex-shrink: 0;
-      transition: color 0.3s var(--ease), transform 0.3s var(--ease);
+      transition: color 0.25s, transform 0.25s;
     }
-    .home-card:hover .card-arrow {
-      color: var(--gold);
-      transform: translateX(3px);
-    }
+    .home-card:hover .card-arrow { color: var(--gold); transform: translateX(3px); }
 
-    /* ── TOOL SCREEN (SHARED) ───────────────────── */
-    .tool-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 24px 0 8px;
+    /* ── TOOL BAR ───────────────────────────── */
+    .tool-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 0 6px;
     }
-    .back-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 0.88rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 0;
-      transition: color 0.2s;
+    .back-link {
+      background: none; border: none;
+      color: var(--text-dim); cursor: pointer;
+      font-size: 0.84rem; font-family: var(--font);
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 0; transition: color 0.2s;
     }
-    .back-btn:hover { color: var(--gold); }
-    .back-btn svg { width: 16px; height: 16px; }
+    .back-link:hover { color: var(--gold); }
+    .back-link svg { width: 15px; height: 15px; }
 
-    .tool-title {
-      font-size: 1.5rem;
+    /* ── RISK NAVIGATOR ─────────────────────── */
+    .rn-title {
+      font-size: 1.45rem;
       font-weight: 700;
-      margin: 20px 0 6px;
+      margin: 18px 0 4px;
     }
-    .tool-subtitle {
-      font-size: 0.92rem;
+    .rn-subtitle {
+      font-size: 0.88rem;
       color: var(--text-dim);
-      margin-bottom: 36px;
-    }
-
-    /* ── FORM ELEMENTS ──────────────────────────── */
-    .form-section {
       margin-bottom: 32px;
     }
-    .form-section-title {
-      font-size: 0.92rem;
+
+    .section {
+      margin-bottom: 28px;
+    }
+    .section-label {
+      font-size: 0.78rem;
       font-weight: 600;
-      margin-bottom: 14px;
-      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 28px;
     }
 
-    .form-grid {
+    /* ── INPUTS ──────────────────────────────── */
+    .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 12px;
     }
-    .form-grid .full { grid-column: 1 / -1; }
+    .grid-2 .span-full { grid-column: 1 / -1; }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .field label {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      letter-spacing: 0.5px;
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
       text-transform: uppercase;
+      letter-spacing: 0.8px;
       font-weight: 500;
     }
     .field input, .field textarea {
       background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 14px 16px;
+      padding: 13px 14px;
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-family: var(--font);
       transition: border-color 0.2s;
       outline: none;
@@ -257,77 +230,130 @@
     .field input::placeholder, .field textarea::placeholder {
       color: var(--text-muted);
     }
-    .field .computed {
+
+    .computed-box {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 14px 16px;
-      color: var(--gold-light);
+      padding: 13px 14px;
       font-size: 0.95rem;
-      font-weight: 500;
-      min-height: 48px;
+      font-weight: 600;
+      font-family: var(--mono);
+      color: var(--gold-light);
+      min-height: 46px;
       display: flex;
       align-items: center;
     }
+    .computed-box.neutral { color: var(--text-muted); font-weight: 400; font-family: var(--font); }
 
-    /* ── RADIO GROUP ─────────────────────────────── */
-    .radio-group {
+    .pl-positive { color: var(--green); }
+    .pl-negative { color: var(--red); }
+
+    /* ── RADIO PILLS ────────────────────────── */
+    .pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
-    .radio-option {
-      position: relative;
-    }
-    .radio-option input {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .radio-option label {
+    .pill { position: relative; }
+    .pill input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pill label {
       display: block;
-      padding: 12px 20px;
+      padding: 10px 18px;
       background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: var(--r);
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.86rem;
       color: var(--text-dim);
-      transition: all 0.25s var(--ease);
-      text-transform: none;
-      letter-spacing: 0;
-      font-weight: 400;
+      transition: all 0.2s var(--ease);
       user-select: none;
     }
-    .radio-option input:checked + label {
+    .pill input:checked + label {
       border-color: var(--gold);
       color: var(--gold-light);
       background: rgba(199,168,108,0.06);
     }
-    .radio-option label:hover {
+    .pill label:hover {
       border-color: var(--border-hover);
       color: var(--text);
     }
 
-    /* ── DOUBT FIELD ─────────────────────────────── */
-    .doubt-field textarea {
-      min-height: 100px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-    .doubt-examples {
+    /* ── MOVEMENT CHIPS ─────────────────────── */
+    .move-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .move-chip {
+      position: relative;
+    }
+    .move-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .move-chip label {
+      display: block;
+      padding: 9px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-family: var(--mono);
+      font-weight: 500;
+      color: var(--text-dim);
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .move-chip.up label { color: var(--green); }
+    .move-chip.down label { color: var(--red); }
+    .move-chip input:checked + label {
+      border-color: var(--gold);
+      background: rgba(199,168,108,0.06);
+    }
+    .move-chip label:hover {
+      border-color: var(--border-hover);
+    }
+    .move-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .move-custom input {
+      width: 100px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 0.86rem;
+      font-family: var(--mono);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .move-custom input:focus { border-color: var(--gold); }
+    .move-custom span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ── DOUBT AREA ─────────────────────────── */
+    .doubt-area textarea {
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .doubt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
     }
     .doubt-chip {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 0.78rem;
+      border-radius: 18px;
+      padding: 5px 13px;
+      font-size: 0.74rem;
       color: var(--text-dim);
       cursor: pointer;
       transition: all 0.2s;
@@ -337,288 +363,241 @@
       color: var(--text);
     }
 
-    /* ── SUBMIT BUTTON ──────────────────────────── */
-    .submit-section {
-      padding: 12px 0 60px;
+    /* ── MAX LOSS ────────────────────────────── */
+    .maxloss-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .btn-submit {
+    .maxloss-row input {
+      width: 120px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 13px 14px;
+      color: var(--red);
+      font-size: 0.95rem;
+      font-family: var(--mono);
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: right;
+    }
+    .maxloss-row input:focus { border-color: var(--gold); }
+    .maxloss-row input::placeholder { color: var(--text-muted); font-weight: 400; }
+    .maxloss-unit {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+    }
+    .maxloss-computed {
+      margin-left: auto;
+      font-size: 0.85rem;
+      font-family: var(--mono);
+      color: var(--red);
+    }
+
+    /* ── SUBMIT ──────────────────────────────── */
+    .submit-area {
+      padding: 8px 0 56px;
+    }
+    .btn-analyze {
       width: 100%;
-      padding: 18px 24px;
+      padding: 17px 24px;
       background: linear-gradient(135deg, var(--gold), var(--gold-dim));
       border: none;
       border-radius: var(--r);
       color: #0a0a12;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       font-family: var(--font);
       cursor: pointer;
+      letter-spacing: 0.4px;
       transition: all 0.3s var(--ease);
-      letter-spacing: 0.3px;
     }
-    .btn-submit:hover {
+    .btn-analyze:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 32px rgba(199,168,108,0.2);
-    }
-    .btn-submit:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+      box-shadow: 0 8px 28px rgba(199,168,108,0.18);
     }
 
-    /* ── RESULT SCREEN ──────────────────────────── */
-    .result-content {
-      padding: 20px 0 60px;
-    }
+    /* ── RESULT ──────────────────────────────── */
+    .result-wrap { padding: 16px 0 56px; }
 
-    .result-diagnosis {
+    .result-box {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 32px 28px;
-      margin-bottom: 36px;
+      padding: 28px 24px;
+      margin-bottom: 32px;
       text-align: center;
     }
-    .result-diagnosis-icon {
-      font-size: 2rem;
+    .result-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .result-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      font-weight: 600;
       margin-bottom: 12px;
     }
-    .result-diagnosis-label {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--gold);
-      margin-bottom: 14px;
-      font-weight: 600;
-    }
-    .result-diagnosis-text {
-      font-size: 1.05rem;
-      color: var(--text);
+    .result-text {
+      font-size: 1rem;
       line-height: 1.7;
+      color: var(--text);
     }
-    .result-diagnosis-text strong { color: var(--gold-light); }
-    .result-diagnosis-text em { color: var(--text-dim); font-style: italic; }
+    .result-text strong { color: var(--gold-light); }
+    .result-text em { color: var(--text-dim); font-style: italic; }
 
-    .result-path-label {
-      font-size: 0.78rem;
+    .path-label {
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: var(--gold);
-      margin-bottom: 18px;
       font-weight: 600;
+      margin-bottom: 14px;
     }
-
-    .path-steps {
+    .steps {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 44px;
+      gap: 10px;
+      margin-bottom: 36px;
     }
-    .path-step {
+    .step {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 20px 22px;
+      padding: 18px 20px;
       display: flex;
       align-items: flex-start;
-      gap: 16px;
+      gap: 14px;
       transition: border-color 0.2s;
     }
-    .path-step:hover { border-color: var(--border-hover); }
-
-    .step-number {
-      width: 32px;
-      height: 32px;
+    .step:hover { border-color: var(--border-hover); }
+    .step-num {
+      width: 30px; height: 30px;
       border-radius: 50%;
       background: var(--gold-glow);
       border: 1px solid var(--gold-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--gold);
-      flex-shrink: 0;
-      margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 600; color: var(--gold);
+      flex-shrink: 0; margin-top: 2px;
     }
-    .step-content { flex: 1; }
+    .step-body { flex: 1; }
     .step-type {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       color: var(--gold);
-      margin-bottom: 4px;
       font-weight: 600;
+      margin-bottom: 3px;
     }
-    .step-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .step-reason {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      line-height: 1.5;
-    }
+    .step-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
+    .step-why { font-size: 0.82rem; color: var(--text-dim); line-height: 1.45; }
     .step-arrow {
-      width: 18px;
-      height: 18px;
+      width: 16px; height: 16px;
       color: var(--text-muted);
-      flex-shrink: 0;
-      margin-top: 6px;
+      flex-shrink: 0; margin-top: 4px;
     }
 
-    /* ── RESULT CTA ─────────────────────────────── */
     .result-cta {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 36px 28px;
+      padding: 32px 24px;
       text-align: center;
     }
-    .result-cta h3 {
-      font-size: 1.15rem;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-    .result-cta p {
-      font-size: 0.9rem;
-      color: var(--text-dim);
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
+    .result-cta h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+    .result-cta p { font-size: 0.86rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
     .btn-cta {
       display: inline-block;
-      padding: 16px 36px;
+      padding: 15px 32px;
       background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-      border: none;
-      border-radius: var(--r);
+      border: none; border-radius: var(--r);
       color: #0a0a12;
-      font-size: 0.95rem;
-      font-weight: 600;
-      font-family: var(--font);
+      font-size: 0.92rem; font-weight: 600; font-family: var(--font);
       cursor: pointer;
       transition: all 0.3s;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    .btn-cta:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 32px rgba(199,168,108,0.2);
-    }
-    .restart-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: none;
-      border: none;
+    .btn-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(199,168,108,0.18); }
+    .restart-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: none; border: none;
       color: var(--text-muted);
-      font-size: 0.82rem;
-      cursor: pointer;
-      padding: 8px;
-      font-family: var(--font);
+      font-size: 0.78rem; cursor: pointer;
+      padding: 6px; font-family: var(--font);
       transition: color 0.2s;
     }
-    .restart-link:hover { color: var(--text-dim); }
-    .restart-link svg { width: 14px; height: 14px; }
+    .restart-btn:hover { color: var(--text-dim); }
+    .restart-btn svg { width: 13px; height: 13px; }
 
-    /* ── LEARN SCREEN ───────────────────────────── */
-    .learn-topics {
+    /* ── LEARN ───────────────────────────────── */
+    .learn-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 40px;
+      gap: 10px;
+      margin-bottom: 36px;
     }
-    .learn-topic {
+    .learn-item {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 22px 24px;
+      padding: 20px 22px;
       cursor: pointer;
-      transition: all 0.25s var(--ease);
+      transition: all 0.2s var(--ease);
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
     }
-    .learn-topic:hover {
+    .learn-item:hover {
       border-color: var(--border-hover);
       background: var(--bg-card-hover);
       transform: translateY(-1px);
     }
-    .learn-topic .topic-icon {
-      font-size: 1.4rem;
-      flex-shrink: 0;
-    }
-    .learn-topic .topic-body { flex: 1; }
-    .learn-topic .topic-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .learn-topic .topic-desc {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-    }
+    .learn-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .learn-body { flex: 1; }
+    .learn-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 2px; }
+    .learn-desc { font-size: 0.82rem; color: var(--text-dim); }
 
-    /* ── NEW POSITION SCREEN ────────────────────── */
-    .new-pos-note {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .new-pos-note .note-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-
-    /* ── FOOTER ──────────────────────────────────── */
+    /* ── FOOTER ──────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
-      padding: 20px 0;
+      padding: 18px 0;
       text-align: center;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
 
-    /* ── RESPONSIVE ──────────────────────────────── */
+    /* ── RESPONSIVE ──────────────────────────── */
     @media (max-width: 600px) {
       .container { padding: 0 16px; }
-      .home-content { padding: 32px 0 48px; }
-      .home-title { font-size: 1.6rem; }
-      .home-card { padding: 24px 20px; gap: 14px; }
-      .card-icon { width: 40px; height: 40px; font-size: 1.2rem; }
-      .form-grid { grid-template-columns: 1fr; }
-      .radio-group { flex-direction: column; }
-      .radio-option label { padding: 12px 16px; }
-      .result-diagnosis { padding: 24px 20px; }
-      .result-cta { padding: 28px 20px; }
-      .path-step { padding: 16px 18px; }
-      .doubt-examples { gap: 6px; }
-      .doubt-chip { font-size: 0.72rem; padding: 5px 12px; }
+      .home-content { padding: 28px 0 40px; }
+      .home-title { font-size: 1.5rem; }
+      .home-card { padding: 22px 18px; gap: 12px; }
+      .card-icon { width: 38px; height: 38px; font-size: 1.15rem; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .pills { flex-direction: column; }
+      .pill label { padding: 10px 14px; }
+      .move-grid { flex-wrap: wrap; }
+      .move-chip label { padding: 8px 12px; font-size: 0.8rem; }
+      .maxloss-row { flex-wrap: wrap; }
+      .result-box { padding: 22px 18px; }
+      .result-cta { padding: 24px 18px; }
+      .step { padding: 14px 16px; }
     }
   </style>
 </head>
 <body>
 
   <div class="container">
+    <div class="header"><div class="brand">Sigma XIII</div></div>
 
-    <div class="header">
-      <div class="brand">Sigma XIII</div>
-    </div>
-
-    <!-- ═══════ HOME ═══════ -->
+    <!-- ═══════════════ HOME ═══════════════ -->
     <div id="screen-home" class="screen active">
       <div class="home-content">
         <h1 class="home-title">Cosa vuoi fare oggi?</h1>
-        <p class="home-subtitle">Scegli il problema che vuoi risolvere.<br>Il sistema ti accompagnerà automaticamente.</p>
-
-        <div class="cards-grid">
-
-          <div class="home-card" onclick="openTool('new-position')">
+        <p class="home-sub">Scegli il problema che vuoi risolvere.<br>Il sistema ti accompagnerà automaticamente.</p>
+        <div class="cards">
+          <div class="home-card" onclick="openNavigator()">
             <div class="card-icon">📊</div>
             <div class="card-body">
               <div class="card-title">Aprire una nuova posizione</div>
@@ -626,8 +605,7 @@
             </div>
             <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-
-          <div class="home-card" onclick="openTool('risk-navigator')">
+          <div class="home-card" onclick="openNavigator()">
             <div class="card-icon">🛡️</div>
             <div class="card-body">
               <div class="card-title">Gestire una posizione esistente</div>
@@ -635,8 +613,7 @@
             </div>
             <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-
-          <div class="home-card" onclick="openTool('learn')">
+          <div class="home-card" onclick="openLearn()">
             <div class="card-icon">📖</div>
             <div class="card-body">
               <div class="card-title">Imparare</div>
@@ -644,433 +621,437 @@
             </div>
             <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-
         </div>
       </div>
     </div>
 
-    <!-- ═══════ RISK NAVIGATOR ═══════ -->
-    <div id="screen-risk-navigator" class="screen">
-      <div class="tool-header">
-        <button class="back-btn" onclick="goHome()">
+    <!-- ═══════════════ RISK NAVIGATOR ═══════════════ -->
+    <div id="screen-navigator" class="screen">
+      <div class="tool-bar">
+        <button class="back-link" onclick="goHome()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Indietro
         </button>
       </div>
 
-      <h2 class="tool-title">Risk Navigator</h2>
-      <p class="tool-subtitle">Inserisci i dettagli della tua posizione. Ti mostreremo il percorso più adatto.</p>
+      <h2 class="rn-title">Analizza una posizione</h2>
+      <p class="rn-subtitle">Inserisci i dati. Il sistema troverà il percorso più adatto per te.</p>
 
-      <div class="form-section">
-        <div class="form-section-title">La tua posizione</div>
-        <div class="form-grid">
-          <div class="field full">
-            <label>Titolo</label>
-            <input type="text" id="rn-ticker" placeholder="Es. Apple, Tesla, S&P 500..." oninput="updateValue()">
+      <!-- Position -->
+      <div class="section">
+        <div class="section-label">Posizione</div>
+        <div class="section-divider"></div>
+        <div class="grid-2">
+          <div class="field span-full">
+            <div class="field-label">Ticker</div>
+            <input type="text" id="rn-ticker" placeholder="Es. AAPL, TSLA, SPY..." autocomplete="off" oninput="compute()">
           </div>
           <div class="field">
-            <label>Numero di azioni</label>
-            <input type="number" id="rn-shares" placeholder="Es. 100" oninput="updateValue()">
+            <div class="field-label">Numero di azioni</div>
+            <input type="number" id="rn-shares" placeholder="100" oninput="compute()">
           </div>
           <div class="field">
-            <label>Prezzo medio</label>
-            <input type="number" id="rn-price" placeholder="Es. 180.50" step="0.01" oninput="updateValue()">
+            <div class="field-label">Prezzo medio di acquisto</div>
+            <input type="number" id="rn-avg" placeholder="180.50" step="0.01" oninput="compute()">
           </div>
-          <div class="field full">
-            <label>Valore della posizione</label>
-            <div class="computed" id="rn-value">—</div>
+          <div class="field">
+            <div class="field-label">Prezzo attuale</div>
+            <input type="number" id="rn-current" placeholder="195.00" step="0.01" oninput="compute()">
+          </div>
+          <div class="field">
+            <div class="field-label">Valore della posizione</div>
+            <div class="computed-box neutral" id="rn-value">—</div>
+          </div>
+          <div class="field span-full">
+            <div class="field-label">P&L attuale</div>
+            <div class="computed-box neutral" id="rn-pl">—</div>
           </div>
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">Come immagini il mercato?</div>
-        <div class="radio-group">
-          <div class="radio-option">
-            <input type="radio" name="outlook" id="ol-bull" value="rialzista">
-            <label for="ol-bull">Rialzista</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" name="outlook" id="ol-bear" value="ribassista">
-            <label for="ol-bear">Ribassista</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" name="outlook" id="ol-flat" value="laterale">
-            <label for="ol-flat">Laterale</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" name="outlook" id="ol-dunno" value="incerto">
-            <label for="ol-dunno">Non ne ho idea</label>
-          </div>
+      <!-- Scenario -->
+      <div class="section">
+        <div class="section-label">Qual è il tuo scenario?</div>
+        <div class="section-divider"></div>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="scenario" id="sc-up" value="rialzo"><label for="sc-up">Mi aspetto un rialzo</label></div>
+          <div class="pill"><input type="radio" name="scenario" id="sc-down" value="ribasso"><label for="sc-down">Mi aspetto un ribasso</label></div>
+          <div class="pill"><input type="radio" name="scenario" id="sc-flat" value="laterale"><label for="sc-flat">Mi aspetto un mercato laterale</label></div>
+          <div class="pill"><input type="radio" name="scenario" id="sc-dunno" value="incerto"><label for="sc-dunno">Non ne ho idea</label></div>
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">Qual è il tuo dubbio?</div>
-        <div class="field doubt-field">
+      <!-- Movement -->
+      <div class="section">
+        <div class="section-label">Quanto pensi possa muoversi?</div>
+        <div class="section-divider"></div>
+        <div class="move-grid">
+          <div class="move-chip up"><input type="radio" name="move" id="mv-p5" value="+5"><label for="mv-p5">+5%</label></div>
+          <div class="move-chip up"><input type="radio" name="move" id="mv-p10" value="+10"><label for="mv-p10">+10%</label></div>
+          <div class="move-chip up"><input type="radio" name="move" id="mv-p20" value="+20"><label for="mv-p20">+20%</label></div>
+          <div class="move-chip down"><input type="radio" name="move" id="mv-m5" value="-5"><label for="mv-m5">-5%</label></div>
+          <div class="move-chip down"><input type="radio" name="move" id="mv-m10" value="-10"><label for="mv-m10">-10%</label></div>
+          <div class="move-chip down"><input type="radio" name="move" id="mv-m20" value="-20"><label for="mv-m20">-20%</label></div>
+        </div>
+        <div class="move-custom">
+          <input type="number" id="rn-move-custom" placeholder="±%" oninput="clearMoveRadios()">
+          <span>oppure inserisci una percentuale</span>
+        </div>
+      </div>
+
+      <!-- Max loss -->
+      <div class="section">
+        <div class="section-label">Perdita massima accettabile</div>
+        <div class="section-divider"></div>
+        <div class="maxloss-row">
+          <input type="number" id="rn-maxloss" placeholder="10" oninput="computeMaxLoss()">
+          <span class="maxloss-unit">%</span>
+          <span class="maxloss-computed" id="rn-maxloss-val"></span>
+        </div>
+      </div>
+
+      <!-- Doubt -->
+      <div class="section">
+        <div class="section-label">Qual è il tuo dubbio?</div>
+        <div class="section-divider"></div>
+        <div class="field doubt-area">
           <textarea id="rn-doubt" placeholder="Descrivi in poche parole cosa ti preoccupa..."></textarea>
         </div>
-        <div class="doubt-examples">
-          <span class="doubt-chip" onclick="setDoubt(this)">Ho paura che perda il 10%</span>
-          <span class="doubt-chip" onclick="setDoubt(this)">Vorrei proteggere il guadagno</span>
-          <span class="doubt-chip" onclick="setDoubt(this)">Non so se vendere</span>
-          <span class="doubt-chip" onclick="setDoubt(this)">Vorrei aumentare il rendimento</span>
-          <span class="doubt-chip" onclick="setDoubt(this)">Ho paura di un crollo</span>
+        <div class="doubt-chips">
+          <span class="doubt-chip" onclick="fillDoubt(this)">Ho paura che perda il 10%</span>
+          <span class="doubt-chip" onclick="fillDoubt(this)">Vorrei proteggere il guadagno</span>
+          <span class="doubt-chip" onclick="fillDoubt(this)">Non so se vendere</span>
+          <span class="doubt-chip" onclick="fillDoubt(this)">Vorrei aumentare il rendimento</span>
+          <span class="doubt-chip" onclick="fillDoubt(this)">Ho paura di un crollo</span>
         </div>
       </div>
 
-      <div class="submit-section">
-        <button class="btn-submit" id="rn-submit" onclick="analyzePosition()">Trova il percorso migliore</button>
+      <div class="submit-area">
+        <button class="btn-analyze" onclick="analyze()">Analizza</button>
       </div>
     </div>
 
-    <!-- ═══════ NEW POSITION ═══════ -->
-    <div id="screen-new-position" class="screen">
-      <div class="tool-header">
-        <button class="back-btn" onclick="goHome()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Indietro
-        </button>
-      </div>
-
-      <h2 class="tool-title">Nuova Posizione</h2>
-      <p class="tool-subtitle">Dicci cosa stai valutando. Ti aiuteremo a capire il rischio prima di entrare.</p>
-
-      <div class="new-pos-note">
-        <span class="note-icon">💡</span>
-        <span>Non devi avere già deciso. Anche un'idea vaga è un buon punto di partenza.</span>
-      </div>
-
-      <div class="form-section">
-        <div class="form-grid">
-          <div class="field full">
-            <label>Cosa stai valutando?</label>
-            <input type="text" id="np-ticker" placeholder="Es. Apple, Nvidia, un ETF sul S&P 500...">
-          </div>
-          <div class="field">
-            <label>Quanto vuoi investire?</label>
-            <input type="text" id="np-budget" placeholder="Es. 5.000 €">
-          </div>
-          <div class="field">
-            <label>Orizzonte temporale</label>
-            <input type="text" id="np-horizon" placeholder="Es. 6 mesi, 2 anni...">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <div class="form-section-title">Qual è la tua preoccupazione principale?</div>
-        <div class="field doubt-field">
-          <textarea id="np-doubt" placeholder="Descrivi in poche parole cosa ti preoccupa..."></textarea>
-        </div>
-        <div class="doubt-examples">
-          <span class="doubt-chip" onclick="setDoubtNP(this)">Comprare al momento sbagliato</span>
-          <span class="doubt-chip" onclick="setDoubtNP(this)">Perdere subito dopo l'acquisto</span>
-          <span class="doubt-chip" onclick="setDoubtNP(this)">Non sapere quanto rischio</span>
-          <span class="doubt-chip" onclick="setDoubtNP(this)">Non avere un piano di uscita</span>
-        </div>
-      </div>
-
-      <div class="submit-section">
-        <button class="btn-submit" onclick="analyzeNewPosition()">Trova il percorso migliore</button>
-      </div>
-    </div>
-
-    <!-- ═══════ LEARN ═══════ -->
+    <!-- ═══════════════ LEARN ═══════════════ -->
     <div id="screen-learn" class="screen">
-      <div class="tool-header">
-        <button class="back-btn" onclick="goHome()">
+      <div class="tool-bar">
+        <button class="back-link" onclick="goHome()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Indietro
         </button>
       </div>
-
-      <h2 class="tool-title">Cosa vuoi imparare?</h2>
-      <p class="tool-subtitle">Scegli il tema. Ti costruiremo un percorso su misura.</p>
-
-      <div class="learn-topics">
-        <div class="learn-topic" onclick="analyzeLearn('protezione')">
-          <span class="topic-icon">🛡️</span>
-          <div class="topic-body">
-            <div class="topic-title">Come proteggere un portafoglio</div>
-            <div class="topic-desc">Capire come ridurre il rischio senza vendere tutto.</div>
+      <h2 class="rn-title">Cosa vuoi imparare?</h2>
+      <p class="rn-subtitle">Scegli il tema. Ti costruiremo un percorso su misura.</p>
+      <div class="learn-list">
+        <div class="learn-item" onclick="learnPath('protezione')">
+          <span class="learn-icon">🛡️</span>
+          <div class="learn-body">
+            <div class="learn-title">Come proteggere un portafoglio</div>
+            <div class="learn-desc">Capire come ridurre il rischio senza vendere tutto.</div>
           </div>
           <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
-        <div class="learn-topic" onclick="analyzeLearn('opzioni')">
-          <span class="topic-icon">🧩</span>
-          <div class="topic-body">
-            <div class="topic-title">Come funzionano le opzioni</div>
-            <div class="topic-desc">Le basi delle opzioni spiegate senza tecnicismi.</div>
+        <div class="learn-item" onclick="learnPath('opzioni')">
+          <span class="learn-icon">🧩</span>
+          <div class="learn-body">
+            <div class="learn-title">Come funzionano le opzioni</div>
+            <div class="learn-desc">Le basi spiegate senza tecnicismi.</div>
           </div>
           <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
-        <div class="learn-topic" onclick="analyzeLearn('rischio')">
-          <span class="topic-icon">📐</span>
-          <div class="topic-body">
-            <div class="topic-title">Gestione del rischio</div>
-            <div class="topic-desc">Come misurare e controllare il rischio nei tuoi investimenti.</div>
+        <div class="learn-item" onclick="learnPath('rischio')">
+          <span class="learn-icon">📐</span>
+          <div class="learn-body">
+            <div class="learn-title">Gestione del rischio</div>
+            <div class="learn-desc">Come misurare e controllare il rischio nei tuoi investimenti.</div>
           </div>
           <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
-        <div class="learn-topic" onclick="analyzeLearn('psicologia')">
-          <span class="topic-icon">🧠</span>
-          <div class="topic-body">
-            <div class="topic-title">Psicologia dell'investitore</div>
-            <div class="topic-desc">Capire le emozioni che influenzano le tue decisioni finanziarie.</div>
+        <div class="learn-item" onclick="learnPath('psicologia')">
+          <span class="learn-icon">🧠</span>
+          <div class="learn-body">
+            <div class="learn-title">Psicologia dell'investitore</div>
+            <div class="learn-desc">Capire le emozioni che influenzano le tue decisioni.</div>
           </div>
           <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
     </div>
 
-    <!-- ═══════ RESULT ═══════ -->
+    <!-- ═══════════════ RESULT ═══════════════ -->
     <div id="screen-result" class="screen">
-      <div class="tool-header">
-        <button class="back-btn" onclick="goBackFromResult()">
+      <div class="tool-bar">
+        <button class="back-link" id="result-back">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Indietro
         </button>
       </div>
-
-      <div class="result-content" id="result-content"></div>
+      <div class="result-wrap" id="result-content"></div>
     </div>
 
-    <footer>
-      Sigma XIII è una piattaforma educativa. Non fornisce consulenza finanziaria.
-    </footer>
-
+    <footer>Sigma XIII è una piattaforma educativa. Non fornisce consulenza finanziaria.</footer>
   </div>
 
-  <script>
-    let lastTool = null;
+<script>
+  let resultOrigin = 'navigator';
 
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const el = document.getElementById(id);
-      el.classList.remove('active');
-      void el.offsetWidth;
-      el.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    el.classList.remove('active');
+    void el.offsetWidth;
+    el.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goHome() { show('screen-home'); }
+  function openNavigator() { show('screen-navigator'); }
+  function openLearn() { show('screen-learn'); }
+
+  document.getElementById('result-back').addEventListener('click', () => {
+    show(resultOrigin === 'learn' ? 'screen-learn' : 'screen-navigator');
+  });
+
+  // ── Compute position value & P/L ──
+  function compute() {
+    const shares  = parseFloat(document.getElementById('rn-shares').value) || 0;
+    const avg     = parseFloat(document.getElementById('rn-avg').value) || 0;
+    const current = parseFloat(document.getElementById('rn-current').value) || 0;
+
+    const valEl = document.getElementById('rn-value');
+    const plEl  = document.getElementById('rn-pl');
+
+    if (shares > 0 && current > 0) {
+      const val = shares * current;
+      valEl.textContent = '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      valEl.className = 'computed-box';
+    } else {
+      valEl.textContent = '—';
+      valEl.className = 'computed-box neutral';
     }
 
-    function goHome() {
-      showScreen('screen-home');
+    if (shares > 0 && avg > 0 && current > 0) {
+      const pl = (current - avg) * shares;
+      const pct = ((current - avg) / avg * 100).toFixed(1);
+      const sign = pl >= 0 ? '+' : '';
+      plEl.textContent = sign + '$' + Math.abs(pl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '  (' + sign + pct + '%)';
+      plEl.className = 'computed-box ' + (pl >= 0 ? 'pl-positive' : 'pl-negative');
+    } else {
+      plEl.textContent = '—';
+      plEl.className = 'computed-box neutral';
     }
 
-    function goBackFromResult() {
-      if (lastTool) showScreen('screen-' + lastTool);
-      else showScreen('screen-home');
+    computeMaxLoss();
+  }
+
+  function computeMaxLoss() {
+    const shares  = parseFloat(document.getElementById('rn-shares').value) || 0;
+    const current = parseFloat(document.getElementById('rn-current').value) || 0;
+    const pct     = parseFloat(document.getElementById('rn-maxloss').value) || 0;
+    const el      = document.getElementById('rn-maxloss-val');
+
+    if (shares > 0 && current > 0 && pct > 0) {
+      const loss = shares * current * pct / 100;
+      el.textContent = '= -$' + loss.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      el.textContent = '';
+    }
+  }
+
+  function clearMoveRadios() {
+    document.querySelectorAll('input[name="move"]').forEach(r => r.checked = false);
+  }
+
+  function fillDoubt(chip) {
+    document.getElementById('rn-doubt').value = chip.textContent;
+  }
+
+  // ── Get movement value ──
+  function getMove() {
+    const custom = document.getElementById('rn-move-custom').value.trim();
+    if (custom) return parseFloat(custom);
+    const checked = document.querySelector('input[name="move"]:checked');
+    return checked ? parseFloat(checked.value) : null;
+  }
+
+  // ── ANALYZE ──
+  function analyze() {
+    resultOrigin = 'navigator';
+
+    const ticker   = document.getElementById('rn-ticker').value.trim().toUpperCase() || 'il tuo titolo';
+    const shares   = parseFloat(document.getElementById('rn-shares').value) || 0;
+    const avg      = parseFloat(document.getElementById('rn-avg').value) || 0;
+    const current  = parseFloat(document.getElementById('rn-current').value) || 0;
+    const scenario = document.querySelector('input[name="scenario"]:checked')?.value || '';
+    const move     = getMove();
+    const maxloss  = parseFloat(document.getElementById('rn-maxloss').value) || 0;
+    const doubt    = document.getElementById('rn-doubt').value.trim();
+
+    const posVal   = shares * current;
+    const pl       = avg > 0 && current > 0 ? ((current - avg) / avg * 100).toFixed(1) : null;
+
+    let d = [];
+
+    d.push(`<strong>Abbiamo analizzato la tua posizione su ${ticker}.</strong>`);
+
+    if (posVal > 0) {
+      const valStr = '$' + posVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      d.push(`Posizione: ${shares} azioni a un prezzo medio di $${avg.toFixed(2)}, prezzo attuale $${current.toFixed(2)}. Valore: ${valStr}.`);
     }
 
-    function openTool(tool) {
-      lastTool = tool;
-      showScreen('screen-' + tool);
-    }
-
-    // ── Risk Navigator helpers ──
-    function updateValue() {
-      const shares = parseFloat(document.getElementById('rn-shares').value) || 0;
-      const price = parseFloat(document.getElementById('rn-price').value) || 0;
-      const val = shares * price;
-      document.getElementById('rn-value').textContent = val > 0
-        ? '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : '—';
-    }
-
-    function setDoubt(chip) {
-      document.getElementById('rn-doubt').value = chip.textContent;
-    }
-
-    function setDoubtNP(chip) {
-      document.getElementById('np-doubt').value = chip.textContent;
-    }
-
-    // ── ANALYZE: Existing Position ──
-    function analyzePosition() {
-      const ticker = document.getElementById('rn-ticker').value.trim() || 'il tuo investimento';
-      const shares = document.getElementById('rn-shares').value.trim();
-      const price  = document.getElementById('rn-price').value.trim();
-      const doubt  = document.getElementById('rn-doubt').value.trim();
-      const outlook = document.querySelector('input[name="outlook"]:checked')?.value || 'incerto';
-
-      const val = shares && price ? parseFloat(shares) * parseFloat(price) : 0;
-      const valStr = val > 0 ? '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
-
-      let diagParts = [];
-      diagParts.push(`<strong>Abbiamo analizzato la tua situazione su ${ticker}.</strong>`);
-
-      if (valStr) {
-        diagParts.push(`Hai una posizione da ${valStr}, ${shares} azioni a un prezzo medio di $${parseFloat(price).toFixed(2)}.`);
+    if (pl !== null) {
+      const plNum = parseFloat(pl);
+      if (plNum > 0) {
+        d.push(`Sei in guadagno del ${pl}%. <em>Il tuo problema potrebbe essere proteggere quello che hai costruito.</em>`);
+      } else if (plNum < 0) {
+        d.push(`Sei in perdita del ${Math.abs(plNum)}%. <em>Il tuo problema potrebbe essere decidere se tenere, mediare o accettare la perdita.</em>`);
+      } else {
+        d.push(`Sei in pari. <em>Un punto di partenza neutro per valutare le tue opzioni.</em>`);
       }
-
-      if (doubt.toLowerCase().includes('paura') || doubt.toLowerCase().includes('crollo') || doubt.toLowerCase().includes('perda')) {
-        diagParts.push(`La tua preoccupazione principale è legata al rischio di ribasso. <em>Questa è la preoccupazione più comune tra gli investitori.</em> Il primo passo è capire cosa puoi fare concretamente — senza tecnicismi, senza fretta.`);
-      } else if (doubt.toLowerCase().includes('proteggere') || doubt.toLowerCase().includes('guadagno')) {
-        diagParts.push(`Vuoi proteggere quello che hai costruito. <em>La paura di perdere un guadagno è spesso più forte della paura di una perdita.</em> Esistono approcci che possono aiutarti a gestire questa situazione.`);
-      } else if (doubt.toLowerCase().includes('vendere')) {
-        diagParts.push(`Il dubbio tra vendere e tenere è uno dei più paralizzanti. <em>Non sei solo.</em> Ti aiuteremo a costruire un metodo per prendere questa decisione con più serenità.`);
-      } else if (doubt.toLowerCase().includes('rendimento') || doubt.toLowerCase().includes('aumentare')) {
-        diagParts.push(`Cerchi di migliorare il rendimento della tua posizione. <em>Esistono modi per farlo in modo consapevole, a patto di capire i compromessi.</em>`);
-      } else if (doubt) {
-        diagParts.push(`<em>"${doubt}"</em> — abbiamo ascoltato la tua preoccupazione. Ti guideremo verso i contenuti più adatti per affrontarla.`);
-      }
-
-      if (outlook === 'ribassista') {
-        diagParts.push(`Hai indicato una visione <strong>ribassista</strong> del mercato. Questo rende ancora più importante avere un piano chiaro.`);
-      } else if (outlook === 'incerto') {
-        diagParts.push(`Hai indicato che <strong>non hai una visione chiara</strong> sul mercato. Questo è perfettamente normale — e il percorso che ti proponiamo parte proprio da qui.`);
-      }
-
-      const diagnosis = diagParts.join('<br><br>');
-
-      const steps = [
-        { type: '🎥 Video', title: 'Capire il rischio della tua posizione', reason: `Perché prima di agire serve capire. Questo video spiega in modo semplice cosa significa realmente "rischio" per chi possiede ${ticker}.` },
-        { type: '📚 Caso studio', title: 'Un investitore con un problema simile al tuo', reason: 'Perché vedere come qualcuno nella tua stessa situazione ha affrontato il problema rende tutto più concreto.' },
-        { type: '🧠 Tutorial', title: 'Le scelte possibili, spiegate senza tecnicismi', reason: 'Perché conoscere le alternative ti permette di decidere con più consapevolezza, senza pressione.' },
-        { type: '💬 Discussione', title: 'Cosa hanno fatto gli altri nella tua situazione', reason: 'Perché scoprirai che non sei solo. Altri hanno avuto la stessa preoccupazione e condividono la loro esperienza.' },
-        { type: '🎙️ Live della settimana', title: 'Sessione Q&A con i mentor', reason: 'Per fare domande e ricevere risposte personalizzate in un ambiente educativo e senza pressione.' }
-      ];
-
-      renderResult(diagnosis, steps);
     }
 
-    // ── ANALYZE: New Position ──
-    function analyzeNewPosition() {
-      const ticker  = document.getElementById('np-ticker').value.trim() || 'il tuo investimento';
-      const budget  = document.getElementById('np-budget').value.trim();
-      const horizon = document.getElementById('np-horizon').value.trim();
-      const doubt   = document.getElementById('np-doubt').value.trim();
-
-      let diagParts = [];
-      diagParts.push(`<strong>Stai valutando di investire in ${ticker}.</strong>`);
-
-      if (budget) {
-        diagParts.push(`Hai indicato un budget di circa ${budget}.`);
-      }
-
-      if (doubt.toLowerCase().includes('momento sbagliato') || doubt.toLowerCase().includes('timing')) {
-        diagParts.push(`La tua paura non è ${ticker} in sé. <em>È il timing.</em> Hai paura di comprare oggi e vedere il prezzo scendere domani. Questo dubbio blocca molti investitori.`);
-      } else if (doubt.toLowerCase().includes('perdere subito') || doubt.toLowerCase().includes('perdere')) {
-        diagParts.push(`La paura di perdere immediatamente dopo l'acquisto è una delle più comuni. <em>Non è irrazionale.</em> Esistono modi per entrare in una posizione riducendo il rischio iniziale.`);
-      } else if (doubt.toLowerCase().includes('quanto rischio') || doubt.toLowerCase().includes('rischio')) {
-        diagParts.push(`Il tuo problema è che <em>non riesci a misurare il rischio.</em> Questo è il primo passo più importante. Prima di investire, devi sapere cosa puoi perdere.`);
-      } else if (doubt.toLowerCase().includes('piano di uscita') || doubt.toLowerCase().includes('uscita')) {
-        diagParts.push(`<em>Sapere quando uscire è più importante di sapere quando entrare.</em> Ti aiuteremo a costruire un piano prima di investire.`);
-      } else if (doubt) {
-        diagParts.push(`<em>"${doubt}"</em> — abbiamo ascoltato la tua preoccupazione. Ti guideremo verso i contenuti più adatti.`);
-      }
-
-      if (horizon) {
-        diagParts.push(`Con un orizzonte di <strong>${horizon}</strong>, il percorso che ti proponiamo tiene conto del tempo che hai a disposizione.`);
-      }
-
-      const diagnosis = diagParts.join('<br><br>');
-
-      const steps = [
-        { type: '🎥 Video', title: 'Come valutare il rischio prima di investire', reason: 'Perché prima di comprare qualsiasi cosa, serve capire quanto puoi perdere e se puoi accettarlo.' },
-        { type: '📚 Caso studio', title: 'Entrata in posizione con gestione del rischio', reason: `Un esempio concreto di come un investitore ha pianificato un acquisto pensando anche all'uscita.` },
-        { type: '🧠 Tutorial', title: 'Le domande da farti prima di comprare', reason: 'Una checklist pratica per non dimenticare nulla di importante prima di investire.' },
-        { type: '💬 Discussione', title: 'Esperienze di altri investitori alle prime armi', reason: 'Perché imparare dagli errori degli altri costa molto meno che imparare dai propri.' },
-        { type: '🎙️ Live della settimana', title: 'Sessione Q&A con i mentor', reason: 'Per fare le tue domande prima di prendere qualsiasi decisione.' }
-      ];
-
-      renderResult(diagnosis, steps);
+    if (scenario === 'ribasso') {
+      d.push(`Hai indicato una visione <strong>ribassista</strong>. Questo rende prioritario capire come gestire il rischio di ribasso.`);
+    } else if (scenario === 'incerto') {
+      d.push(`Hai indicato che <strong>non hai una visione chiara</strong> sul mercato. Questo è perfettamente normale — e il percorso che ti proponiamo parte da qui.`);
+    } else if (scenario === 'laterale') {
+      d.push(`Hai indicato che ti aspetti un <strong>mercato laterale</strong>. Esistono approcci specifici per questa situazione.`);
     }
 
-    // ── ANALYZE: Learn ──
-    function analyzeLearn(topic) {
-      lastTool = 'learn';
-
-      const topicData = {
-        protezione: {
-          diagnosis: `<strong>Vuoi capire come proteggere il tuo portafoglio.</strong><br><br>Questa è una delle competenze più importanti per un investitore. <em>Non si tratta di eliminare il rischio — si tratta di gestirlo in modo consapevole.</em><br><br>Il percorso che ti proponiamo parte dalle basi e arriva alle applicazioni pratiche, senza mai dare nulla per scontato.`,
-          steps: [
-            { type: '🎥 Video', title: 'Cosa significa realmente "protezione"', reason: 'Perché la parola "protezione" viene usata spesso ma capita poco. Questo video ti darà una comprensione chiara.' },
-            { type: '📚 Caso studio', title: 'Un portafoglio protetto durante un ribasso', reason: 'Per vedere concretamente cosa succede a un portafoglio protetto vs uno non protetto in un momento di crisi.' },
-            { type: '🧠 Tutorial', title: 'Le famiglie di strategie di protezione', reason: 'Non una strategia specifica, ma le categorie di approccio. Per capire quale direzione fa per te.' },
-            { type: '💬 Discussione', title: 'Come proteggono i loro portafogli gli altri membri', reason: 'Esperienze reali di chi ha già affrontato questo tema.' },
-            { type: '🎙️ Live della settimana', title: 'Focus sulla protezione con i mentor', reason: 'Per fare domande specifiche e ricevere risposte personalizzate.' }
-          ]
-        },
-        opzioni: {
-          diagnosis: `<strong>Vuoi capire come funzionano le opzioni.</strong><br><br>Le opzioni sono strumenti potenti ma spesso spiegati in modo troppo tecnico. <em>Il nostro approccio parte dal problema che risolvono, non dalla formula matematica.</em><br><br>Imparerai a pensare alle opzioni come strumenti per gestire situazioni reali.`,
-          steps: [
-            { type: '🎥 Video', title: 'Le opzioni spiegate con esempi di vita quotidiana', reason: 'Perché le opzioni sono ovunque nella vita reale. Questo video usa analogie semplici per spiegare i concetti chiave.' },
-            { type: '📚 Caso studio', title: 'Un problema risolto con le opzioni', reason: 'Per vedere come le opzioni risolvono un problema concreto di un investitore reale.' },
-            { type: '🧠 Tutorial', title: 'I 4 mattoni base delle opzioni', reason: 'I concetti fondamentali che devi conoscere, spiegati uno alla volta senza fretta.' },
-            { type: '💬 Discussione', title: 'Le domande più frequenti di chi inizia', reason: 'Perché le domande degli altri ti faranno scoprire cose che non sapevi di non sapere.' },
-            { type: '🎙️ Live della settimana', title: 'Sessione Q&A sulle opzioni', reason: 'Per chiarire qualsiasi dubbio con i mentor in tempo reale.' }
-          ]
-        },
-        rischio: {
-          diagnosis: `<strong>Vuoi imparare a gestire il rischio.</strong><br><br>La gestione del rischio è la competenza che separa chi investe da chi scommette. <em>Non si tratta di evitare il rischio, ma di sapere quanto stai rischiando e decidere se è accettabile.</em><br><br>Questo percorso ti darà gli strumenti per prendere decisioni più consapevoli.`,
-          steps: [
-            { type: '🎥 Video', title: 'Cos\'è realmente il rischio', reason: 'Perché "rischio" non significa "pericolo". Questo video cambia la prospettiva su come pensi ai tuoi investimenti.' },
-            { type: '📚 Caso studio', title: 'Un investitore che ha sottovalutato il rischio', reason: 'Un esempio reale di cosa succede quando non si misura il rischio prima di investire.' },
-            { type: '🧠 Tutorial', title: 'Come misurare il rischio senza formule', reason: 'Strumenti pratici e intuitivi per capire quanto stai rischiando in ogni momento.' },
-            { type: '💬 Discussione', title: 'Gli errori più comuni nella gestione del rischio', reason: 'Impara dagli errori degli altri per non ripeterli.' },
-            { type: '🎙️ Live della settimana', title: 'Focus sulla gestione del rischio', reason: 'Per fare domande specifiche sulla tua situazione e ricevere indicazioni pratiche.' }
-          ]
-        },
-        psicologia: {
-          diagnosis: `<strong>Vuoi capire la psicologia dell'investitore.</strong><br><br>Le emozioni influenzano le decisioni finanziarie più di quanto pensiamo. <em>Paura, avidità, FOMO, paralisi decisionale — sono tutti meccanismi che si possono riconoscere e gestire.</em><br><br>Questo percorso ti aiuterà a diventare un investitore più consapevole delle proprie reazioni.`,
-          steps: [
-            { type: '🎥 Video', title: 'Perché il tuo cervello sabota i tuoi investimenti', reason: 'Perché il primo passo è capire come funzionano i meccanismi che influenzano le tue decisioni.' },
-            { type: '📚 Caso studio', title: 'Decisioni emotive vs decisioni razionali', reason: 'Un confronto concreto tra due approcci alla stessa situazione di mercato.' },
-            { type: '🧠 Tutorial', title: 'I bias cognitivi dell\'investitore', reason: 'I 5 errori mentali più comuni e come riconoscerli nelle tue decisioni.' },
-            { type: '💬 Discussione', title: 'Come gestisci le emozioni quando investi?', reason: 'Un confronto aperto con altri investitori sulle sfide psicologiche più comuni.' },
-            { type: '🎙️ Live della settimana', title: 'Psicologia e investimenti con i mentor', reason: 'Per esplorare i tuoi schemi decisionali in un ambiente sicuro e senza giudizio.' }
-          ]
-        }
-      };
-
-      const data = topicData[topic];
-      renderResult(data.diagnosis, data.steps);
+    if (move !== null && posVal > 0) {
+      const impact = posVal * Math.abs(move) / 100;
+      const impStr = '$' + impact.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (move > 0) {
+        d.push(`Con un movimento del +${move}%, la tua posizione guadagnerebbe circa ${impStr}.`);
+      } else {
+        d.push(`Con un movimento del ${move}%, la tua posizione perderebbe circa ${impStr}.`);
+      }
     }
 
-    // ── RENDER RESULT ──
-    function renderResult(diagnosis, steps) {
-      const rc = document.getElementById('result-content');
-      rc.innerHTML = `
-        <div class="result-diagnosis">
-          <div class="result-diagnosis-icon">🔍</div>
-          <div class="result-diagnosis-label">Abbiamo analizzato il tuo problema</div>
-          <div class="result-diagnosis-text">${diagnosis}</div>
-        </div>
+    if (maxloss > 0 && posVal > 0) {
+      const lossAmt = posVal * maxloss / 100;
+      const lossStr = '$' + lossAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      d.push(`La tua <strong>perdita massima accettabile è del ${maxloss}%</strong> (${lossStr}). Questo è il dato più importante per costruire il tuo percorso.`);
+    }
 
-        <div class="result-path-label">Il percorso che ti consigliamo</div>
+    if (doubt.toLowerCase().includes('paura') || doubt.toLowerCase().includes('crollo') || doubt.toLowerCase().includes('perda')) {
+      d.push(`La tua preoccupazione principale è legata al rischio di ribasso. <em>Questa è la preoccupazione più comune tra gli investitori.</em>`);
+    } else if (doubt.toLowerCase().includes('proteggere') || doubt.toLowerCase().includes('guadagno')) {
+      d.push(`Vuoi proteggere quello che hai costruito. <em>La paura di perdere un guadagno è spesso più forte della paura di una perdita.</em>`);
+    } else if (doubt.toLowerCase().includes('vendere')) {
+      d.push(`Il dubbio tra vendere e tenere è uno dei più paralizzanti. <em>Non sei solo.</em>`);
+    } else if (doubt.toLowerCase().includes('rendimento') || doubt.toLowerCase().includes('aumentare')) {
+      d.push(`Cerchi di migliorare il rendimento. <em>Esistono modi per farlo in modo consapevole.</em>`);
+    } else if (doubt) {
+      d.push(`<em>"${doubt}"</em> — abbiamo ascoltato la tua preoccupazione.`);
+    }
 
-        <div class="path-steps">
-          ${steps.map((s, i) => `
-            <div class="path-step">
-              <div class="step-number">${i + 1}</div>
-              <div class="step-content">
-                <div class="step-type">${s.type}</div>
-                <div class="step-title">${s.title}</div>
-                <div class="step-reason">${s.reason}</div>
-              </div>
-              <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    const diagnosis = d.join('<br><br>');
+
+    const steps = [
+      { type: '🎥 Video', title: 'Capire il rischio della tua posizione', why: `Perché prima di agire serve capire. Questo video spiega cosa significa realmente "rischio" per chi possiede ${ticker}.` },
+      { type: '📚 Caso studio', title: 'Un investitore con un problema simile al tuo', why: 'Perché vedere come qualcuno nella tua stessa situazione ha affrontato il problema rende tutto più concreto.' },
+      { type: '🧠 Tutorial', title: 'Le scelte possibili, spiegate senza tecnicismi', why: 'Perché conoscere le alternative ti permette di decidere con più consapevolezza.' },
+      { type: '💬 Discussione', title: 'Cosa hanno fatto gli altri nella tua situazione', why: 'Perché scoprirai che non sei solo. Altri condividono la loro esperienza.' },
+      { type: '📊 Simulatore', title: 'Visualizza gli scenari sulla tua posizione', why: 'Per capire concretamente cosa succede al tuo investimento nei diversi scenari.' },
+      { type: '🎙️ Live', title: 'Sessione Q&A con i mentor', why: 'Per fare domande e ricevere risposte personalizzate in un ambiente educativo.' }
+    ];
+
+    renderResult(diagnosis, steps);
+  }
+
+  // ── LEARN ──
+  function learnPath(topic) {
+    resultOrigin = 'learn';
+
+    const data = {
+      protezione: {
+        diag: `<strong>Vuoi capire come proteggere il tuo portafoglio.</strong><br><br>Questa è una delle competenze più importanti per un investitore. <em>Non si tratta di eliminare il rischio — si tratta di gestirlo in modo consapevole.</em>`,
+        steps: [
+          { type: '🎥 Video', title: 'Cosa significa realmente "protezione"', why: 'Perché la parola viene usata spesso ma capita poco. Questo video ti darà una comprensione chiara.' },
+          { type: '📚 Caso studio', title: 'Un portafoglio protetto durante un ribasso', why: 'Per vedere concretamente cosa succede a un portafoglio protetto vs uno non protetto.' },
+          { type: '🧠 Tutorial', title: 'Le famiglie di strategie di protezione', why: 'Non una strategia specifica, ma le categorie di approccio per capire quale direzione fa per te.' },
+          { type: '💬 Discussione', title: 'Come proteggono i loro portafogli gli altri membri', why: 'Esperienze reali di chi ha già affrontato questo tema.' },
+          { type: '📊 Simulatore', title: 'Simula la protezione del tuo portafoglio', why: 'Per vedere in modo intuitivo l\'effetto delle diverse scelte sul tuo portafoglio.' },
+          { type: '🎙️ Live', title: 'Focus sulla protezione con i mentor', why: 'Per fare domande specifiche e ricevere risposte personalizzate.' }
+        ]
+      },
+      opzioni: {
+        diag: `<strong>Vuoi capire come funzionano le opzioni.</strong><br><br>Le opzioni sono strumenti potenti ma spesso spiegati in modo troppo tecnico. <em>Il nostro approccio parte dal problema che risolvono, non dalla formula matematica.</em>`,
+        steps: [
+          { type: '🎥 Video', title: 'Le opzioni spiegate con esempi di vita quotidiana', why: 'Perché le opzioni sono ovunque nella vita reale. Questo video usa analogie semplici.' },
+          { type: '📚 Caso studio', title: 'Un problema risolto con le opzioni', why: 'Per vedere come le opzioni risolvono un problema concreto di un investitore reale.' },
+          { type: '🧠 Tutorial', title: 'I 4 mattoni base delle opzioni', why: 'I concetti fondamentali spiegati uno alla volta senza fretta.' },
+          { type: '💬 Discussione', title: 'Le domande più frequenti di chi inizia', why: 'Le domande degli altri ti faranno scoprire cose che non sapevi di non sapere.' },
+          { type: '📊 Simulatore', title: 'Sperimenta le opzioni senza rischio', why: 'Per mettere in pratica quello che hai imparato in un ambiente sicuro.' },
+          { type: '🎙️ Live', title: 'Sessione Q&A sulle opzioni', why: 'Per chiarire qualsiasi dubbio con i mentor in tempo reale.' }
+        ]
+      },
+      rischio: {
+        diag: `<strong>Vuoi imparare a gestire il rischio.</strong><br><br>La gestione del rischio è la competenza che separa chi investe da chi scommette. <em>Non si tratta di evitare il rischio, ma di sapere quanto stai rischiando e decidere se è accettabile.</em>`,
+        steps: [
+          { type: '🎥 Video', title: 'Cos\'è realmente il rischio', why: '"Rischio" non significa "pericolo". Questo video cambia la prospettiva su come pensi ai tuoi investimenti.' },
+          { type: '📚 Caso studio', title: 'Un investitore che ha sottovalutato il rischio', why: 'Un esempio reale di cosa succede quando non si misura il rischio prima di investire.' },
+          { type: '🧠 Tutorial', title: 'Come misurare il rischio senza formule', why: 'Strumenti pratici e intuitivi per capire quanto stai rischiando in ogni momento.' },
+          { type: '💬 Discussione', title: 'Gli errori più comuni nella gestione del rischio', why: 'Impara dagli errori degli altri per non ripeterli.' },
+          { type: '📊 Simulatore', title: 'Il tuo portafoglio nei diversi scenari', why: 'Per capire concretamente l\'impatto di una perdita sui tuoi investimenti.' },
+          { type: '🎙️ Live', title: 'Focus sulla gestione del rischio', why: 'Per fare domande specifiche sulla tua situazione.' }
+        ]
+      },
+      psicologia: {
+        diag: `<strong>Vuoi capire la psicologia dell'investitore.</strong><br><br>Le emozioni influenzano le decisioni finanziarie più di quanto pensiamo. <em>Paura, avidità, FOMO, paralisi decisionale — sono tutti meccanismi che si possono riconoscere e gestire.</em>`,
+        steps: [
+          { type: '🎥 Video', title: 'Perché il tuo cervello sabota i tuoi investimenti', why: 'Il primo passo è capire come funzionano i meccanismi che influenzano le tue decisioni.' },
+          { type: '📚 Caso studio', title: 'Decisioni emotive vs decisioni razionali', why: 'Un confronto concreto tra due approcci alla stessa situazione di mercato.' },
+          { type: '🧠 Tutorial', title: 'I bias cognitivi dell\'investitore', why: 'I 5 errori mentali più comuni e come riconoscerli nelle tue decisioni.' },
+          { type: '💬 Discussione', title: 'Come gestisci le emozioni quando investi?', why: 'Un confronto aperto con altri investitori sulle sfide psicologiche.' },
+          { type: '📊 Simulatore', title: 'Testa le tue reazioni in scenari reali', why: 'Per scoprire come reagisci sotto pressione, senza conseguenze.' },
+          { type: '🎙️ Live', title: 'Psicologia e investimenti con i mentor', why: 'Per esplorare i tuoi schemi decisionali in un ambiente sicuro.' }
+        ]
+      }
+    };
+
+    const d = data[topic];
+    renderResult(d.diag, d.steps);
+  }
+
+  // ── RENDER ──
+  function renderResult(diagnosis, steps) {
+    document.getElementById('result-content').innerHTML = `
+      <div class="result-box">
+        <div class="result-icon">🔍</div>
+        <div class="result-label">In base ai dati inseriti</div>
+        <div class="result-text">${diagnosis}</div>
+      </div>
+
+      <div class="path-label">Il percorso che ti consigliamo</div>
+
+      <div class="steps">
+        ${steps.map((s, i) => `
+          <div class="step">
+            <div class="step-num">${i + 1}</div>
+            <div class="step-body">
+              <div class="step-type">${s.type}</div>
+              <div class="step-title">${s.title}</div>
+              <div class="step-why">${s.why}</div>
             </div>
-          `).join('')}
-        </div>
+            <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        `).join('')}
+      </div>
 
-        <div class="result-cta">
-          <h3>Vuoi iniziare questo percorso con la guida dei nostri mentor?</h3>
-          <p>Nel Sigma XIII Club troverai video, casi studio, tutorial, discussioni, sessioni live e mentoring personalizzato. Tutto pensato per accompagnarti dal problema alla comprensione.</p>
-          <button class="btn-cta" onclick="goHome()">
-            Accedi gratuitamente al Sigma XIII Club per 30 giorni
-          </button>
-          <br>
-          <button class="restart-link" onclick="goHome()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-            Ricomincia da capo
-          </button>
-        </div>
-      `;
-
-      showScreen('screen-result');
-    }
-  </script>
+      <div class="result-cta">
+        <h3>Vuoi iniziare questo percorso con la guida dei nostri mentor?</h3>
+        <p>Nel Sigma XIII Club troverai video, casi studio, tutorial, discussioni, simulatori, sessioni live e mentoring personalizzato.</p>
+        <button class="btn-cta" onclick="goHome()">Accedi gratuitamente al Sigma XIII Club per 30 giorni</button>
+        <br>
+        <button class="restart-btn" onclick="goHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Ricomincia da capo
+        </button>
+      </div>
+    `;
+    show('screen-result');
+  }
+</script>
 </body>
 </html>
