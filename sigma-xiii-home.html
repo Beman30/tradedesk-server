@@ -558,6 +558,184 @@
     .learn-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 2px; }
     .learn-desc { font-size: 0.82rem; color: var(--text-dim); }
 
+    /* ── NEW POSITION ───────────────────────── */
+    .np-field-group {
+      margin-bottom: 32px;
+    }
+    .np-field-label {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .np-field-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .np-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .np-input-row input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: var(--mono);
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .np-input-row input:focus { border-color: var(--gold); }
+    .np-input-row input::placeholder { color: var(--text-muted); font-weight: 400; }
+    .np-input-row .np-unit {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .np-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .np-preset {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 5px 13px;
+      font-size: 0.76rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .np-preset:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .unit-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .unit-toggle button {
+      background: var(--bg-input);
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-family: var(--font);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .unit-toggle button.active {
+      background: rgba(199,168,108,0.1);
+      color: var(--gold-light);
+    }
+    .unit-toggle button:not(:last-child) {
+      border-right: 1px solid var(--border);
+    }
+
+    .np-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239896a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      cursor: pointer;
+    }
+    .np-select:focus { border-color: var(--gold); }
+    .np-select option {
+      background: var(--bg-elevated);
+      color: var(--text);
+    }
+
+    .ratio-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      margin-top: 24px;
+      display: none;
+    }
+    .ratio-box.visible { display: block; }
+    .ratio-header {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .ratio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .ratio-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .ratio-item-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .ratio-item-value {
+      font-size: 1rem;
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+    .ratio-item-value.green { color: var(--green); }
+    .ratio-item-value.red { color: var(--red); }
+    .ratio-item-value.gold { color: var(--gold-light); }
+
+    .ratio-verdict {
+      padding: 14px 18px;
+      border-radius: var(--r);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .ratio-verdict.coherent {
+      background: var(--green-dim);
+      border: 1px solid rgba(74,158,106,0.2);
+      color: var(--green);
+    }
+    .ratio-verdict.warning {
+      background: rgba(199,168,108,0.06);
+      border: 1px solid rgba(199,168,108,0.15);
+      color: var(--gold-light);
+    }
+    .ratio-verdict.risky {
+      background: var(--red-dim);
+      border: 1px solid rgba(199,80,80,0.2);
+      color: var(--red);
+    }
+
     /* ── FOOTER ──────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
@@ -583,6 +761,8 @@
       .result-box { padding: 22px 18px; }
       .result-cta { padding: 24px 18px; }
       .step { padding: 14px 16px; }
+      .ratio-grid { grid-template-columns: 1fr 1fr; }
+      .np-input-row { flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -597,7 +777,7 @@
         <h1 class="home-title">Cosa vuoi fare oggi?</h1>
         <p class="home-sub">Scegli il problema che vuoi risolvere.<br>Il sistema ti accompagnerà automaticamente.</p>
         <div class="cards">
-          <div class="home-card" onclick="openNavigator()">
+          <div class="home-card" onclick="openNewPos()">
             <div class="card-icon">📊</div>
             <div class="card-body">
               <div class="card-title">Aprire una nuova posizione</div>
@@ -622,6 +802,120 @@
             <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ NEW POSITION ═══════════════ -->
+    <div id="screen-newpos" class="screen">
+      <div class="tool-bar">
+        <button class="back-link" onclick="goHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Indietro
+        </button>
+      </div>
+
+      <h2 class="rn-title">Aprire una nuova posizione</h2>
+      <p class="rn-subtitle">Definisci il tuo obiettivo. Il sistema valuterà la coerenza del tuo profilo rischio/rendimento.</p>
+
+      <div class="np-field-group">
+        <div class="np-field-label">Quanto vuoi investire?</div>
+        <div class="np-input-row">
+          <input type="number" id="np-invest" placeholder="10.000" oninput="computeRatio()">
+          <span class="np-unit">&euro;</span>
+        </div>
+        <div class="np-presets">
+          <span class="np-preset" onclick="setInvest(1000)">1.000 &euro;</span>
+          <span class="np-preset" onclick="setInvest(5000)">5.000 &euro;</span>
+          <span class="np-preset" onclick="setInvest(10000)">10.000 &euro;</span>
+          <span class="np-preset" onclick="setInvest(50000)">50.000 &euro;</span>
+          <span class="np-preset" onclick="setInvest(100000)">100.000 &euro;</span>
+        </div>
+      </div>
+
+      <div class="np-field-group">
+        <div class="np-field-label">Quanto vorresti guadagnare?</div>
+        <div class="np-input-row">
+          <input type="number" id="np-gain" placeholder="1.000" oninput="computeRatio()">
+          <div class="unit-toggle" id="gain-toggle">
+            <button class="active" onclick="setGainUnit('eur')">Euro</button>
+            <button onclick="setGainUnit('pct')">%</button>
+          </div>
+        </div>
+        <div class="np-presets" id="gain-presets-eur">
+          <span class="np-preset" onclick="setGain(500)">500 &euro;</span>
+          <span class="np-preset" onclick="setGain(1000)">1.000 &euro;</span>
+          <span class="np-preset" onclick="setGain(2000)">2.000 &euro;</span>
+          <span class="np-preset" onclick="setGain(5000)">5.000 &euro;</span>
+        </div>
+        <div class="np-presets" id="gain-presets-pct" style="display:none">
+          <span class="np-preset" onclick="setGain(5)">5%</span>
+          <span class="np-preset" onclick="setGain(10)">10%</span>
+          <span class="np-preset" onclick="setGain(20)">20%</span>
+          <span class="np-preset" onclick="setGain(50)">50%</span>
+        </div>
+      </div>
+
+      <div class="np-field-group">
+        <div class="np-field-label">Qual è la perdita massima che sei disposto ad accettare?</div>
+        <div class="np-input-row">
+          <input type="number" id="np-loss" placeholder="500" oninput="computeRatio()">
+          <div class="unit-toggle" id="loss-toggle">
+            <button class="active" onclick="setLossUnit('eur')">Euro</button>
+            <button onclick="setLossUnit('pct')">%</button>
+          </div>
+        </div>
+        <div class="np-presets" id="loss-presets-eur">
+          <span class="np-preset" onclick="setLoss(300)">300 &euro;</span>
+          <span class="np-preset" onclick="setLoss(500)">500 &euro;</span>
+          <span class="np-preset" onclick="setLoss(1000)">1.000 &euro;</span>
+          <span class="np-preset" onclick="setLoss(2000)">2.000 &euro;</span>
+        </div>
+        <div class="np-presets" id="loss-presets-pct" style="display:none">
+          <span class="np-preset" onclick="setLoss(3)">3%</span>
+          <span class="np-preset" onclick="setLoss(5)">5%</span>
+          <span class="np-preset" onclick="setLoss(10)">10%</span>
+          <span class="np-preset" onclick="setLoss(15)">15%</span>
+        </div>
+      </div>
+
+      <div class="np-field-group">
+        <div class="np-field-label">Entro quanto tempo vorresti raggiungere questo obiettivo?</div>
+        <select class="np-select" id="np-horizon">
+          <option value="" disabled selected>Seleziona un orizzonte temporale</option>
+          <option value="30">30 giorni</option>
+          <option value="60">60 giorni</option>
+          <option value="90">90 giorni</option>
+          <option value="180">6 mesi</option>
+          <option value="365">1 anno</option>
+          <option value="999">Più di un anno</option>
+        </select>
+      </div>
+
+      <div class="submit-area">
+        <button class="btn-analyze" onclick="analyzeNewPos()">Analizza il mio obiettivo</button>
+      </div>
+
+      <div class="ratio-box" id="np-ratio-box">
+        <div class="ratio-header">Rapporto Rischio / Obiettivo</div>
+        <div class="ratio-grid">
+          <div class="ratio-item">
+            <div class="ratio-item-label">Investimento</div>
+            <div class="ratio-item-value gold" id="ratio-invest">—</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-item-label">Orizzonte</div>
+            <div class="ratio-item-value gold" id="ratio-horizon">—</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-item-label">Obiettivo</div>
+            <div class="ratio-item-value green" id="ratio-gain">—</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-item-label">Perdita max</div>
+            <div class="ratio-item-value red" id="ratio-loss">—</div>
+          </div>
+        </div>
+        <div class="ratio-verdict" id="ratio-verdict"></div>
       </div>
     </div>
 
@@ -805,10 +1099,13 @@
 
   function goHome() { show('screen-home'); }
   function openNavigator() { show('screen-navigator'); }
+  function openNewPos() { show('screen-newpos'); }
   function openLearn() { show('screen-learn'); }
 
   document.getElementById('result-back').addEventListener('click', () => {
-    show(resultOrigin === 'learn' ? 'screen-learn' : 'screen-navigator');
+    if (resultOrigin === 'learn') show('screen-learn');
+    else if (resultOrigin === 'newpos') show('screen-newpos');
+    else show('screen-navigator');
   });
 
   // ── Compute position value & P/L ──
@@ -954,6 +1251,158 @@
       { type: '💬 Discussione', title: 'Cosa hanno fatto gli altri nella tua situazione', why: 'Perché scoprirai che non sei solo. Altri condividono la loro esperienza.' },
       { type: '📊 Simulatore', title: 'Visualizza gli scenari sulla tua posizione', why: 'Per capire concretamente cosa succede al tuo investimento nei diversi scenari.' },
       { type: '🎙️ Live', title: 'Sessione Q&A con i mentor', why: 'Per fare domande e ricevere risposte personalizzate in un ambiente educativo.' }
+    ];
+
+    renderResult(diagnosis, steps);
+  }
+
+  // ── NEW POSITION ──
+  let gainUnit = 'eur';
+  let lossUnit = 'eur';
+
+  function setGainUnit(u) {
+    gainUnit = u;
+    document.querySelectorAll('#gain-toggle button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#gain-toggle button:${u === 'eur' ? 'first-child' : 'last-child'}`).classList.add('active');
+    document.getElementById('gain-presets-eur').style.display = u === 'eur' ? 'flex' : 'none';
+    document.getElementById('gain-presets-pct').style.display = u === 'pct' ? 'flex' : 'none';
+    document.getElementById('np-gain').value = '';
+    document.getElementById('np-gain').placeholder = u === 'eur' ? '1.000' : '10';
+    computeRatio();
+  }
+
+  function setLossUnit(u) {
+    lossUnit = u;
+    document.querySelectorAll('#loss-toggle button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#loss-toggle button:${u === 'eur' ? 'first-child' : 'last-child'}`).classList.add('active');
+    document.getElementById('loss-presets-eur').style.display = u === 'eur' ? 'flex' : 'none';
+    document.getElementById('loss-presets-pct').style.display = u === 'pct' ? 'flex' : 'none';
+    document.getElementById('np-loss').value = '';
+    document.getElementById('np-loss').placeholder = u === 'eur' ? '500' : '5';
+    computeRatio();
+  }
+
+  function setInvest(v) { document.getElementById('np-invest').value = v; computeRatio(); }
+  function setGain(v)   { document.getElementById('np-gain').value = v; computeRatio(); }
+  function setLoss(v)   { document.getElementById('np-loss').value = v; computeRatio(); }
+
+  function getGainEur() {
+    const invest = parseFloat(document.getElementById('np-invest').value) || 0;
+    const raw = parseFloat(document.getElementById('np-gain').value) || 0;
+    return gainUnit === 'pct' ? invest * raw / 100 : raw;
+  }
+
+  function getLossEur() {
+    const invest = parseFloat(document.getElementById('np-invest').value) || 0;
+    const raw = parseFloat(document.getElementById('np-loss').value) || 0;
+    return lossUnit === 'pct' ? invest * raw / 100 : raw;
+  }
+
+  function getGainPct() {
+    const invest = parseFloat(document.getElementById('np-invest').value) || 0;
+    const raw = parseFloat(document.getElementById('np-gain').value) || 0;
+    if (invest === 0) return 0;
+    return gainUnit === 'pct' ? raw : (raw / invest * 100);
+  }
+
+  function getLossPct() {
+    const invest = parseFloat(document.getElementById('np-invest').value) || 0;
+    const raw = parseFloat(document.getElementById('np-loss').value) || 0;
+    if (invest === 0) return 0;
+    return lossUnit === 'pct' ? raw : (raw / invest * 100);
+  }
+
+  function fmtEur(v) {
+    return v.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+  }
+
+  function computeRatio() {
+    const invest = parseFloat(document.getElementById('np-invest').value) || 0;
+    const gainEur = getGainEur();
+    const lossEur = getLossEur();
+    const gainPct = getGainPct();
+    const lossPct = getLossPct();
+    const horizon = document.getElementById('np-horizon').value;
+
+    const box = document.getElementById('np-ratio-box');
+
+    if (invest > 0 && gainEur > 0 && lossEur > 0) {
+      box.classList.add('visible');
+
+      document.getElementById('ratio-invest').textContent = fmtEur(invest);
+      document.getElementById('ratio-gain').textContent = '+' + fmtEur(gainEur) + ' (+' + gainPct.toFixed(1) + '%)';
+      document.getElementById('ratio-loss').textContent = '-' + fmtEur(lossEur) + ' (-' + lossPct.toFixed(1) + '%)';
+
+      const horizonLabels = { '30': '30 giorni', '60': '60 giorni', '90': '90 giorni', '180': '6 mesi', '365': '1 anno', '999': 'Più di un anno' };
+      document.getElementById('ratio-horizon').textContent = horizonLabels[horizon] || '—';
+
+      const ratio = gainEur / lossEur;
+      const verdictEl = document.getElementById('ratio-verdict');
+
+      if (ratio >= 2) {
+        verdictEl.className = 'ratio-verdict coherent';
+        verdictEl.textContent = 'L\'obiettivo sembra coerente. Il potenziale guadagno è ' + ratio.toFixed(1) + 'x rispetto alla perdita massima accettata.';
+      } else if (ratio >= 1) {
+        verdictEl.className = 'ratio-verdict warning';
+        verdictEl.textContent = 'L\'obiettivo è realistico, ma il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) suggerisce di approfondire le strategie di gestione del rischio.';
+      } else {
+        verdictEl.className = 'ratio-verdict risky';
+        verdictEl.textContent = 'L\'obiettivo potrebbe richiedere un livello di rischio superiore a quello che hai dichiarato. Il rapporto rischio/rendimento è di ' + ratio.toFixed(1) + 'x.';
+      }
+    } else {
+      box.classList.remove('visible');
+    }
+  }
+
+  document.getElementById('np-horizon').addEventListener('change', computeRatio);
+
+  function analyzeNewPos() {
+    resultOrigin = 'newpos';
+
+    const invest  = parseFloat(document.getElementById('np-invest').value) || 0;
+    const gainEur = getGainEur();
+    const lossEur = getLossEur();
+    const gainPct = getGainPct();
+    const lossPct = getLossPct();
+    const horizon = document.getElementById('np-horizon').value;
+    const ratio   = lossEur > 0 ? gainEur / lossEur : 0;
+
+    const horizonLabels = { '30': '30 giorni', '60': '60 giorni', '90': '90 giorni', '180': '6 mesi', '365': '1 anno', '999': 'più di un anno' };
+    const hLabel = horizonLabels[horizon] || '';
+
+    let d = [];
+
+    d.push('<strong>Abbiamo analizzato il tuo obiettivo di investimento.</strong>');
+
+    if (invest > 0) {
+      d.push('Vuoi investire <strong>' + fmtEur(invest) + '</strong>' + (hLabel ? ' con un orizzonte di <strong>' + hLabel + '</strong>' : '') + '.');
+    }
+
+    if (gainEur > 0 && lossEur > 0) {
+      d.push('Il tuo obiettivo è guadagnare <strong>+' + fmtEur(gainEur) + ' (+' + gainPct.toFixed(1) + '%)</strong>, accettando una perdita massima di <strong>-' + fmtEur(lossEur) + ' (-' + lossPct.toFixed(1) + '%)</strong>.');
+
+      if (ratio >= 2) {
+        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) è favorevole.</em> Questo ti permette di esplorare diverse famiglie di approcci.');
+      } else if (ratio >= 1) {
+        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) è equilibrato ma non offre molto margine.</em> È importante capire come gestire il rischio in modo attivo.');
+      } else {
+        d.push('<em>Il rapporto rischio/rendimento (' + ratio.toFixed(1) + 'x) suggerisce che l\'obiettivo è ambizioso rispetto alla perdita accettata.</em> Prima di investire, è fondamentale capire se le aspettative sono realistiche.');
+      }
+    }
+
+    if (horizon && parseInt(horizon) <= 60) {
+      d.push('Con un orizzonte così breve, <strong>la gestione del timing diventa cruciale</strong>. Il percorso includerà contenuti specifici su come gestire il rischio nel breve termine.');
+    }
+
+    const diagnosis = d.join('<br><br>');
+
+    const steps = [
+      { type: '🎥 Video', title: 'Quanto rischio stai prendendo realmente?', why: 'Perché il primo passo è capire se il tuo obiettivo di rendimento è compatibile con la perdita che sei disposto ad accettare.' },
+      { type: '📚 Caso studio', title: 'Un investitore che ha pianificato prima di entrare', why: 'Un esempio concreto di come si costruisce un piano di investimento partendo dagli obiettivi, non dal titolo.' },
+      { type: '🧠 Tutorial', title: 'Le famiglie di approcci per il tuo profilo', why: 'Non una strategia specifica, ma le categorie di approccio che si adattano al tuo rapporto rischio/rendimento.' },
+      { type: '💬 Discussione', title: 'Come altri investitori hanno costruito il loro piano', why: 'Esperienze reali di chi è partito dalla stessa domanda che ti stai facendo tu.' },
+      { type: '📊 Simulatore', title: 'Simula il tuo investimento nei diversi scenari', why: 'Per visualizzare cosa succede al tuo capitale nei diversi scenari di mercato, prima di investire un solo euro.' },
+      { type: '🎙️ Live', title: 'Sessione Q&A con i mentor', why: 'Per fare le tue domande prima di prendere qualsiasi decisione.' }
     ];
 
     renderResult(diagnosis, steps);
