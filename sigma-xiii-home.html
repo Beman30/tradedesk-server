@@ -711,6 +711,51 @@
       margin: 0;
     }
 
+    .family-technique {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .family-technique-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .family-technique-value {
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      background: var(--bg-elevated);
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-mission {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      margin-top: 18px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      border: none;
+      border-radius: var(--r);
+      color: #0a0a12;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.3s var(--ease);
+      text-align: center;
+    }
+    .btn-mission:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(199,168,108,0.18);
+    }
+
     /* ── LEARN ───────────────────────────────── */
     .learn-list {
       display: flex;
@@ -1543,8 +1588,9 @@
   // ── STRATEGY FAMILIES DATABASE ──
   const families = {
     debitSpread: {
-      name: 'Debit Spread Direzionale',
-      reason: 'Questo approccio potrebbe essere coerente con i tuoi vincoli perché permette di definire in anticipo sia il guadagno massimo sia la perdita massima, con un orizzonte temporale preciso.',
+      name: 'Puntare su un rialzo con rischio definito',
+      technique: 'Bull Call Debit Spread',
+      reason: 'Questo percorso potrebbe essere coerente con i tuoi vincoli perché permette di definire in anticipo sia il guadagno massimo sia la perdita massima, con un orizzonte temporale preciso.',
       pro: [
         'Rischio definito fin dall\'inizio',
         'Non serve un grande movimento del mercato',
@@ -1555,11 +1601,12 @@
         'Richiede una visione direzionale',
         'Ha una scadenza temporale'
       ],
-      study: 'Prima di esplorare questo approccio, è importante capire cosa sono le opzioni, come funziona il concetto di spread e perché il rischio è limitato. Il percorso formativo parte dalle basi.'
+      study: 'In questa prima Missione scoprirai perché Sigma XIII ti ha consigliato proprio questo approccio, come funziona il concetto di spread e quando è realmente adatto al tuo caso.'
     },
     azioniStopLoss: {
-      name: 'Azioni + Gestione del Rischio',
-      reason: 'Questo approccio potrebbe essere adatto a chi preferisce la semplicità. Si acquistano azioni e si definisce un livello di uscita in caso di perdita.',
+      name: 'Investire in azioni con un piano di uscita chiaro',
+      technique: 'Azioni + Stop Loss',
+      reason: 'Questo percorso potrebbe essere adatto a chi preferisce la semplicità. Si investe in azioni definendo fin dall\'inizio un livello di uscita in caso di perdita.',
       pro: [
         'Approccio semplice e intuitivo',
         'Nessun limite al guadagno potenziale',
@@ -1570,11 +1617,12 @@
         'Richiede disciplina nell\'esecuzione',
         'Il capitale è interamente esposto'
       ],
-      study: 'Prima di utilizzare questo approccio, è importante capire come funziona uno stop loss, i suoi limiti (gap di mercato, slippage) e come dimensionare la posizione in base alla perdita massima accettabile.'
+      study: 'In questa prima Missione scoprirai come funziona un piano di uscita, i suoi limiti e come dimensionare la posizione in base alla perdita massima che sei disposto ad accettare.'
     },
     bullPutSpread: {
-      name: 'Strategia a Credito',
-      reason: 'Questo approccio potrebbe essere interessante perché permette di generare un rendimento anche se il mercato non si muove nella direzione attesa, a patto che non scenda oltre un certo livello.',
+      name: 'Guadagnare anche se il mercato non sale molto',
+      technique: 'Bull Put Spread',
+      reason: 'Questo percorso potrebbe essere interessante perché permette di generare un rendimento anche se il mercato non si muove nella direzione attesa, a patto che non scenda oltre un certo livello.',
       pro: [
         'Si incassa un premio subito',
         'Funziona anche con mercato laterale',
@@ -1585,11 +1633,12 @@
         'Richiede comprensione delle opzioni',
         'Ha una scadenza temporale'
       ],
-      study: 'Questo approccio richiede una comprensione di base delle opzioni put, del concetto di premio e di come si costruisce uno spread a credito. Il percorso formativo copre tutti questi aspetti.'
+      study: 'In questa prima Missione scoprirai perché questo approccio è stato selezionato per il tuo profilo e quali concetti di base ti servono per comprenderlo a fondo.'
     },
     protective: {
-      name: 'Struttura Protettiva',
-      reason: 'Questo approccio potrebbe essere adatto se la priorità è limitare la perdita massima. Si acquista l\'asset e contemporaneamente si acquista una protezione.',
+      name: 'Proteggere il portafoglio da un ribasso importante',
+      technique: 'Protective Put',
+      reason: 'Questo percorso potrebbe essere adatto se la tua priorità è limitare la perdita massima, mantenendo il potenziale di guadagno.',
       pro: [
         'Perdita massima nota fin dall\'inizio',
         'Mantieni il potenziale di rialzo',
@@ -1600,11 +1649,12 @@
         'Richiede comprensione delle opzioni',
         'La protezione ha una scadenza'
       ],
-      study: 'Prima di esplorare questo approccio, è importante capire il concetto di "assicurazione" applicata agli investimenti, quanto costa e quando ha senso utilizzarla.'
+      study: 'In questa prima Missione scoprirai il concetto di "assicurazione" applicata agli investimenti, perché Sigma XIII lo ha consigliato e quando ha realmente senso utilizzarlo.'
     },
     attesa: {
-      name: 'Attesa / Nessuna Operazione',
-      reason: 'In base ai vincoli inseriti, potrebbe avere senso non agire immediatamente. A volte la migliore operazione è aspettare di avere più chiarezza.',
+      name: 'Aspettare il momento giusto per agire',
+      technique: 'Nessuna tecnica richiesta',
+      reason: 'In base ai vincoli inseriti, potrebbe avere senso non agire immediatamente. A volte la decisione più intelligente è aspettare di avere più chiarezza.',
       pro: [
         'Nessun rischio di perdita',
         'Tempo per studiare e prepararsi',
@@ -1615,7 +1665,7 @@
         'Rischio di perdere un\'opportunità',
         'L\'attesa non è sempre la scelta migliore'
       ],
-      study: 'Anche la decisione di non agire richiede metodo. Il percorso formativo ti aiuterà a capire quando aspettare è una strategia e quando è solo procrastinazione.'
+      study: 'In questa prima Missione scoprirai quando aspettare è una strategia consapevole e quando invece è solo procrastinazione. Ti aiuteremo a distinguere le due cose.'
     }
   };
 
@@ -1767,9 +1817,9 @@
       html += `<div class="engine-warning">${warning}</div>`;
     }
 
-    html += `<div class="families-label">Famiglie di approccio compatibili</div>`;
+    html += `<div class="families-label">Percorsi consigliati per te</div>`;
 
-    sorted.forEach(([key, score]) => {
+    sorted.forEach(([key, score], idx) => {
       const fam = families[key];
       const isRec = key === bestKey;
       const dots = [1,2,3,4,5].map(i =>
@@ -1781,6 +1831,10 @@
           <div class="family-header">
             <div class="family-name">${fam.name}</div>
             <div class="family-badge">Percorso consigliato</div>
+          </div>
+          <div class="family-technique">
+            <span class="family-technique-label">Tecnica utilizzata</span>
+            <span class="family-technique-value">${fam.technique}</span>
           </div>
           <div class="compat-bar">
             ${dots}
@@ -1798,19 +1852,16 @@
             </div>
           </div>
           <div class="family-study">
-            <h4>Cosa studiare prima</h4>
+            <h4>Inizia da qui</h4>
             <p>${fam.study}</p>
           </div>
+          <button class="btn-mission" onclick="goHome()">INIZIA LA MISSIONE ${idx + 1}</button>
         </div>
       `;
     });
 
     html += `
-      <div class="result-cta">
-        <h3>Vuoi approfondire il percorso consigliato?</h3>
-        <p>Nel Sigma XIII Club troverai video, casi studio, tutorial, simulatori e sessioni live per ogni famiglia di approccio. Tutto pensato per accompagnarti dalla comprensione alla decisione consapevole.</p>
-        <button class="btn-cta" onclick="goHome()">Accedi gratuitamente al Sigma XIII Club per 30 giorni</button>
-        <br>
+      <div class="result-cta" style="margin-top: 24px;">
         <button class="restart-btn" onclick="goHome()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
           Ricomincia da capo
