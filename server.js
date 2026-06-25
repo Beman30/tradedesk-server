@@ -93,6 +93,9 @@ function broadcastSignal(signal) {
   return sent;
 }
 
+// ─── STATIC HTML PAGES ──────────────────────────────────────
+app.get('/beta', (req, res) => res.sendFile(path.join(__dirname, 'sigma-xiii-beta.html')));
+
 // ─── ENDPOINTS ───────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok', agents: agents.size, time: new Date().toISOString() }));
 app.get('/vapid-public-key', (req, res) => res.json({ publicKey: process.env.VAPID_PUBLIC_KEY }));
