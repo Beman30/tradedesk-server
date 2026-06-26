@@ -1177,6 +1177,20 @@
       </div>
 
       <div class="np-field-group">
+        <div class="np-field-label">Guadagno desiderato</div>
+        <div class="np-input-row">
+          <input type="number" id="np-target" placeholder="1.000">
+          <span class="np-unit">$</span>
+        </div>
+        <div class="np-presets">
+          <span class="np-preset" onclick="document.getElementById('np-target').value=500">$500</span>
+          <span class="np-preset" onclick="document.getElementById('np-target').value=1000">$1.000</span>
+          <span class="np-preset" onclick="document.getElementById('np-target').value=2000">$2.000</span>
+          <span class="np-preset" onclick="document.getElementById('np-target').value=5000">$5.000</span>
+        </div>
+      </div>
+
+      <div class="np-field-group">
         <div class="np-field-label">Perdita massima accettata</div>
         <div class="np-input-row">
           <input type="number" id="np-maxloss" placeholder="500">
@@ -1560,7 +1574,7 @@
     return Math.round(v / step) * step;
   }
 
-  function buildSpread(ticker, direction, maxLoss, horizonDays) {
+  function buildSpread(ticker, direction, maxLoss, targetGain, horizonDays) {
     const price = demoPrice(ticker);
     const step = price >= 200 ? 5 : (price >= 50 ? 2.5 : 1);
 
@@ -1575,38 +1589,54 @@
 
     let strategyName, strikeLong, strikeShort, premiumCost, maxGain, rationale, monitor;
 
+    const costRatio = 0.45;
+    const desiredTotalGain = targetGain + maxLoss;
+    const idealContracts = Math.max(1, Math.round(maxLoss / (step * costRatio * 100)));
+    const idealWidth = Math.max(step, roundStrike(desiredTotalGain / (idealContracts * 100) + step * costRatio, step));
+
+    let bestWidth = step, bestContracts = 1, bestDiff = Infinity;
+    for (let w = step; w <= step * 20; w += step) {
+      const cost1 = w * costRatio * 100;
+      const c = Math.max(1, Math.floor(maxLoss / cost1));
+      const totalCost = Math.round(cost1 * c);
+      const gain = (w * c * 100) - totalCost;
+      const diff = Math.abs(gain - targetGain);
+      if (diff < bestDiff && totalCost <= maxLoss * 1.1) {
+        bestDiff = diff;
+        bestWidth = w;
+        bestContracts = c;
+      }
+    }
+
     if (direction === 'rialzista') {
       strategyName = 'Bull Call Debit Spread';
-      strikeLong = roundStrike(price * 0.99, step);
-      strikeShort = roundStrike(price * 1.05, step);
+      strikeLong = roundStrike(price - step, step);
+      strikeShort = roundStrike(strikeLong + bestWidth, step);
       if (strikeLong === strikeShort) strikeShort += step;
       const spreadWidth = strikeShort - strikeLong;
-      premiumCost = Math.round(spreadWidth * 0.45 * 100) / 100;
-      const contracts = Math.max(1, Math.floor(maxLoss / (premiumCost * 100)));
-      premiumCost = Math.round(premiumCost * contracts * 100);
-      maxGain = (spreadWidth * contracts * 100) - premiumCost;
+      premiumCost = Math.round(spreadWidth * costRatio * bestContracts * 100);
+      maxGain = (spreadWidth * bestContracts * 100) - premiumCost;
 
-      rationale = `Il sottostante ${ticker} quota $${price}. Con una visione rialzista e un rischio massimo di $${maxLoss}, Sigma XIII propone un Bull Call Debit Spread. Si acquista la call con strike $${strikeLong} e si vende la call con strike $${strikeShort}. Il costo totale (e la perdita massima) è definito all'apertura. Se ${ticker} sale sopra $${strikeShort} entro la scadenza, la struttura raggiunge il guadagno massimo.`;
+      rationale = `Il sottostante ${ticker} quota $${price}. Con una visione rialzista, un guadagno desiderato di $${targetGain} e un rischio massimo di $${maxLoss}, Sigma XIII propone un Bull Call Debit Spread${bestContracts > 1 ? ' con ' + bestContracts + ' contratti' : ''}. Si acquista la call con strike $${strikeLong} e si vende la call con strike $${strikeShort}. Il costo totale (e la perdita massima) è definito all'apertura. Se ${ticker} sale sopra $${strikeShort} entro la scadenza, la struttura raggiunge il guadagno massimo.`;
       monitor = `Prezzo del sottostante rispetto agli strike · Valore residuo dello spread · Giorni rimanenti alla scadenza · Variazione della volatilità implicita`;
     } else {
       strategyName = 'Bear Put Debit Spread';
-      strikeShort = roundStrike(price * 0.95, step);
-      strikeLong = roundStrike(price * 1.01, step);
-      if (strikeLong === strikeShort) strikeLong += step;
+      strikeLong = roundStrike(price + step, step);
+      strikeShort = roundStrike(strikeLong - bestWidth, step);
+      if (strikeLong === strikeShort) strikeShort -= step;
       const spreadWidth = strikeLong - strikeShort;
-      premiumCost = Math.round(spreadWidth * 0.45 * 100) / 100;
-      const contracts = Math.max(1, Math.floor(maxLoss / (premiumCost * 100)));
-      premiumCost = Math.round(premiumCost * contracts * 100);
-      maxGain = (spreadWidth * contracts * 100) - premiumCost;
+      premiumCost = Math.round(spreadWidth * costRatio * bestContracts * 100);
+      maxGain = (spreadWidth * bestContracts * 100) - premiumCost;
 
-      rationale = `Il sottostante ${ticker} quota $${price}. Con una visione ribassista e un rischio massimo di $${maxLoss}, Sigma XIII propone un Bear Put Debit Spread. Si acquista la put con strike $${strikeLong} e si vende la put con strike $${strikeShort}. Il costo totale (e la perdita massima) è definito all'apertura. Se ${ticker} scende sotto $${strikeShort} entro la scadenza, la struttura raggiunge il guadagno massimo.`;
+      rationale = `Il sottostante ${ticker} quota $${price}. Con una visione ribassista, un guadagno desiderato di $${targetGain} e un rischio massimo di $${maxLoss}, Sigma XIII propone un Bear Put Debit Spread${bestContracts > 1 ? ' con ' + bestContracts + ' contratti' : ''}. Si acquista la put con strike $${strikeLong} e si vende la put con strike $${strikeShort}. Il costo totale (e la perdita massima) è definito all'apertura. Se ${ticker} scende sotto $${strikeShort} entro la scadenza, la struttura raggiunge il guadagno massimo.`;
       monitor = `Prezzo del sottostante rispetto agli strike · Valore residuo dello spread · Giorni rimanenti alla scadenza · Variazione della volatilità implicita`;
     }
 
     return {
       ticker, direction, strategyName, strikeLong, strikeShort,
+      contracts: bestContracts,
       expiry: expiryStr, expiryDate: expDate.toISOString().split('T')[0],
-      premiumCost, maxLoss: premiumCost, maxGain,
+      premiumCost, maxLoss: premiumCost, maxGain, targetGain,
       underlyingPrice: price, rationale, monitor,
       openDate: today.toISOString().split('T')[0]
     };
@@ -1619,17 +1649,19 @@
   function analyzeNewPos() {
     resultOrigin = 'newpos';
 
-    const ticker    = (document.getElementById('np-ticker').value || '').trim().toUpperCase();
-    const direction = document.querySelector('input[name="np-dir"]:checked')?.value || '';
-    const maxLoss   = parseFloat(document.getElementById('np-maxloss').value) || 0;
-    const horizon   = parseInt(document.querySelector('input[name="np-hor"]:checked')?.value || '0');
+    const ticker     = (document.getElementById('np-ticker').value || '').trim().toUpperCase();
+    const direction  = document.querySelector('input[name="np-dir"]:checked')?.value || '';
+    const targetGain = parseFloat(document.getElementById('np-target').value) || 0;
+    const maxLoss    = parseFloat(document.getElementById('np-maxloss').value) || 0;
+    const horizon    = parseInt(document.querySelector('input[name="np-hor"]:checked')?.value || '0');
 
     if (!ticker) return alert('Inserisci il ticker del sottostante.');
     if (!direction) return alert('Seleziona la direzione attesa.');
+    if (targetGain <= 0) return alert('Inserisci il guadagno desiderato.');
     if (maxLoss <= 0) return alert('Inserisci la perdita massima accettata.');
     if (!horizon) return alert('Seleziona l\'orizzonte temporale.');
 
-    const spread = buildSpread(ticker, direction, maxLoss, horizon);
+    const spread = buildSpread(ticker, direction, maxLoss, targetGain, horizon);
     const isBull = direction === 'rialzista';
 
     let html = `
@@ -1655,6 +1687,10 @@
           <div class="strat-field">
             <div class="strat-field-label">Strike Short</div>
             <div class="strat-field-value">${fmtUsd(spread.strikeShort)}</div>
+          </div>
+          <div class="strat-field">
+            <div class="strat-field-label">Contratti</div>
+            <div class="strat-field-value gold">${spread.contracts}</div>
           </div>
           <div class="strat-field">
             <div class="strat-field-label">Guadagno massimo</div>
