@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma XIII — Spread Opening Engine</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1YD246YPC8"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1YD246YPC8');
+  </script>
+  <style>
+    :root {
+      --bg-primary:     #07070c;
+      --bg-card:        #101019;
+      --bg-elevated:    #1c1c28;
+      --bg-input:       #0e0e18;
+      --text-primary:   #eae6dd;
+      --text-secondary: #9896a8;
+      --text-muted:     #56566a;
+      --gold:           #c7a86c;
+      --gold-light:     #ddbf8a;
+      --gold-dim:       #7a6540;
+      --green:          #4a9e6a;
+      --green-dim:      rgba(74,158,106,0.15);
+      --red:            #b85555;
+      --red-dim:        rgba(184,85,85,0.15);
+      --border:         rgba(199,168,108,0.12);
+      --border-hover:   rgba(199,168,108,0.28);
+      --radius:         14px;
+      --radius-sm:      8px;
+      --shadow-md:      0 6px 28px rgba(0,0,0,0.45);
+      --font-serif: 'Georgia', serif;
+      --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono:  'SF Mono', 'Fira Code', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      color: var(--gold-light);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 32px;
+    }
+
+    /* ── FORM ── */
+    .spread-form {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-md);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+    .form-group input, .form-group select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 24px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .btn-add {
+      background: var(--bg-elevated);
+      color: var(--gold-light);
+    }
+    .btn-add:hover { border-color: var(--gold); }
+    .btn-analyze {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-primary);
+      border: none;
+      font-weight: 600;
+    }
+    .btn-analyze:hover { opacity: 0.9; }
+    .btn-analyze:disabled { opacity: 0.4; cursor: wait; }
+    .btn-clear {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .btn-clear:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── CANDIDATES LIST ── */
+    .candidates { margin-bottom: 24px; }
+    .candidate-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      margin: 4px;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+    }
+    .candidate-chip .dir {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .dir-bear { background: var(--red-dim); color: var(--red); }
+    .dir-bull { background: var(--green-dim); color: var(--green); }
+    .candidate-chip .remove {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .candidate-chip .remove:hover { color: var(--red); }
+
+    /* ── RESULTS TABLE ── */
+    .results-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+    }
+    thead { background: var(--bg-elevated); }
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      color: var(--text-primary);
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { background: var(--bg-card); }
+    tbody tr:hover { background: var(--bg-elevated); }
+    .val-green { color: var(--green); }
+    .val-red { color: var(--red); }
+    .val-gold { color: var(--gold-light); }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .rank-1 { background: var(--gold); color: var(--bg-primary); }
+    .rank-2 { background: var(--text-muted); color: var(--bg-primary); }
+    .rank-other { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    /* ── SCREENSHOT UPLOAD ── */
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 24px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+    }
+    .upload-area input { display: none; }
+    .upload-preview {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: var(--radius-sm);
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr 1fr; }
+      body { padding: 16px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Spread Opening Engine</h1>
+    <p class="subtitle">Sigma XIII &mdash; Engine #2 &middot; Monte Carlo Analysis</p>
+
+    <!-- Screenshot upload -->
+    <div class="upload-area" id="uploadArea">
+      <div>Trascina uno screenshot della chain oppure clicca per caricare</div>
+      <div style="margin-top:8px; font-size:0.7rem; color:var(--text-muted)">(funzionalit&agrave; OCR in arrivo &mdash; per ora inserisci i dati manualmente)</div>
+      <input type="file" id="fileInput" accept="image/*">
+      <img class="upload-preview" id="uploadPreview" style="display:none">
+    </div>
+
+    <!-- Input form -->
+    <div class="spread-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ticker</label>
+          <input type="text" id="ticker" placeholder="NVDA" value="">
+        </div>
+        <div class="form-group">
+          <label>Direzione</label>
+          <select id="direction">
+            <option value="BEAR_CALL">Bear Call</option>
+            <option value="BULL_PUT">Bull Put</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo Attuale</label>
+          <input type="number" id="currentPrice" step="0.01" placeholder="194.20">
+        </div>
+        <div class="form-group">
+          <label>IV</label>
+          <input type="number" id="iv" step="0.001" placeholder="0.419">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Short Strike</label>
+          <input type="number" id="shortStrike" step="0.5" placeholder="220">
+        </div>
+        <div class="form-group">
+          <label>Long Strike</label>
+          <input type="number" id="longStrike" step="0.5" placeholder="225">
+        </div>
+        <div class="form-group">
+          <label>Short Price</label>
+          <input type="number" id="shortPrice" step="0.01" placeholder="1.20">
+        </div>
+        <div class="form-group">
+          <label>Long Price</label>
+          <input type="number" id="longPrice" step="0.01" placeholder="0.65">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>DTE (giorni)</label>
+          <input type="number" id="daysToExpiration" step="1" placeholder="56">
+        </div>
+        <div class="form-group">
+          <label>Contratti</label>
+          <input type="number" id="contracts" step="1" value="1" min="1">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-add" id="btnAdd">+ Aggiungi Candidato</button>
+        <button class="btn btn-analyze" id="btnAnalyze" disabled>Analizza &amp; Classifica</button>
+        <button class="btn btn-clear" id="btnClear">Reset</button>
+      </div>
+    </div>
+
+    <!-- Candidates chips -->
+    <div class="candidates" id="candidates"></div>
+
+    <!-- Results -->
+    <div id="results">
+      <div class="empty-state">Aggiungi almeno un candidato e premi Analizza</div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+    let candidates = [];
+
+    const $ = id => document.getElementById(id);
+
+    // Upload area
+    const uploadArea = $('uploadArea');
+    const fileInput = $('fileInput');
+    const preview = $('uploadPreview');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length) showPreview(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(file);
+    }
+
+    // Add candidate
+    $('btnAdd').addEventListener('click', () => {
+      const c = {
+        ticker: $('ticker').value.trim().toUpperCase(),
+        direction: $('direction').value,
+        currentPrice: parseFloat($('currentPrice').value),
+        shortStrike: parseFloat($('shortStrike').value),
+        longStrike: parseFloat($('longStrike').value),
+        shortPrice: parseFloat($('shortPrice').value),
+        longPrice: parseFloat($('longPrice').value),
+        iv: parseFloat($('iv').value),
+        daysToExpiration: parseInt($('daysToExpiration').value),
+        contracts: parseInt($('contracts').value) || 1
+      };
+
+      if (!c.ticker || isNaN(c.currentPrice) || isNaN(c.shortStrike) || isNaN(c.longStrike) ||
+          isNaN(c.shortPrice) || isNaN(c.longPrice) || isNaN(c.iv) || isNaN(c.daysToExpiration)) {
+        alert('Compila tutti i campi');
+        return;
+      }
+
+      candidates.push(c);
+      renderCandidates();
+      clearForm();
+    });
+
+    $('btnClear').addEventListener('click', () => {
+      candidates = [];
+      renderCandidates();
+      $('results').innerHTML = '<div class="empty-state">Aggiungi almeno un candidato e premi Analizza</div>';
+    });
+
+    function clearForm() {
+      ['ticker','currentPrice','shortStrike','longStrike','shortPrice','longPrice','iv','daysToExpiration'].forEach(id => $(id).value = '');
+      $('contracts').value = '1';
+    }
+
+    function renderCandidates() {
+      const el = $('candidates');
+      $('btnAnalyze').disabled = candidates.length === 0;
+      el.innerHTML = candidates.map((c, i) => {
+        const dirClass = c.direction === 'BEAR_CALL' ? 'dir-bear' : 'dir-bull';
+        const dirLabel = c.direction === 'BEAR_CALL' ? 'BC' : 'BP';
+        return `<span class="candidate-chip">
+          <span class="dir ${dirClass}">${dirLabel}</span>
+          ${c.ticker} ${c.shortStrike}/${c.longStrike} · ${c.daysToExpiration}d · x${c.contracts}
+          <span class="remove" data-idx="${i}">&times;</span>
+        </span>`;
+      }).join('');
+      el.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          candidates.splice(parseInt(btn.dataset.idx), 1);
+          renderCandidates();
+        });
+      });
+    }
+
+    // Analyze
+    $('btnAnalyze').addEventListener('click', async () => {
+      if (!candidates.length) return;
+      const btn = $('btnAnalyze');
+      btn.disabled = true;
+      btn.textContent = 'Calcolo MC...';
+
+      try {
+        const res = await fetch(`${API}/rank-spreads`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spreads: candidates })
+        });
+        const ranked = await res.json();
+        if (ranked.error) throw new Error(ranked.error);
+        renderResults(ranked);
+      } catch (e) {
+        $('results').innerHTML = `<div class="empty-state" style="color:var(--red)">Errore: ${e.message}</div>`;
+      } finally {
+        btn.disabled = candidates.length === 0;
+        btn.innerHTML = 'Analizza &amp; Classifica';
+      }
+    });
+
+    function renderResults(ranked) {
+      const cols = [
+        { key: '#',                    label: '#' },
+        { key: 'ticker',              label: 'Ticker' },
+        { key: 'direction',           label: 'Dir' },
+        { key: 'spread',              label: 'Spread' },
+        { key: 'contracts',           label: 'Ctr' },
+        { key: 'credit',              label: 'Credito' },
+        { key: 'maxProfit',           label: 'Max Gain' },
+        { key: 'maxLoss',             label: 'Max Loss' },
+        { key: 'breakEven',           label: 'Break Even' },
+        { key: 'distancePct',         label: 'Dist. BE' },
+        { key: 'touchProbability',    label: 'P(Touch BE)' },
+        { key: 'noTouchProbability',  label: 'P(Safe)' },
+        { key: 'medianFirstTouchDays',label: 'Tempo Mediano' },
+      ];
+
+      let html = '<div class="results-wrap"><table><thead><tr>';
+      cols.forEach(c => html += `<th>${c.label}</th>`);
+      html += '</tr></thead><tbody>';
+
+      ranked.forEach((r, i) => {
+        const rank = i + 1;
+        const badgeClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-other';
+        html += '<tr>';
+        html += `<td><span class="rank-badge ${badgeClass}">${rank}</span></td>`;
+        html += `<td><strong>${r.ticker}</strong></td>`;
+        html += `<td><span class="dir ${r.direction === 'BEAR_CALL' ? 'dir-bear' : 'dir-bull'}">${r.direction === 'BEAR_CALL' ? 'BC' : 'BP'}</span></td>`;
+        html += `<td>${r.spread}</td>`;
+        html += `<td>${r.contracts}</td>`;
+        html += `<td class="val-green">$${r.credit}</td>`;
+        html += `<td class="val-green">$${r.maxProfit}</td>`;
+        html += `<td class="val-red">$${r.maxLoss}</td>`;
+        html += `<td class="val-gold">${r.breakEven}</td>`;
+        html += `<td>${r.distancePct}</td>`;
+        html += `<td class="val-red">${r.touchProbability}</td>`;
+        html += `<td class="val-green">${r.noTouchProbability}</td>`;
+        html += `<td>${r.medianFirstTouchDays}</td>`;
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      $('results').innerHTML = html;
+    }
+  </script>
+</body>
+</html>

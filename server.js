@@ -7,6 +7,8 @@ const path     = require('path');
 const http     = require('http');
 const WebSocket = require('ws');
 
+const { analyzeCreditSpread, rankCreditSpreads } = require('./spread-engine');
+
 const app    = express();
 const server = http.createServer(app);
 const wss    = new WebSocket.Server({ server });
@@ -14,6 +16,7 @@ const PORT   = process.env.PORT || 3000;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use(express.static(__dirname));
 
 webpush.setVapidDetails(
   `mailto:${process.env.VAPID_EMAIL || 'tu@email.com'}`,
@@ -159,6 +162,27 @@ app.post('/send-signal', async (req, res) => {
   res.json({ ok: true, signalId: record.id, agentsSent, pushSent: record.delivered.length });
 });
 
+// ─── SPREAD ENGINE ──────────────────────────────────────────
+app.post('/analyze-spread', (req, res) => {
+  try {
+    const result = analyzeCreditSpread(req.body);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.post('/rank-spreads', (req, res) => {
+  try {
+    const { spreads } = req.body;
+    if (!Array.isArray(spreads) || !spreads.length) return res.status(400).json({ error: 'spreads array richiesto' });
+    const ranked = rankCreditSpreads(spreads);
+    res.json(ranked);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 app.get('/latest-signal', (req, res) => res.json(lastSignal || { signal: null }));
 app.get('/signals', (req, res) => { const data = loadData(); res.json(data.signals.slice(0, 20)); });
 
@@ -175,6 +199,8 @@ Endpoints:
   GET  /agents          → agenti connessi + posizioni
   GET  /clients
   POST /send-signal     → invia a agenti + push
+  POST /analyze-spread  → analisi singolo spread
+  POST /rank-spreads    → classifica spread multipli
   GET  /latest-signal
   GET  /signals
 `);
