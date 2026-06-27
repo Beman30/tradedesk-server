@@ -7,6 +7,8 @@ const path     = require('path');
 const http     = require('http');
 const WebSocket = require('ws');
 
+const { analyzeCreditSpread, rankCreditSpreads } = require('./spread-engine');
+
 const app    = express();
 const server = http.createServer(app);
 const wss    = new WebSocket.Server({ server });
@@ -162,6 +164,29 @@ app.post('/send-signal', async (req, res) => {
 app.get('/latest-signal', (req, res) => res.json(lastSignal || { signal: null }));
 app.get('/signals', (req, res) => { const data = loadData(); res.json(data.signals.slice(0, 20)); });
 
+// ─── SPREAD ENGINE #2 ──────────────────────────────────────
+app.post('/spread/analyze', (req, res) => {
+  try {
+    const result = analyzeCreditSpread(req.body);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.post('/spread/rank', (req, res) => {
+  try {
+    const { spreads } = req.body;
+    if (!Array.isArray(spreads)) return res.status(400).json({ error: 'spreads deve essere un array' });
+    const ranked = rankCreditSpreads(spreads);
+    res.json(ranked);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.use(express.static(__dirname));
+
 // ─── START ───────────────────────────────────────────────────
 server.listen(PORT, () => {
   console.log(`
@@ -177,5 +202,7 @@ Endpoints:
   POST /send-signal     → invia a agenti + push
   GET  /latest-signal
   GET  /signals
+  POST /spread/analyze  → analizza singolo credit spread
+  POST /spread/rank     → classifica multipli spread
 `);
 });
