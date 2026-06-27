@@ -161,6 +161,58 @@
     }
     .candidate-chip .remove:hover { color: var(--red); }
 
+    /* ── JSON MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+    }
+    .modal h3 { color: var(--gold-light); margin-bottom: 12px; font-size: 1rem; }
+    .modal textarea {
+      width: 100%;
+      height: 200px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 12px;
+      resize: vertical;
+    }
+    .modal textarea:focus { outline: none; border-color: var(--gold); }
+    .modal-btns { display: flex; gap: 12px; margin-top: 12px; }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold-light);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .toast.show { opacity: 1; }
+
     /* ── RESULTS TABLE ── */
     .results-wrap {
       overflow-x: auto;
@@ -317,6 +369,8 @@
       <div class="btn-row">
         <button class="btn btn-add" id="btnAdd">+ Aggiungi Candidato</button>
         <button class="btn btn-analyze" id="btnAnalyze" disabled>Analizza &amp; Classifica</button>
+        <button class="btn btn-add" id="btnLoad">Carica da Server</button>
+        <button class="btn btn-add" id="btnImport">Importa JSON</button>
         <button class="btn btn-clear" id="btnClear">Reset</button>
       </div>
     </div>
@@ -329,6 +383,20 @@
       <div class="empty-state">Aggiungi almeno un candidato e premi Analizza</div>
     </div>
   </div>
+
+  <!-- JSON Import Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>Importa Candidati JSON</h3>
+      <p style="color:var(--text-secondary); font-size:0.78rem; margin-bottom:12px;">Incolla il JSON generato da Claude dopo aver analizzato lo screenshot:</p>
+      <textarea id="jsonInput" placeholder='[{"ticker":"NVDA","direction":"BEAR_CALL","currentPrice":194.20,"shortStrike":220,"longStrike":225,"shortPrice":1.20,"longPrice":0.65,"iv":0.419,"daysToExpiration":56,"contracts":3}]'></textarea>
+      <div class="modal-btns">
+        <button class="btn btn-analyze" id="btnImportConfirm">Importa</button>
+        <button class="btn btn-clear" id="btnImportCancel">Annulla</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
 
   <script>
     const API = window.location.origin;
@@ -412,6 +480,49 @@
           renderCandidates();
         });
       });
+    }
+
+    // Load from server
+    $('btnLoad').addEventListener('click', async () => {
+      try {
+        const res = await fetch(`${API}/spread-candidates`);
+        const data = await res.json();
+        if (!data.length) { showToast('Nessun candidato salvato sul server'); return; }
+        candidates = data;
+        renderCandidates();
+        showToast(`${data.length} candidati caricati dal server`);
+      } catch (e) { showToast('Errore: ' + e.message); }
+    });
+
+    // Import JSON modal
+    $('btnImport').addEventListener('click', () => $('modalOverlay').classList.add('open'));
+    $('btnImportCancel').addEventListener('click', () => $('modalOverlay').classList.remove('open'));
+    $('modalOverlay').addEventListener('click', e => { if (e.target === $('modalOverlay')) $('modalOverlay').classList.remove('open'); });
+
+    $('btnImportConfirm').addEventListener('click', () => {
+      try {
+        const data = JSON.parse($('jsonInput').value.trim());
+        const arr = Array.isArray(data) ? data : [data];
+        const required = ['ticker','direction','currentPrice','shortStrike','longStrike','shortPrice','longPrice','iv','daysToExpiration'];
+        for (const c of arr) {
+          for (const k of required) {
+            if (c[k] === undefined || c[k] === null) throw new Error(`Campo mancante: ${k} in ${c.ticker || 'candidato'}`);
+          }
+          if (!c.contracts) c.contracts = 1;
+        }
+        candidates = [...candidates, ...arr];
+        renderCandidates();
+        $('modalOverlay').classList.remove('open');
+        $('jsonInput').value = '';
+        showToast(`${arr.length} candidati importati`);
+      } catch (e) { alert('JSON non valido: ' + e.message); }
+    });
+
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
 
     // Analyze

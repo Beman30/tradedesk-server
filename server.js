@@ -183,6 +183,24 @@ app.post('/rank-spreads', (req, res) => {
   }
 });
 
+const SPREAD_CANDIDATES_FILE = path.join(__dirname, 'data', 'spread-candidates.json');
+
+app.get('/spread-candidates', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(SPREAD_CANDIDATES_FILE, 'utf8'));
+    res.json(data);
+  } catch {
+    res.json([]);
+  }
+});
+
+app.post('/spread-candidates', (req, res) => {
+  const { candidates } = req.body;
+  if (!Array.isArray(candidates)) return res.status(400).json({ error: 'candidates array richiesto' });
+  fs.writeFileSync(SPREAD_CANDIDATES_FILE, JSON.stringify(candidates, null, 2));
+  res.json({ ok: true, count: candidates.length });
+});
+
 app.get('/latest-signal', (req, res) => res.json(lastSignal || { signal: null }));
 app.get('/signals', (req, res) => { const data = loadData(); res.json(data.signals.slice(0, 20)); });
 
