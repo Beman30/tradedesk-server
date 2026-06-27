@@ -154,7 +154,7 @@ function rankCreditSpreads(spreads) {
     .sort((a, b) => {
       const pa = parseFloat(a.touchProbability);
       const pb = parseFloat(b.touchProbability);
-      if (pa !== pb) return pa - pb;
+      if (pa !== pb) return pb - pa;
       return a.maxLoss - b.maxLoss;
     });
 }
