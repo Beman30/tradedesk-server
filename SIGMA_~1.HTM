@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #ffffff; color: #1a1a1a;
+  }
+  h1 { font-size: 21px; margin: 0 0 4px; }
+  h2 { font-size: 14px; margin: 0 0 10px; color: #444; }
+  .module-label { color: #6b5cff; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+
+  .demo-banner {
+    background: #fff7e6; border: 1px solid #f3dfa8; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 18px; font-size: 12.5px; color: #7a5b00; line-height: 1.55;
+  }
+  .demo-banner strong { color: #5c4400; }
+
+  .card-panel {
+    background: #f7f7f8; border: 1px solid #e5e5e7; border-radius: 12px;
+    padding: 18px; margin-bottom: 18px;
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .03em; }
+  .field input {
+    border: 1px solid #d6d6da; border-radius: 8px; padding: 9px 10px; font-size: 14.5px;
+    width: 100%; background: #fff;
+  }
+  .field input:focus { outline: none; border-color: #6b5cff; box-shadow: 0 0 0 3px rgba(107,92,255,.12); }
+
+  .currency-toggle { display: flex; border: 1px solid #d6d6da; border-radius: 8px; overflow: hidden; width: fit-content; }
+  .currency-toggle button {
+    border: none; background: #fff; padding: 8px 14px; font-size: 13.5px; cursor: pointer; color: #555;
+  }
+  .currency-toggle button.active { background: #1a1a1a; color: #fff; }
+  .currency-toggle button:not(:last-child) { border-right: 1px solid #d6d6da; }
+
+  .risk-row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+
+  button#runBtn {
+    background: #1a1a1a; color: #fff; border: none; border-radius: 8px;
+    padding: 11px 24px; font-size: 14.5px; font-weight: 600; cursor: pointer;
+    margin-top: 16px;
+  }
+  button#runBtn:disabled { opacity: .5; cursor: default; }
+  button#runBtn:hover:not(:disabled) { background: #333; }
+
+  #status { font-size: 13px; color: #666; margin-bottom: 12px; min-height: 18px; }
+  #status.error { color: #c0392b; font-weight: 500; }
+
+  #progressWrap { display: none; margin-bottom: 18px; }
+  #progressWrap.active { display: block; }
+  .progress-track { width: 100%; height: 8px; background: #eee; border-radius: 20px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#6b5cff,#1a1a1a); border-radius: 20px; transition: width .25s ease; }
+  .progress-label { font-size: 12px; color: #666; margin-top: 6px; text-align: right; }
+
+  .summary { display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .summary .stat {
+    background: #f7f7f8; border: 1px solid #e5e5e7; border-radius: 12px;
+    padding: 12px 18px; min-width: 120px; flex: 1;
+  }
+  .summary .stat .label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: .03em; }
+  .summary .stat .value { font-size: 19px; font-weight: 700; margin-top: 3px; }
+  .summary .stat.accent-green .value { color: #1e7e34; }
+  .summary .stat.accent-red .value { color: #c0392b; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
+  th { background: #fafafa; font-weight: 600; color: #444; font-size: 11.5px; text-transform: uppercase; letter-spacing: .02em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-weight: 600; font-size: 12.5px; }
+  .badge.high { background: #fde8e8; color: #c0392b; }
+  .badge.mid { background: #fef4e0; color: #b7791f; }
+  .badge.low { background: #e6f6ea; color: #1e7e34; }
+
+  .ev-pos { color: #1e7e34; font-weight: 700; }
+  .ev-neg { color: #c0392b; font-weight: 700; }
+
+  .results-card { background: #fff; border: 1px solid #e5e5e7; border-radius: 12px; padding: 4px 0; overflow: hidden; }
+  .hint { font-size: 11.5px; color: #999; margin-top: 4px; }
+
+  #evNote {
+    font-size: 12px; color: #666; margin-top: 10px; line-height: 1.5;
+  }
+
+  tr.best-row { background: #f3fbf4; }
+  .best-star { color: #1e7e34; margin-right: 5px; }
+  #bestLegend {
+    font-size: 12px; color: #1e7e34; margin-top: 8px; line-height: 1.5;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  #trustSection { display: none; margin-top: 18px; }
+  #trustSection.active { display: block; }
+  .trust-prompt {
+    cursor: pointer; font-size: 13.5px; color: #333; font-weight: 600;
+    padding: 12px 16px; background: #f7f7f8; border: 1px solid #e5e5e7; border-radius: 10px;
+    user-select: none;
+  }
+  .trust-prompt:hover { background: #f0f0f1; }
+  .trust-prompt .arrow { float: right; transition: transform .2s ease; }
+  .trust-prompt.open .arrow { transform: rotate(90deg); }
+  .trust-detail {
+    display: none; margin-top: 10px; padding: 16px 18px; background: #fafafa;
+    border: 1px solid #e5e5e7; border-radius: 10px; font-size: 13px; line-height: 1.6; color: #333;
+  }
+  .trust-detail.open { display: block; }
+  .trust-detail h3 { font-size: 13.5px; margin: 0 0 8px; }
+  .trust-detail p { margin: 0 0 10px; }
+  .trust-detail p:last-child { margin-bottom: 0; }
+
+  #buyPanel { display: none; margin-top: 18px; }
+  #buyPanel.active { display: block; }
+  .buy-card {
+    background: #f7f7f8; border: 1px solid #e5e5e7; border-radius: 12px; padding: 18px;
+  }
+  .buy-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 16px;
+  }
+  .buy-field { background: #fff; border: 1px solid #e5e5e7; border-radius: 8px; padding: 9px 12px; }
+  .buy-field .label { font-size: 10.5px; color: #888; text-transform: uppercase; letter-spacing: .03em; }
+  .buy-field .value { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  button#buyBtn {
+    background: #1e7e34; color: #fff; border: none; border-radius: 8px;
+    padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%;
+  }
+  button#buyBtn:hover { background: #176b2b; }
+
+  #orderScreen { display: none; margin-top: 18px; }
+  #orderScreen.active { display: block; }
+  .order-card {
+    background: #f0faf1; border: 1px solid #bfe6c6; border-radius: 12px; padding: 22px;
+  }
+  .order-card h2 { color: #1e7e34; }
+  .order-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #dcefe0; font-size: 14px; }
+  .order-row .k { color: #555; }
+  .order-row .v { font-weight: 700; }
+  button#backBtn {
+    background: #fff; color: #333; border: 1px solid #d6d6da; border-radius: 8px;
+    padding: 9px 18px; font-size: 13.5px; cursor: pointer;
+  }
+  button#analisiBtn {
+    background: #1a1a1a; color: #fff; border: none; border-radius: 8px;
+    padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  button#analisiBtn:hover { background: #333; }
+  button#analisiBtn:disabled { opacity: .6; cursor: default; }
+  .mockup-note { font-size: 11.5px; color: #888; margin-top: 12px; }
+
+  button#closeOpBtn {
+    background: #fff; color: #1a1a1a; border: 1px solid #d6d6da; border-radius: 8px;
+    padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  button#closeOpBtn:hover { background: #f0f0f1; }
+  button#closeOpBtn:disabled { opacity: .6; cursor: default; }
+
+  #archiveSection { margin-top: 26px; }
+  #archiveSection h2 { margin-bottom: 12px; }
+  .archive-card {
+    background: #f7f7f8; border: 1px solid #e5e5e7; border-radius: 12px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .archive-card .archive-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+  .archive-card .archive-head .tk { font-size: 15px; font-weight: 700; }
+  .archive-card .archive-head .dt { font-size: 12px; color: #888; }
+  .delete-archive-btn {
+    background: none; border: none; color: #c0392b; font-size: 11.5px; cursor: pointer;
+    padding: 3px 6px; font-weight: 600; opacity: .75;
+  }
+  .delete-archive-btn:hover { opacity: 1; text-decoration: underline; }
+  .archive-card .decision-line { font-size: 13.5px; margin-top: 8px; color: #333; }
+  .archive-resolved-note { font-size: 12.5px; color: #b7791f; margin-top: 8px; line-height: 1.5; }
+  button.verifica-btn {
+    background: #1a1a1a; color: #fff; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px;
+  }
+  button.verifica-btn:hover { background: #333; }
+  button.verifica-btn:disabled { opacity: .6; cursor: default; }
+  .compare-box { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+  .compare-box .col { flex: 1; min-width: 180px; background: #fff; border: 1px solid #e5e5e7; border-radius: 10px; padding: 12px 14px; }
+  .compare-box .col .ctitle { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
+  .compare-box .col .cval { font-size: 17px; font-weight: 700; }
+  .compare-box .col .csub { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .why-return-box {
+    background: #f5f2ff; border: 1px solid #ddd4fb; border-radius: 10px;
+    padding: 14px 16px; margin-top: 16px;
+  }
+  .why-return-title {
+    font-size: 13.5px; font-weight: 700; color: #4b3fc4; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .why-return-title .icon { font-size: 15px; }
+  .why-return-box p { font-size: 12.5px; color: #444; line-height: 1.55; margin: 0 0 8px; }
+  .why-return-box p:last-child { margin-bottom: 0; }
+  .cycle-step-title { font-size: 12.5px; font-weight: 700; color: #4b3fc4; margin-bottom: 3px; }
+  .cycle-step p { margin: 0; }
+  .cycle-arrow { text-align: center; color: #b3a9f5; font-size: 13px; margin: 6px 0; }
+
+  .growth-hook {
+    position: relative; background: linear-gradient(135deg,#f5f2ff,#eef7ff);
+    border: 1px solid #ddd4fb; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  }
+  .growth-hook .gh-close {
+    position: absolute; top: 10px; right: 12px; background: none; border: none;
+    color: #999; font-size: 15px; cursor: pointer; line-height: 1;
+  }
+  .growth-hook .gh-close:hover { color: #555; }
+  .growth-hook .gh-title { font-size: 14.5px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .growth-hook .gh-sub { font-size: 13px; color: #444; margin-bottom: 12px; }
+  .growth-hook ul { list-style: none; margin: 0 0 14px; padding: 0; }
+  .growth-hook li { font-size: 13px; color: #333; margin-bottom: 6px; }
+  .growth-hook li:last-child { margin-bottom: 0; }
+  button#createAccountBtn {
+    background: #1a1a1a; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 22px; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  }
+  button#createAccountBtn:hover { background: #333; }
+  button#createAccountBtn:disabled { opacity: .6; cursor: default; background: #1e7e34; }
+
+  #realMonitor { margin-bottom: 6px; }
+  .rm-card {
+    background: #fff; border: 1px solid #dcefe0; border-radius: 10px; padding: 14px 16px; margin-bottom: 4px;
+  }
+  .rm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .rm-head .rm-title { font-size: 13px; font-weight: 700; color: #333; display:flex; align-items:center; gap:6px; }
+  .rm-head .rm-refresh { background: none; border: none; color: #6b5cff; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .rm-head .rm-refresh:disabled { opacity: .5; cursor: default; }
+  .rm-verdict { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 700; margin-bottom: 10px; }
+  .rm-verdict.up { background: #e6f6ea; color: #1e7e34; }
+  .rm-verdict.down { background: #fde8e8; color: #c0392b; }
+  .rm-verdict.hit { background: #fef4e0; color: #b7791f; }
+  .rm-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+  .rm-grid .rm-stat .rm-label { font-size: 10.5px; color: #888; text-transform: uppercase; letter-spacing: .03em; }
+  .rm-grid .rm-stat .rm-value { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .rm-note { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<h1>Sigma Trade Coach</h1>
+<div class="module-label">Motore 1 · Azioni</div>
+<div class="subtitle">Analizza, monitora e impara da ogni trade.</div>
+
+<div class="demo-banner">
+  <strong>Versione dimostrativa.</strong> Dati di mercato reali (prezzo, volatilità, dividendo, storico prezzi a 1 anno) congelati al 9 luglio 2026 per tre titoli: <strong>AAPL, MSFT, TSLA</strong>. Nella versione live i dati si aggiornano automaticamente per qualsiasi ticker.
+</div>
+
+<div class="why-return-box">
+  <div class="why-return-title"><span class="icon">📈</span>Cosa imparerai da ogni trade</div>
+  <div class="cycle-step">
+    <div class="cycle-step-title">① Crea il trade</div>
+    <p>Ricevi una fotografia statistica dell'operazione e scopri quale combinazione di rischio, stop e target è statisticamente più vantaggiosa.</p>
+  </div>
+  <div class="cycle-arrow">↓</div>
+  <div class="cycle-step">
+    <div class="cycle-step-title">② Monitora il mercato</div>
+    <p>Le probabilità cambiano continuamente insieme al mercato. Torna quando vuoi e scopri se il trade sta migliorando o peggiorando. Se il profilo statistico si deteriora, puoi decidere se mantenerlo o chiuderlo.</p>
+  </div>
+  <div class="cycle-arrow">↓</div>
+  <div class="cycle-step">
+    <div class="cycle-step-title">③ Chiudi il trade</div>
+    <p>Anche dopo la chiusura, Sigma continua a seguire il trade e confronta la tua decisione con ciò che sarebbe successo restando nel mercato.</p>
+  </div>
+  <div class="cycle-arrow">↓</div>
+  <div class="cycle-step">
+    <div class="cycle-step-title">④ Migliora il tuo metodo</div>
+    <p>Ogni operazione diventa un caso di studio. Più trade accumuli, più Sigma identifica i tuoi punti di forza, gli errori ricorrenti e le decisioni che hanno realmente migliorato i tuoi risultati.</p>
+  </div>
+</div>
+
+<div class="card-panel">
+  <h2>Trade</h2>
+  <div class="grid">
+    <div class="field">
+      <label>Ticker</label>
+      <input id="ticker" type="text" placeholder="AAPL, MSFT o TSLA" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Stop Loss (prezzo)</label>
+      <input id="sl" type="number" step="0.01" placeholder="es. 290">
+    </div>
+    <div class="field">
+      <label>Take Profit (prezzo, opzionale)</label>
+      <input id="tp" type="number" step="0.01" placeholder="es. 340 (lascia vuoto se non hai un target)">
+    </div>
+  </div>
+
+  <div style="margin-top:16px;" class="risk-row">
+    <div class="field" style="width:160px;">
+      <label>Rischio sullo Stop Loss</label>
+      <input id="riskAmount" type="number" step="1" placeholder="es. 500">
+    </div>
+    <div class="field">
+      <label>Valuta</label>
+      <div class="currency-toggle" id="currencyToggle">
+        <button type="button" data-cur="$" class="active">$</button>
+        <button type="button" data-cur="€">€</button>
+      </div>
+    </div>
+    <button id="runBtn">Calcola</button>
+  </div>
+  <div class="hint">Quanto sei disposto a perdere se il prezzo tocca lo Stop Loss: da qui calcoliamo la size della posizione e il guadagno potenziale a Take Profit.</div>
+
+  <div style="margin-top:16px;" class="risk-row">
+    <div class="field" style="width:180px;">
+      <label><input type="checkbox" id="trailingEnabled" style="width:auto;margin-right:6px;vertical-align:middle;">Trailing Stop</label>
+    </div>
+    <div class="field" style="width:180px;">
+      <label>Distanza trailing (%)</label>
+      <input id="trailingDistance" type="number" step="0.1" placeholder="es. 5 (%)" disabled>
+    </div>
+  </div>
+  <div class="hint">Percentuale di distanza dal massimo raggiunto (long) o dal minimo raggiunto (short): se metti 5, lo stop resta sempre il 5% sotto/sopra il livello migliore toccato dal prezzo, e sale/scende con esso senza mai tornare indietro. Lascia vuoto per usare la stessa distanza percentuale del tuo Stop Loss iniziale.</div>
+</div>
+
+<div id="status"></div>
+<div id="progressWrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0%</div>
+</div>
+<div id="summary"></div>
+<div id="resultsWrap"></div>
+
+<div id="trustSection">
+  <div class="trust-prompt" id="trustPrompt">Ti stai chiedendo perché dovresti fidarti? <span class="arrow">›</span></div>
+  <div class="trust-detail" id="trustDetail">
+    <h3>Perché questi numeri non sono inventati</h3>
+    <p>Ogni risultato deriva da decine di migliaia di simulazioni. Il motore ricostruisce migliaia di possibili evoluzioni future del prezzo utilizzando volatilità, distribuzione storica dei movimenti, dividendi, tempo residuo e altri fattori di mercato. Successivamente conta quante volte il prezzo raggiunge lo stop, quante volte raggiunge il target e quante rimane ancora aperto. L'EV rappresenta la media di tutti questi scenari.</p>
+    <h3>Perché fidarsi?</h3>
+    <p>Non chiederti se il motore ha ragione. Chiediti se è più preciso della tua intuizione. Prendi gli ultimi 20 trade che hai fatto. Inseriscili nel simulatore. Tra qualche settimana confronta ciò che era previsto con ciò che è realmente accaduto. Se il motore non ti aiuta, smetti di usarlo. Se invece migliora le tue decisioni, allora avrai la tua risposta.</p>
+  </div>
+</div>
+
+<div id="buyPanel">
+  <div class="buy-card">
+    <h2>Operazione</h2>
+    <div class="buy-grid" id="buyGrid"></div>
+    <button id="buyBtn">1. Crea ordine</button>
+  </div>
+</div>
+
+<div id="orderScreen">
+  <div class="order-card">
+    <div id="orderDetails"></div>
+    <div id="realMonitor"></div>
+    <div id="demoComparison"></div>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+      <button id="analisiBtn" style="flex:1;">Analisi</button>
+      <button id="backBtn">Modifica operazione</button>
+      <button id="closeOpBtn">Chiudi operazione</button>
+      <button id="closeDemoBtn" style="background:#fff;color:#c0392b;border:1px solid #f0c4c4;border-radius:8px;padding:9px 18px;font-size:13.5px;cursor:pointer;">Annulla (senza tracciare)</button>
+    </div>
+    <div class="mockup-note">Modalità Demo — nessun ordine reale è stato inviato. Questo passaggio si collegherà in futuro alla pagina di invio ordine.</div>
+  </div>
+</div>
+
+<div id="archiveSection">
+  <h2>Operazioni chiuse</h2>
+  <div id="growthHook"></div>
+  <div id="archiveList"></div>
+</div>
+
+<script>
+const HORIZONS = [7, 14, 30, 60, 90, 120];
+let currency = '$';
+
+const MC_PATHS = 10000;
+
+// --- Dati di mercato reali, congelati al 9 luglio 2026, per la versione demo condivisibile
+// (senza Claude/Cowork). Prezzo, volatilità implicita, volatilità storica, dividendo e un anno
+// di chiusure giornaliere reali per AAPL, MSFT, TSLA. ---
+const DEMO_DATA = {
+  AAPL: { price: 312.0, ivUnderlying: 0.2743998999587616, hv: 0.283266305818606, dividendYield: 0.34/100,
+    time: ["2025-07-10T13:30:00Z","2025-07-11T13:30:00Z","2025-07-14T13:30:00Z","2025-07-15T13:30:00Z","2025-07-16T13:30:00Z","2025-07-17T13:30:00Z","2025-07-18T13:30:00Z","2025-07-21T13:30:00Z","2025-07-22T13:30:00Z","2025-07-23T13:30:00Z","2025-07-24T13:30:00Z","2025-07-25T13:30:00Z","2025-07-28T13:30:00Z","2025-07-29T13:30:00Z","2025-07-30T13:30:00Z","2025-07-31T13:30:00Z","2025-08-01T13:30:00Z","2025-08-04T13:30:00Z","2025-08-05T13:30:00Z","2025-08-06T13:30:00Z","2025-08-07T13:30:00Z","2025-08-08T13:30:00Z","2025-08-11T13:30:00Z","2025-08-12T13:30:00Z","2025-08-13T13:30:00Z","2025-08-14T13:30:00Z","2025-08-15T13:30:00Z","2025-08-18T13:30:00Z","2025-08-19T13:30:00Z","2025-08-20T13:30:00Z","2025-08-21T13:30:00Z","2025-08-22T13:30:00Z","2025-08-25T13:30:00Z","2025-08-26T13:30:00Z","2025-08-27T13:30:00Z","2025-08-28T13:30:00Z","2025-08-29T13:30:00Z","2025-09-02T13:30:00Z","2025-09-03T13:30:00Z","2025-09-04T13:30:00Z","2025-09-05T13:30:00Z","2025-09-08T13:30:00Z","2025-09-09T13:30:00Z","2025-09-10T13:30:00Z","2025-09-11T13:30:00Z","2025-09-12T13:30:00Z","2025-09-15T13:30:00Z","2025-09-16T13:30:00Z","2025-09-17T13:30:00Z","2025-09-18T13:30:00Z","2025-09-19T13:30:00Z","2025-09-22T13:30:00Z","2025-09-23T13:30:00Z","2025-09-24T13:30:00Z","2025-09-25T13:30:00Z","2025-09-26T13:30:00Z","2025-09-29T13:30:00Z","2025-09-30T13:30:00Z","2025-10-01T13:30:00Z","2025-10-02T13:30:00Z","2025-10-03T13:30:00Z","2025-10-06T13:30:00Z","2025-10-07T13:30:00Z","2025-10-08T13:30:00Z","2025-10-09T13:30:00Z","2025-10-10T13:30:00Z","2025-10-13T13:30:00Z","2025-10-14T13:30:00Z","2025-10-15T13:30:00Z","2025-10-16T13:30:00Z","2025-10-17T13:30:00Z","2025-10-20T13:30:00Z","2025-10-21T13:30:00Z","2025-10-22T13:30:00Z","2025-10-23T13:30:00Z","2025-10-24T13:30:00Z","2025-10-27T13:30:00Z","2025-10-28T13:30:00Z","2025-10-29T13:30:00Z","2025-10-30T13:30:00Z","2025-10-31T13:30:00Z","2025-11-03T14:30:00Z","2025-11-04T14:30:00Z","2025-11-05T14:30:00Z","2025-11-06T14:30:00Z","2025-11-07T14:30:00Z","2025-11-10T14:30:00Z","2025-11-11T14:30:00Z","2025-11-12T14:30:00Z","2025-11-13T14:30:00Z","2025-11-14T14:30:00Z","2025-11-17T14:30:00Z","2025-11-18T14:30:00Z","2025-11-19T14:30:00Z","2025-11-20T14:30:00Z","2025-11-21T14:30:00Z","2025-11-24T14:30:00Z","2025-11-25T14:30:00Z","2025-11-26T14:30:00Z","2025-11-28T14:30:00Z","2025-12-01T14:30:00Z","2025-12-02T14:30:00Z","2025-12-03T14:30:00Z","2025-12-04T14:30:00Z","2025-12-05T14:30:00Z","2025-12-08T14:30:00Z","2025-12-09T14:30:00Z","2025-12-10T14:30:00Z","2025-12-11T14:30:00Z","2025-12-12T14:30:00Z","2025-12-15T14:30:00Z","2025-12-16T14:30:00Z","2025-12-17T14:30:00Z","2025-12-18T14:30:00Z","2025-12-19T14:30:00Z","2025-12-22T14:30:00Z","2025-12-23T14:30:00Z","2025-12-24T14:30:00Z","2025-12-26T14:30:00Z","2025-12-29T14:30:00Z","2025-12-30T14:30:00Z","2025-12-31T14:30:00Z","2026-01-02T14:30:00Z","2026-01-05T14:30:00Z","2026-01-06T14:30:00Z","2026-01-07T14:30:00Z","2026-01-08T14:30:00Z","2026-01-09T14:30:00Z","2026-01-12T14:30:00Z","2026-01-13T14:30:00Z","2026-01-14T14:30:00Z","2026-01-15T14:30:00Z","2026-01-16T14:30:00Z","2026-01-20T14:30:00Z","2026-01-21T14:30:00Z","2026-01-22T14:30:00Z","2026-01-23T14:30:00Z","2026-01-26T14:30:00Z","2026-01-27T14:30:00Z","2026-01-28T14:30:00Z","2026-01-29T14:30:00Z","2026-01-30T14:30:00Z","2026-02-02T14:30:00Z","2026-02-03T14:30:00Z","2026-02-04T14:30:00Z","2026-02-05T14:30:00Z","2026-02-06T14:30:00Z","2026-02-09T14:30:00Z","2026-02-10T14:30:00Z","2026-02-11T14:30:00Z","2026-02-12T14:30:00Z","2026-02-13T14:30:00Z","2026-02-17T14:30:00Z","2026-02-18T14:30:00Z","2026-02-19T14:30:00Z","2026-02-20T14:30:00Z","2026-02-23T14:30:00Z","2026-02-24T14:30:00Z","2026-02-25T14:30:00Z","2026-02-26T14:30:00Z","2026-02-27T14:30:00Z","2026-03-02T14:30:00Z","2026-03-03T14:30:00Z","2026-03-04T14:30:00Z","2026-03-05T14:30:00Z","2026-03-06T14:30:00Z","2026-03-09T13:30:00Z","2026-03-10T13:30:00Z","2026-03-11T13:30:00Z","2026-03-12T13:30:00Z","2026-03-13T13:30:00Z","2026-03-16T13:30:00Z","2026-03-17T13:30:00Z","2026-03-18T13:30:00Z","2026-03-19T13:30:00Z","2026-03-20T13:30:00Z","2026-03-23T13:30:00Z","2026-03-24T13:30:00Z","2026-03-25T13:30:00Z","2026-03-26T13:30:00Z","2026-03-27T13:30:00Z","2026-03-30T13:30:00Z","2026-03-31T13:30:00Z","2026-04-01T13:30:00Z","2026-04-02T13:30:00Z","2026-04-06T13:30:00Z","2026-04-07T13:30:00Z","2026-04-08T13:30:00Z","2026-04-09T13:30:00Z","2026-04-10T13:30:00Z","2026-04-13T13:30:00Z","2026-04-14T13:30:00Z","2026-04-15T13:30:00Z","2026-04-16T13:30:00Z","2026-04-17T13:30:00Z","2026-04-20T13:30:00Z","2026-04-21T13:30:00Z","2026-04-22T13:30:00Z","2026-04-23T13:30:00Z","2026-04-24T13:30:00Z","2026-04-27T13:30:00Z","2026-04-28T13:30:00Z","2026-04-29T13:30:00Z","2026-04-30T13:30:00Z","2026-05-01T13:30:00Z","2026-05-04T13:30:00Z","2026-05-05T13:30:00Z","2026-05-06T13:30:00Z","2026-05-07T13:30:00Z","2026-05-08T13:30:00Z","2026-05-11T13:30:00Z","2026-05-12T13:30:00Z","2026-05-13T13:30:00Z","2026-05-14T13:30:00Z","2026-05-15T13:30:00Z","2026-05-18T13:30:00Z","2026-05-19T13:30:00Z","2026-05-20T13:30:00Z","2026-05-21T13:30:00Z","2026-05-22T13:30:00Z","2026-05-26T13:30:00Z","2026-05-27T13:30:00Z","2026-05-28T13:30:00Z","2026-05-29T13:30:00Z","2026-06-01T13:30:00Z","2026-06-02T13:30:00Z","2026-06-03T13:30:00Z","2026-06-04T13:30:00Z","2026-06-05T13:30:00Z","2026-06-08T13:30:00Z","2026-06-09T13:30:00Z","2026-06-10T13:30:00Z","2026-06-11T13:30:00Z","2026-06-12T13:30:00Z","2026-06-15T13:30:00Z","2026-06-16T13:30:00Z","2026-06-17T13:30:00Z","2026-06-18T13:30:00Z","2026-06-22T13:30:00Z","2026-06-23T13:30:00Z","2026-06-24T13:30:00Z","2026-06-25T13:30:00Z","2026-06-26T13:30:00Z","2026-06-29T13:30:00Z","2026-06-30T13:30:00Z","2026-07-01T13:30:00Z","2026-07-02T13:30:00Z","2026-07-06T13:30:00Z","2026-07-07T13:30:00Z","2026-07-08T13:30:00Z","2026-07-09T13:30:00Z"],
+    close: [212.41,211.16,208.62,209.11,210.16,210.02,211.18,212.48,214.4,214.15,213.76,213.88,214.05,211.27,209.05,207.57,202.38,203.35,202.92,213.25,220.03,229.35,227.18,229.65,233.33,232.78,231.59,230.89,230.56,226.01,224.9,227.76,227.16,229.31,230.49,232.56,232.14,229.72,238.47,239.78,239.69,237.88,234.35,226.79,230.03,234.07,236.7,238.15,238.99,237.88,245.5,256.08,254.43,252.31,256.87,255.46,254.43,254.63,255.45,257.13,258.02,256.69,256.48,258.06,254.04,245.27,247.66,247.77,249.34,247.45,252.29,262.24,262.77,258.45,259.58,262.82,268.81,269,269.7,271.4,270.37,269.05,270.04,270.14,269.77,268.47,269.43,275.25,273.47,272.95,272.41,267.46,267.44,268.56,266.25,271.49,275.92,276.97,277.55,278.85,283.1,286.19,284.15,280.7,278.78,277.89,277.18,278.78,278.03,278.28,274.11,274.61,271.84,272.19,273.67,270.97,272.36,273.81,273.4,273.76,273.08,271.86,271.01,267.26,262.36,260.33,259.04,259.37,260.25,261.05,259.96,258.21,255.53,246.7,247.65,248.35,248.04,255.41,258.27,256.44,258.28,259.48,270.01,269.48,276.49,275.91,278.12,274.62,273.68,275.5,261.73,255.78,263.88,264.35,260.58,264.58,266.18,272.14,274.23,272.95,264.18,264.72,263.75,262.52,260.29,257.46,259.88,260.83,260.81,255.76,250.12,252.82,254.23,249.94,248.96,247.99,251.49,251.64,252.62,252.89,248.8,246.63,253.79,255.63,255.92,258.86,253.5,258.9,260.49,260.48,259.2,258.83,266.43,263.4,270.23,273.05,266.17,273.17,273.43,271.06,267.61,270.71,270.17,271.35,280.14,276.83,284.18,287.51,287.44,293.32,292.68,294.8,298.87,298.21,300.23,297.84,298.97,302.25,304.99,308.82,308.33,310.85,312.51,312.06,306.31,315.2,310.26,311.23,307.34,301.54,290.55,291.58,295.63,291.13,296.42,299.24,295.95,298.01,297.01,294.3,293.08,275.15,283.78,281.74,289.36,294.38,308.63,312.66,310.66,313.39,312] },
+  MSFT: { price: 376.77, ivUnderlying: 0.43023516338243667, hv: 0.35717166464135985, dividendYield: 0.93/100,
+    time: ["2025-07-10T13:30:00Z","2025-07-11T13:30:00Z","2025-07-14T13:30:00Z","2025-07-15T13:30:00Z","2025-07-16T13:30:00Z","2025-07-17T13:30:00Z","2025-07-18T13:30:00Z","2025-07-21T13:30:00Z","2025-07-22T13:30:00Z","2025-07-23T13:30:00Z","2025-07-24T13:30:00Z","2025-07-25T13:30:00Z","2025-07-28T13:30:00Z","2025-07-29T13:30:00Z","2025-07-30T13:30:00Z","2025-07-31T13:30:00Z","2025-08-01T13:30:00Z","2025-08-04T13:30:00Z","2025-08-05T13:30:00Z","2025-08-06T13:30:00Z","2025-08-07T13:30:00Z","2025-08-08T13:30:00Z","2025-08-11T13:30:00Z","2025-08-12T13:30:00Z","2025-08-13T13:30:00Z","2025-08-14T13:30:00Z","2025-08-15T13:30:00Z","2025-08-18T13:30:00Z","2025-08-19T13:30:00Z","2025-08-20T13:30:00Z","2025-08-21T13:30:00Z","2025-08-22T13:30:00Z","2025-08-25T13:30:00Z","2025-08-26T13:30:00Z","2025-08-27T13:30:00Z","2025-08-28T13:30:00Z","2025-08-29T13:30:00Z","2025-09-02T13:30:00Z","2025-09-03T13:30:00Z","2025-09-04T13:30:00Z","2025-09-05T13:30:00Z","2025-09-08T13:30:00Z","2025-09-09T13:30:00Z","2025-09-10T13:30:00Z","2025-09-11T13:30:00Z","2025-09-12T13:30:00Z","2025-09-15T13:30:00Z","2025-09-16T13:30:00Z","2025-09-17T13:30:00Z","2025-09-18T13:30:00Z","2025-09-19T13:30:00Z","2025-09-22T13:30:00Z","2025-09-23T13:30:00Z","2025-09-24T13:30:00Z","2025-09-25T13:30:00Z","2025-09-26T13:30:00Z","2025-09-29T13:30:00Z","2025-09-30T13:30:00Z","2025-10-01T13:30:00Z","2025-10-02T13:30:00Z","2025-10-03T13:30:00Z","2025-10-06T13:30:00Z","2025-10-07T13:30:00Z","2025-10-08T13:30:00Z","2025-10-09T13:30:00Z","2025-10-10T13:30:00Z","2025-10-13T13:30:00Z","2025-10-14T13:30:00Z","2025-10-15T13:30:00Z","2025-10-16T13:30:00Z","2025-10-17T13:30:00Z","2025-10-20T13:30:00Z","2025-10-21T13:30:00Z","2025-10-22T13:30:00Z","2025-10-23T13:30:00Z","2025-10-24T13:30:00Z","2025-10-27T13:30:00Z","2025-10-28T13:30:00Z","2025-10-29T13:30:00Z","2025-10-30T13:30:00Z","2025-10-31T13:30:00Z","2025-11-03T14:30:00Z","2025-11-04T14:30:00Z","2025-11-05T14:30:00Z","2025-11-06T14:30:00Z","2025-11-07T14:30:00Z","2025-11-10T14:30:00Z","2025-11-11T14:30:00Z","2025-11-12T14:30:00Z","2025-11-13T14:30:00Z","2025-11-14T14:30:00Z","2025-11-17T14:30:00Z","2025-11-18T14:30:00Z","2025-11-19T14:30:00Z","2025-11-20T14:30:00Z","2025-11-21T14:30:00Z","2025-11-24T14:30:00Z","2025-11-25T14:30:00Z","2025-11-26T14:30:00Z","2025-11-28T14:30:00Z","2025-12-01T14:30:00Z","2025-12-02T14:30:00Z","2025-12-03T14:30:00Z","2025-12-04T14:30:00Z","2025-12-05T14:30:00Z","2025-12-08T14:30:00Z","2025-12-09T14:30:00Z","2025-12-10T14:30:00Z","2025-12-11T14:30:00Z","2025-12-12T14:30:00Z","2025-12-15T14:30:00Z","2025-12-16T14:30:00Z","2025-12-17T14:30:00Z","2025-12-18T14:30:00Z","2025-12-19T14:30:00Z","2025-12-22T14:30:00Z","2025-12-23T14:30:00Z","2025-12-24T14:30:00Z","2025-12-26T14:30:00Z","2025-12-29T14:30:00Z","2025-12-30T14:30:00Z","2025-12-31T14:30:00Z","2026-01-02T14:30:00Z","2026-01-05T14:30:00Z","2026-01-06T14:30:00Z","2026-01-07T14:30:00Z","2026-01-08T14:30:00Z","2026-01-09T14:30:00Z","2026-01-12T14:30:00Z","2026-01-13T14:30:00Z","2026-01-14T14:30:00Z","2026-01-15T14:30:00Z","2026-01-16T14:30:00Z","2026-01-20T14:30:00Z","2026-01-21T14:30:00Z","2026-01-22T14:30:00Z","2026-01-23T14:30:00Z","2026-01-26T14:30:00Z","2026-01-27T14:30:00Z","2026-01-28T14:30:00Z","2026-01-29T14:30:00Z","2026-01-30T14:30:00Z","2026-02-02T14:30:00Z","2026-02-03T14:30:00Z","2026-02-04T14:30:00Z","2026-02-05T14:30:00Z","2026-02-06T14:30:00Z","2026-02-09T14:30:00Z","2026-02-10T14:30:00Z","2026-02-11T14:30:00Z","2026-02-12T14:30:00Z","2026-02-13T14:30:00Z","2026-02-17T14:30:00Z","2026-02-18T14:30:00Z","2026-02-19T14:30:00Z","2026-02-20T14:30:00Z","2026-02-23T14:30:00Z","2026-02-24T14:30:00Z","2026-02-25T14:30:00Z","2026-02-26T14:30:00Z","2026-02-27T14:30:00Z","2026-03-02T14:30:00Z","2026-03-03T14:30:00Z","2026-03-04T14:30:00Z","2026-03-05T14:30:00Z","2026-03-06T14:30:00Z","2026-03-09T13:30:00Z","2026-03-10T13:30:00Z","2026-03-11T13:30:00Z","2026-03-12T13:30:00Z","2026-03-13T13:30:00Z","2026-03-16T13:30:00Z","2026-03-17T13:30:00Z","2026-03-18T13:30:00Z","2026-03-19T13:30:00Z","2026-03-20T13:30:00Z","2026-03-23T13:30:00Z","2026-03-24T13:30:00Z","2026-03-25T13:30:00Z","2026-03-26T13:30:00Z","2026-03-27T13:30:00Z","2026-03-30T13:30:00Z","2026-03-31T13:30:00Z","2026-04-01T13:30:00Z","2026-04-02T13:30:00Z","2026-04-06T13:30:00Z","2026-04-07T13:30:00Z","2026-04-08T13:30:00Z","2026-04-09T13:30:00Z","2026-04-10T13:30:00Z","2026-04-13T13:30:00Z","2026-04-14T13:30:00Z","2026-04-15T13:30:00Z","2026-04-16T13:30:00Z","2026-04-17T13:30:00Z","2026-04-20T13:30:00Z","2026-04-21T13:30:00Z","2026-04-22T13:30:00Z","2026-04-23T13:30:00Z","2026-04-24T13:30:00Z","2026-04-27T13:30:00Z","2026-04-28T13:30:00Z","2026-04-29T13:30:00Z","2026-04-30T13:30:00Z","2026-05-01T13:30:00Z","2026-05-04T13:30:00Z","2026-05-05T13:30:00Z","2026-05-06T13:30:00Z","2026-05-07T13:30:00Z","2026-05-08T13:30:00Z","2026-05-11T13:30:00Z","2026-05-12T13:30:00Z","2026-05-13T13:30:00Z","2026-05-14T13:30:00Z","2026-05-15T13:30:00Z","2026-05-18T13:30:00Z","2026-05-19T13:30:00Z","2026-05-20T13:30:00Z","2026-05-21T13:30:00Z","2026-05-22T13:30:00Z","2026-05-26T13:30:00Z","2026-05-27T13:30:00Z","2026-05-28T13:30:00Z","2026-05-29T13:30:00Z","2026-06-01T13:30:00Z","2026-06-02T13:30:00Z","2026-06-03T13:30:00Z","2026-06-04T13:30:00Z","2026-06-05T13:30:00Z","2026-06-08T13:30:00Z","2026-06-09T13:30:00Z","2026-06-10T13:30:00Z","2026-06-11T13:30:00Z","2026-06-12T13:30:00Z","2026-06-15T13:30:00Z","2026-06-16T13:30:00Z","2026-06-17T13:30:00Z","2026-06-18T13:30:00Z","2026-06-22T13:30:00Z","2026-06-23T13:30:00Z","2026-06-24T13:30:00Z","2026-06-25T13:30:00Z","2026-06-26T13:30:00Z","2026-06-29T13:30:00Z","2026-06-30T13:30:00Z","2026-07-01T13:30:00Z","2026-07-02T13:30:00Z","2026-07-06T13:30:00Z","2026-07-07T13:30:00Z","2026-07-08T13:30:00Z","2026-07-09T13:30:00Z"],
+    close: [501.48,503.32,503.02,505.82,505.62,511.7,510.05,510.06,505.27,505.87,510.88,513.71,512.5,512.57,513.24,533.5,524.11,535.64,527.75,524.94,520.84,522.04,521.77,529.24,520.58,522.48,520.17,517.1,509.77,505.72,504.24,507.23,504.26,502.04,506.74,509.64,506.69,505.12,505.35,507.97,495,498.2,498.41,500.37,501.01,509.9,515.36,509.04,510.02,508.45,517.93,514.45,509.23,510.15,507.03,511.46,514.6,517.95,519.71,515.74,517.35,528.57,523.98,524.85,522.4,510.96,514.05,513.57,513.43,511.61,513.58,516.79,517.66,520.54,520.56,523.61,531.52,542.07,541.55,525.76,517.81,517.03,514.33,507.16,497.1,496.82,506,508.68,511.14,503.29,510.18,507.49,493.79,487.12,478.43,472.12,474,476.99,485.5,492.01,486.74,490,477.73,480.84,483.16,491.02,492.02,478.56,483.47,478.53,474.82,476.39,476.12,483.98,485.92,484.92,486.85,488.02,487.71,487.1,487.48,483.62,472.94,472.85,478.51,483.47,478.11,479.28,477.18,470.67,459.38,456.66,459.86,454.52,444.11,451.14,465.95,470.28,480.58,481.63,433.5,430.29,423.37,411.21,414.19,393.67,401.14,413.6,413.27,404.37,401.84,401.32,396.86,399.6,398.46,397.23,384.47,389,400.6,401.72,392.74,398.55,403.93,405.2,410.68,408.96,409.41,405.76,404.88,401.86,395.55,399.95,399.41,391.79,389.02,381.87,383,372.74,371.04,365.97,356.77,358.96,370.17,369.37,373.46,372.88,372.29,374.33,373.07,370.87,384.37,393.11,411.22,420.26,422.79,418.07,424.16,432.92,415.75,424.62,424.82,429.25,424.46,407.78,414.44,413.62,411.38,413.96,420.77,415.12,412.66,407.77,405.21,409.43,421.92,423.54,417.42,421.06,419.09,418.57,416.03,412.67,426.99,450.24,460.52,441.31,427.34,428.05,416.67,411.74,403.41,397.36,390.34,390.74,399.76,393.83,378.91,379.4,367.34,373.94,365.46,352.83,372.97,368.57,373.02,384.28,390.49,386.74,388.84,383.34,377.14] },
+  TSLA: { price: 393.49, ivUnderlying: 0.4817337252305899, hv: 0.4843296475526973, dividendYield: 0.0/100,
+    time: ["2025-07-10T13:30:00Z","2025-07-11T13:30:00Z","2025-07-14T13:30:00Z","2025-07-15T13:30:00Z","2025-07-16T13:30:00Z","2025-07-17T13:30:00Z","2025-07-18T13:30:00Z","2025-07-21T13:30:00Z","2025-07-22T13:30:00Z","2025-07-23T13:30:00Z","2025-07-24T13:30:00Z","2025-07-25T13:30:00Z","2025-07-28T13:30:00Z","2025-07-29T13:30:00Z","2025-07-30T13:30:00Z","2025-07-31T13:30:00Z","2025-08-01T13:30:00Z","2025-08-04T13:30:00Z","2025-08-05T13:30:00Z","2025-08-06T13:30:00Z","2025-08-07T13:30:00Z","2025-08-08T13:30:00Z","2025-08-11T13:30:00Z","2025-08-12T13:30:00Z","2025-08-13T13:30:00Z","2025-08-14T13:30:00Z","2025-08-15T13:30:00Z","2025-08-18T13:30:00Z","2025-08-19T13:30:00Z","2025-08-20T13:30:00Z","2025-08-21T13:30:00Z","2025-08-22T13:30:00Z","2025-08-25T13:30:00Z","2025-08-26T13:30:00Z","2025-08-27T13:30:00Z","2025-08-28T13:30:00Z","2025-08-29T13:30:00Z","2025-09-02T13:30:00Z","2025-09-03T13:30:00Z","2025-09-04T13:30:00Z","2025-09-05T13:30:00Z","2025-09-08T13:30:00Z","2025-09-09T13:30:00Z","2025-09-10T13:30:00Z","2025-09-11T13:30:00Z","2025-09-12T13:30:00Z","2025-09-15T13:30:00Z","2025-09-16T13:30:00Z","2025-09-17T13:30:00Z","2025-09-18T13:30:00Z","2025-09-19T13:30:00Z","2025-09-22T13:30:00Z","2025-09-23T13:30:00Z","2025-09-24T13:30:00Z","2025-09-25T13:30:00Z","2025-09-26T13:30:00Z","2025-09-29T13:30:00Z","2025-09-30T13:30:00Z","2025-10-01T13:30:00Z","2025-10-02T13:30:00Z","2025-10-03T13:30:00Z","2025-10-06T13:30:00Z","2025-10-07T13:30:00Z","2025-10-08T13:30:00Z","2025-10-09T13:30:00Z","2025-10-10T13:30:00Z","2025-10-13T13:30:00Z","2025-10-14T13:30:00Z","2025-10-15T13:30:00Z","2025-10-16T13:30:00Z","2025-10-17T13:30:00Z","2025-10-20T13:30:00Z","2025-10-21T13:30:00Z","2025-10-22T13:30:00Z","2025-10-23T13:30:00Z","2025-10-24T13:30:00Z","2025-10-27T13:30:00Z","2025-10-28T13:30:00Z","2025-10-29T13:30:00Z","2025-10-30T13:30:00Z","2025-10-31T13:30:00Z","2025-11-03T14:30:00Z","2025-11-04T14:30:00Z","2025-11-05T14:30:00Z","2025-11-06T14:30:00Z","2025-11-07T14:30:00Z","2025-11-10T14:30:00Z","2025-11-11T14:30:00Z","2025-11-12T14:30:00Z","2025-11-13T14:30:00Z","2025-11-14T14:30:00Z","2025-11-17T14:30:00Z","2025-11-18T14:30:00Z","2025-11-19T14:30:00Z","2025-11-20T14:30:00Z","2025-11-21T14:30:00Z","2025-11-24T14:30:00Z","2025-11-25T14:30:00Z","2025-11-26T14:30:00Z","2025-11-28T14:30:00Z","2025-12-01T14:30:00Z","2025-12-02T14:30:00Z","2025-12-03T14:30:00Z","2025-12-04T14:30:00Z","2025-12-05T14:30:00Z","2025-12-08T14:30:00Z","2025-12-09T14:30:00Z","2025-12-10T14:30:00Z","2025-12-11T14:30:00Z","2025-12-12T14:30:00Z","2025-12-15T14:30:00Z","2025-12-16T14:30:00Z","2025-12-17T14:30:00Z","2025-12-18T14:30:00Z","2025-12-19T14:30:00Z","2025-12-22T14:30:00Z","2025-12-23T14:30:00Z","2025-12-24T14:30:00Z","2025-12-26T14:30:00Z","2025-12-29T14:30:00Z","2025-12-30T14:30:00Z","2025-12-31T14:30:00Z","2026-01-02T14:30:00Z","2026-01-05T14:30:00Z","2026-01-06T14:30:00Z","2026-01-07T14:30:00Z","2026-01-08T14:30:00Z","2026-01-09T14:30:00Z","2026-01-12T14:30:00Z","2026-01-13T14:30:00Z","2026-01-14T14:30:00Z","2026-01-15T14:30:00Z","2026-01-16T14:30:00Z","2026-01-20T14:30:00Z","2026-01-21T14:30:00Z","2026-01-22T14:30:00Z","2026-01-23T14:30:00Z","2026-01-26T14:30:00Z","2026-01-27T14:30:00Z","2026-01-28T14:30:00Z","2026-01-29T14:30:00Z","2026-01-30T14:30:00Z","2026-02-02T14:30:00Z","2026-02-03T14:30:00Z","2026-02-04T14:30:00Z","2026-02-05T14:30:00Z","2026-02-06T14:30:00Z","2026-02-09T14:30:00Z","2026-02-10T14:30:00Z","2026-02-11T14:30:00Z","2026-02-12T14:30:00Z","2026-02-13T14:30:00Z","2026-02-17T14:30:00Z","2026-02-18T14:30:00Z","2026-02-19T14:30:00Z","2026-02-20T14:30:00Z","2026-02-23T14:30:00Z","2026-02-24T14:30:00Z","2026-02-25T14:30:00Z","2026-02-26T14:30:00Z","2026-02-27T14:30:00Z","2026-03-02T14:30:00Z","2026-03-03T14:30:00Z","2026-03-04T14:30:00Z","2026-03-05T14:30:00Z","2026-03-06T14:30:00Z","2026-03-09T13:30:00Z","2026-03-10T13:30:00Z","2026-03-11T13:30:00Z","2026-03-12T13:30:00Z","2026-03-13T13:30:00Z","2026-03-16T13:30:00Z","2026-03-17T13:30:00Z","2026-03-18T13:30:00Z","2026-03-19T13:30:00Z","2026-03-20T13:30:00Z","2026-03-23T13:30:00Z","2026-03-24T13:30:00Z","2026-03-25T13:30:00Z","2026-03-26T13:30:00Z","2026-03-27T13:30:00Z","2026-03-30T13:30:00Z","2026-03-31T13:30:00Z","2026-04-01T13:30:00Z","2026-04-02T13:30:00Z","2026-04-06T13:30:00Z","2026-04-07T13:30:00Z","2026-04-08T13:30:00Z","2026-04-09T13:30:00Z","2026-04-10T13:30:00Z","2026-04-13T13:30:00Z","2026-04-14T13:30:00Z","2026-04-15T13:30:00Z","2026-04-16T13:30:00Z","2026-04-17T13:30:00Z","2026-04-20T13:30:00Z","2026-04-21T13:30:00Z","2026-04-22T13:30:00Z","2026-04-23T13:30:00Z","2026-04-24T13:30:00Z","2026-04-27T13:30:00Z","2026-04-28T13:30:00Z","2026-04-29T13:30:00Z","2026-04-30T13:30:00Z","2026-05-01T13:30:00Z","2026-05-04T13:30:00Z","2026-05-05T13:30:00Z","2026-05-06T13:30:00Z","2026-05-07T13:30:00Z","2026-05-08T13:30:00Z","2026-05-11T13:30:00Z","2026-05-12T13:30:00Z","2026-05-13T13:30:00Z","2026-05-14T13:30:00Z","2026-05-15T13:30:00Z","2026-05-18T13:30:00Z","2026-05-19T13:30:00Z","2026-05-20T13:30:00Z","2026-05-21T13:30:00Z","2026-05-22T13:30:00Z","2026-05-26T13:30:00Z","2026-05-27T13:30:00Z","2026-05-28T13:30:00Z","2026-05-29T13:30:00Z","2026-06-01T13:30:00Z","2026-06-02T13:30:00Z","2026-06-03T13:30:00Z","2026-06-04T13:30:00Z","2026-06-05T13:30:00Z","2026-06-08T13:30:00Z","2026-06-09T13:30:00Z","2026-06-10T13:30:00Z","2026-06-11T13:30:00Z","2026-06-12T13:30:00Z","2026-06-15T13:30:00Z","2026-06-16T13:30:00Z","2026-06-17T13:30:00Z","2026-06-18T13:30:00Z","2026-06-22T13:30:00Z","2026-06-23T13:30:00Z","2026-06-24T13:30:00Z","2026-06-25T13:30:00Z","2026-06-26T13:30:00Z","2026-06-29T13:30:00Z","2026-06-30T13:30:00Z","2026-07-01T13:30:00Z","2026-07-02T13:30:00Z","2026-07-06T13:30:00Z","2026-07-07T13:30:00Z","2026-07-08T13:30:00Z","2026-07-09T13:30:00Z"],
+    close: [309.87,313.51,316.9,310.78,321.67,319.41,329.65,328.49,332.11,332.56,305.3,316.06,325.59,321.2,319.04,308.27,302.63,309.26,308.72,319.91,322.27,329.65,339.03,340.84,339.38,335.58,330.56,335.16,329.31,323.9,320.11,340.01,346.6,351.67,349.6,345.98,333.87,329.36,334.09,338.53,350.84,346.4,346.97,347.79,368.81,395.94,410.04,421.62,425.86,416.85,426.07,434.21,425.85,442.79,423.39,440.4,443.21,444.72,459.46,436,429.83,453.25,433.09,438.69,435.54,413.49,435.9,429.24,435.15,428.75,439.31,447.43,442.6,438.97,448.98,433.72,452.42,460.55,461.51,440.1,456.56,468.37,444.26,462.07,445.91,429.52,445.23,439.62,430.6,401.99,404.35,408.92,401.25,403.99,395.23,391.09,417.78,419.4,426.58,430.17,430.14,429.24,446.74,454.53,455,439.58,445.17,451.45,446.89,458.96,475.31,489.88,467.26,483.37,481.2,488.73,485.56,485.4,475.19,459.64,454.43,449.72,438.07,451.67,432.96,431.41,435.8,445.01,448.96,447.2,439.2,438.57,437.5,419.25,431.44,449.36,449.06,435.2,430.9,431.46,416.56,430.41,421.81,421.96,406.01,397.21,411.11,417.32,425.21,428.27,417.07,417.44,410.63,411.32,411.71,411.82,399.83,409.38,417.4,408.58,402.51,403.32,392.43,405.94,405.55,396.73,398.68,399.24,407.82,395.01,391.2,395.56,399.27,392.78,380.3,367.96,380.85,383.03,385.95,372.11,361.83,355.28,371.75,381.26,360.59,352.82,346.65,343.25,345.62,348.95,352.42,364.2,391.95,388.9,400.62,392.5,386.42,387.51,373.72,376.3,378.67,376.02,372.8,381.63,390.82,392.51,389.37,398.73,411.79,428.35,445,433.45,445.27,443.3,422.24,409.99,404.11,417.26,417.85,426.01,433.59,440.36,442.1,435.79,415.88,423.74,423.7,418.45,391,408.95,396.68,381.59,399.15,406.43,411.15,404.66,396.38,400.49,405.05,381.61,375.53,375.12,379.71,411.84,420.6,425.3,393.45,419.77,402.9,394.06,393.7] }
+};
+
+function demoBars(ticker){
+  const d = DEMO_DATA[ticker];
+  if (!d) return [];
+  return d.time.map((t, i) => ({ t: new Date(t).getTime(), close: d.close[i] })).filter(b => b.close != null);
+}
+
+// PRNG deterministico (mulberry32): a parità di seme produce sempre la stessa sequenza.
+// Il seme viene calcolato dai dati di mercato usati in una simulazione, cosi che risultati
+// identici (stesse condizioni) restino identici tra un click e l'altro, e cambino solo
+// quando cambia davvero qualcosa (prezzo, volatilità, parametri del trade).
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hashSeed(str){
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function randNormal(rng){
+  let u1 = 0;
+  while (u1 === 0) u1 = rng();
+  const u2 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+function barrierHit(price, B, S0){
+  return B >= S0 ? price >= B : price <= B;
+}
+
+document.getElementById('trailingEnabled').addEventListener('change', (e) => {
+  document.getElementById('trailingDistance').disabled = !e.target.checked;
+});
+
+// Stima frequenza e ampiezza degli shock storici (giorni con rendimento anomalo, es. earnings/notizie)
+// dai prezzi storici, cosi da poter riprodurre nella simulazione movimenti realistici oltre al rumore normale.
+function computeJumpStats(closes){
+  const rets = [];
+  for (let i = 1; i < closes.length; i++){
+    if (closes[i] > 0 && closes[i-1] > 0) rets.push(Math.log(closes[i] / closes[i-1]));
+  }
+  if (rets.length < 30) return { jumpProb: 0, jumpPool: [] };
+  const mean = rets.reduce((a,b) => a+b, 0) / rets.length;
+  const variance = rets.reduce((a,b) => a + (b-mean)*(b-mean), 0) / rets.length;
+  const std = Math.sqrt(variance);
+  const jumpPool = rets.filter(r => Math.abs(r - mean) > 3 * std);
+  return { jumpProb: jumpPool.length / rets.length, jumpPool };
+}
+
+// Monte Carlo: simula MC_PATHS traiettorie giornaliere del prezzo fino a `days`.
+// Il rumore giornaliero e' calibrato sulla IV di mercato; la varianza totale resta ancorata
+// a quella IV, ma una parte viene redistribuita in shock discreti realistici (calibrati sullo storico)
+// invece di un'unica campana gaussiana uniforme. Il drift tiene conto del dividendo atteso.
+function simulateHorizon(S0, sl, tp, hasTP, long, sigma, days, gainAmount, dividendYield, jumpStats, shares, trailing){
+  const dt = 1 / 365;
+  const drift = -(dividendYield || 0) - 0.5 * sigma * sigma;
+
+  const totalVarDaily = (sigma * sigma) * dt;
+  const jumpProb = jumpStats && jumpStats.jumpProb ? jumpStats.jumpProb : 0;
+  const jumpPool = jumpStats && jumpStats.jumpPool ? jumpStats.jumpPool : [];
+  const jumpVarDaily = (jumpProb > 0 && jumpPool.length > 0)
+    ? jumpProb * (jumpPool.reduce((a,b) => a + b*b, 0) / jumpPool.length)
+    : 0;
+  const diffusiveVarDaily = Math.max(totalVarDaily - jumpVarDaily, totalVarDaily * 0.15);
+  const diffusiveStd = Math.sqrt(diffusiveVarDaily);
+  const hasJumps = jumpProb > 0 && jumpPool.length > 0;
+
+  const trailingOn = !!(trailing && trailing.enabled && trailing.pct > 0);
+
+  const seedStr = [
+    S0.toFixed(4), sl.toFixed(4), hasTP ? tp.toFixed(4) : '-', long, sigma.toFixed(6), days,
+    hasTP ? gainAmount.toFixed(2) : '-', (dividendYield||0).toFixed(6), jumpProb.toFixed(6),
+    jumpPool.length, shares, trailingOn, trailingOn ? trailing.pct.toFixed(6) : '-'
+  ].join('|');
+  const rng = mulberry32(hashSeed(seedStr));
+
+  let countTP = 0, countSLOriginal = 0, countTrailExit = 0, sumPayoff = 0;
+
+  for (let i = 0; i < MC_PATHS; i++){
+    let price = S0;
+    let outcome = 'NONE';
+    let exitPrice = null;
+    let runningExtreme = S0;
+    let effectiveSL = sl;
+    let trailed = false;
+
+    for (let d = 0; d < days; d++){
+      price *= Math.exp(drift * dt + diffusiveStd * randNormal(rng));
+      if (hasJumps && rng() < jumpProb){
+        price *= Math.exp(jumpPool[Math.floor(rng() * jumpPool.length)]);
+      }
+
+      if (trailingOn){
+        if (long){
+          runningExtreme = Math.max(runningExtreme, price);
+          effectiveSL = Math.max(effectiveSL, runningExtreme * (1 - trailing.pct));
+        } else {
+          runningExtreme = Math.min(runningExtreme, price);
+          effectiveSL = Math.min(effectiveSL, runningExtreme * (1 + trailing.pct));
+        }
+        if ((long && effectiveSL > sl) || (!long && effectiveSL < sl)) trailed = true;
+      }
+
+      const hitTP = hasTP && (long ? price >= tp : price <= tp);
+      const hitSL = long ? price <= effectiveSL : price >= effectiveSL;
+
+      if (hitTP && hitSL){
+        outcome = rng() < 0.5 ? 'TP' : 'SL';
+        exitPrice = outcome === 'TP' ? tp : effectiveSL;
+        break;
+      } else if (hitTP){
+        outcome = 'TP'; exitPrice = tp; break;
+      } else if (hitSL){
+        outcome = 'SL'; exitPrice = effectiveSL; break;
+      }
+    }
+
+    if (outcome === 'TP'){
+      countTP++; sumPayoff += gainAmount;
+    } else if (outcome === 'SL'){
+      if (trailed) countTrailExit++; else countSLOriginal++;
+      const payoff = long ? (exitPrice - S0) * shares : (S0 - exitPrice) * shares;
+      sumPayoff += payoff;
+    } else {
+      // Posizione ancora aperta a fine periodo (che ci sia o no un TP): valutata
+      // mark-to-market al prezzo simulato finale, non a zero.
+      const payoff = long ? (price - S0) * shares : (S0 - price) * shares;
+      sumPayoff += payoff;
+    }
+  }
+
+  const countSL = countSLOriginal + countTrailExit;
+  return {
+    pTP: countTP / MC_PATHS,
+    pSL: countSL / MC_PATHS,
+    pSLOriginal: countSLOriginal / MC_PATHS,
+    pTrailExit: countTrailExit / MC_PATHS,
+    pNone: (MC_PATHS - countTP - countSL) / MC_PATHS,
+    ev: sumPayoff / MC_PATHS
+  };
+}
+
+function fmtPct(p){ return (p*100).toFixed(1) + '%'; }
+function fmtMoney(v){
+  const sign = v < 0 ? '-' : '';
+  return sign + currency + Math.abs(v).toLocaleString('it-IT', { maximumFractionDigits: 0 });
+}
+function badgeClass(p){ return p >= 0.6 ? 'high' : (p >= 0.3 ? 'mid' : 'low'); }
+function todayUTC(){ const d = new Date(); return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); }
+function parseExpDate(yyyymmdd){
+  const y = +yyyymmdd.slice(0,4), m = +yyyymmdd.slice(4,6)-1, d = +yyyymmdd.slice(6,8);
+  return new Date(Date.UTC(y,m,d));
+}
+
+function setStatus(msg, isError){
+  const el = document.getElementById('status');
+  el.textContent = msg || '';
+  el.className = isError ? 'error' : '';
+}
+
+function setProgress(pct, active){
+  const wrap = document.getElementById('progressWrap');
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  wrap.className = active ? 'active' : '';
+  fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  label.textContent = Math.round(pct) + '%';
+}
+
+// Versione demo: nessuna chiamata di rete. Il ticker viene validato contro i tre titoli
+// congelati (AAPL, MSFT, TSLA); qualunque altro ticker restituisce un errore chiaro.
+async function resolveUnderlying(tickerRaw){
+  const ticker = tickerRaw.trim().toUpperCase();
+  if (!DEMO_DATA[ticker]) throw new Error('Ticker "' + ticker + '" non incluso in questa demo. Prova AAPL, MSFT o TSLA.');
+  return { contractId: ticker, hasOptions: false, description: ticker };
+}
+
+async function getSpotAndHV(contractId){
+  const d = DEMO_DATA[contractId];
+  if (!d) throw new Error('Dati non disponibili per questo ticker in demo.');
+  return { price: d.price, ivUnderlying: d.ivUnderlying, hv: d.hv, dividendYield: d.dividendYield };
+}
+
+async function getJumpStats(contractId){
+  const d = DEMO_DATA[contractId];
+  if (!d) return { jumpProb: 0, jumpPool: [] };
+  return computeJumpStats(d.close);
+}
+
+// Scarica lo storico prezzi giornalieri reali (non simulati) e li appaia con le rispettive date,
+// cosi da poter "camminare" sul prezzo reale invece che su un percorso Monte Carlo.
+// Nella demo i dati sono quelli congelati in DEMO_DATA, non una chiamata di rete.
+async function fetchDailyCloses(contractId, period){
+  return demoBars(contractId);
+}
+
+// Percorre una serie di prezzi REALI (non simulati) applicando le stesse regole di
+// SL/TP/trailing usate nel Montecarlo, per scoprire se e quando il prezzo avrebbe
+// davvero toccato uno dei due livelli. Usata dal motore "shadow" (Motore 2) per
+// confrontare la decisione di chiusura con l'alternativa di restare aperti.
+function walkRealPath(bars, sl, tp, hasTP, long, trailingEnabled, trailingPct, startRunningExtreme, startEffectiveSL){
+  let runningExtreme = startRunningExtreme;
+  let effectiveSL = startEffectiveSL;
+  for (const bar of bars){
+    const price = bar.close;
+    if (trailingEnabled){
+      if (long){
+        runningExtreme = Math.max(runningExtreme, price);
+        effectiveSL = Math.max(effectiveSL, runningExtreme * (1 - trailingPct));
+      } else {
+        runningExtreme = Math.min(runningExtreme, price);
+        effectiveSL = Math.min(effectiveSL, runningExtreme * (1 + trailingPct));
+      }
+    }
+    const hitTP = hasTP && (long ? price >= tp : price <= tp);
+    const hitSL = long ? price <= effectiveSL : price >= effectiveSL;
+    if (hitTP || hitSL){
+      if (hitTP) return { hit: 'TP', exitPrice: tp, exitDate: bar.t, runningExtreme, effectiveSL };
+      return { hit: 'SL', exitPrice: effectiveSL, exitDate: bar.t, runningExtreme, effectiveSL };
+    }
+  }
+  const last = bars.length ? bars[bars.length - 1] : null;
+  return { hit: 'NONE', exitPrice: last ? last.close : null, exitDate: last ? last.t : null, runningExtreme, effectiveSL };
+}
+
+document.getElementById('currencyToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-cur]');
+  if (!btn) return;
+  currency = btn.getAttribute('data-cur');
+  document.querySelectorAll('#currencyToggle button').forEach(b => b.classList.toggle('active', b === btn));
+});
+
+// Nucleo di calcolo condiviso: usato sia dal pulsante "Calcola" sia, in seguito,
+// dal ricalcolo "Analisi" di un'operazione demo salvata (stessi parametri, dati di mercato aggiornati).
+// In questa versione demo hasOptions e' sempre false (nessun dato opzioni congelato), quindi
+// la sigma usata per ogni orizzonte e' sempre la volatilita' reale (implicita o storica) del titolo.
+async function computeTradeAnalysis(ticker, sl, tp, riskAmount, trailingEnabled, trailingDistanceInput, horizonsList, onStep){
+  const hasTP = !isNaN(tp) && tp !== null;
+
+  const { contractId, hasOptions, description } = await resolveUnderlying(ticker);
+  onStep && onStep();
+
+  const { price: S0, ivUnderlying, hv, dividendYield } = await getSpotAndHV(contractId);
+  if (!S0) throw new Error('Impossibile recuperare il prezzo attuale.');
+
+  const riskPerShare = Math.abs(S0 - sl);
+  if (riskPerShare <= 0) throw new Error('Lo Stop Loss non può coincidere con il prezzo attuale.');
+  const long = sl < S0;
+  if (hasTP && (tp >= S0) !== long) throw new Error('TP e SL devono essere su lati opposti rispetto al prezzo attuale.');
+
+  const rewardPerShare = hasTP ? Math.abs(tp - S0) : null;
+  const shares = Math.max(1, Math.round(riskAmount / riskPerShare));
+  const actualRisk = shares * riskPerShare;
+  const gainAmount = hasTP ? shares * rewardPerShare : null;
+  const rr = hasTP ? rewardPerShare / riskPerShare : null;
+
+  const trailing = {
+    enabled: trailingEnabled,
+    pct: (!isNaN(trailingDistanceInput) && trailingDistanceInput > 0) ? (trailingDistanceInput / 100) : (riskPerShare / S0)
+  };
+
+  const jumpStats = await getJumpStats(contractId);
+  onStep && onStep();
+
+  onStep && onStep();
+
+  const fallbackSigma = ivUnderlying || hv;
+  const rows = [];
+
+  for (let i = 0; i < horizonsList.length; i++){
+    const days = horizonsList[i];
+    const sigma = fallbackSigma || 0.3;
+
+    // yield al thread UI prima di ogni simulazione, cosi la progress bar resta fluida
+    await new Promise(r => setTimeout(r, 0));
+    const { pTP, pSL, pSLOriginal, pTrailExit, pNone, ev } = simulateHorizon(S0, sl, tp, hasTP, long, sigma, days, gainAmount, dividendYield, jumpStats, shares, trailing);
+
+    rows.push({ days, pTP, pSL, pSLOriginal, pTrailExit, pNone, ev });
+    onStep && onStep();
+  }
+
+  return { ticker: ticker.toUpperCase(), description, S0, long, hasTP, sl, tp, riskPerShare, rewardPerShare, shares, actualRisk, gainAmount, rr, trailing, rows };
+}
+
+async function run(){
+  const ticker = document.getElementById('ticker').value;
+  const sl = parseFloat(document.getElementById('sl').value);
+  const tp = parseFloat(document.getElementById('tp').value);
+  const riskAmount = parseFloat(document.getElementById('riskAmount').value);
+  const trailingEnabled = document.getElementById('trailingEnabled').checked;
+  const trailingDistanceInput = parseFloat(document.getElementById('trailingDistance').value);
+  const btn = document.getElementById('runBtn');
+
+  if (!ticker.trim()) { setStatus('Inserisci un ticker.', true); return; }
+  if (isNaN(sl)) { setStatus('Lo Stop Loss è obbligatorio.', true); return; }
+  if (isNaN(riskAmount) || riskAmount <= 0) { setStatus('Inserisci il rischio sullo Stop Loss (in ' + currency + ').', true); return; }
+
+  btn.disabled = true;
+  document.getElementById('resultsWrap').innerHTML = '';
+  document.getElementById('summary').innerHTML = '';
+  document.getElementById('buyPanel').classList.remove('active');
+  document.getElementById('orderScreen').classList.remove('active');
+  document.getElementById('trustSection').classList.remove('active');
+  setStatus('');
+  setProgress(0, true);
+
+  const totalSteps = HORIZONS.length + 3;
+  let stepsDone = 0;
+  const bump = () => { stepsDone++; setProgress((stepsDone/totalSteps)*100, true); };
+
+  try {
+    const trade = await computeTradeAnalysis(ticker, sl, tp, riskAmount, trailingEnabled, trailingDistanceInput, HORIZONS, bump);
+
+    setProgress(100, true);
+    renderSummary(trade.ticker, trade.S0, trade.description, trade.riskPerShare, trade.rewardPerShare, trade.shares, trade.actualRisk, trade.gainAmount, trade.rr, trade.hasTP);
+    renderTable(trade.rows, trade.sl, trade.tp, trade.trailing.enabled, trade.hasTP);
+    document.getElementById('trustSection').classList.add('active');
+    renderBuyPanel(trade);
+    setTimeout(() => setProgress(0, false), 600);
+
+  } catch (err){
+    setStatus('Errore: ' + err.message, true);
+    setProgress(0, false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderSummary(ticker, S0, description, riskPerShare, rewardPerShare, shares, actualRisk, gainAmount, rr, hasTP){
+  document.getElementById('summary').innerHTML =
+    '<div class="summary">' +
+      '<div class="stat"><div class="label">Ticker</div><div class="value">' + ticker + '</div></div>' +
+      '<div class="stat"><div class="label">Prezzo attuale</div><div class="value">' + S0.toFixed(2) + '</div></div>' +
+      '<div class="stat"><div class="label">Size posizione</div><div class="value">' + shares + ' az.</div></div>' +
+      '<div class="stat accent-red"><div class="label">Rischio</div><div class="value">' + fmtMoney(actualRisk) + '</div></div>' +
+      (hasTP ? '<div class="stat accent-green"><div class="label">Guadagno a TP</div><div class="value">' + fmtMoney(gainAmount) + '</div></div>' : '') +
+      (hasTP ? '<div class="stat"><div class="label">Rischio/Rendimento</div><div class="value">1:' + rr.toFixed(2) + '</div></div>' : '') +
+    '</div>';
+}
+
+function renderTable(rows, sl, tp, trailingEnabled, hasTP){
+  const noneLabel = hasTP ? 'P(nessuno dei due)' : 'P(posizione ancora aperta)';
+  let html = '<div class="results-card"><table><thead><tr>' +
+    '<th>Orizzonte</th>' +
+    (hasTP ? ('<th class="num">P(tocca TP ' + tp + ')</th>') : '') +
+    (trailingEnabled
+      ? ('<th class="num">P(tocca SL ' + sl + ')</th><th class="num">P(uscita su trailing)</th>')
+      : ('<th class="num">P(tocca SL ' + sl + ')</th>')) +
+    '<th class="num">' + noneLabel + '</th>' +
+    '<th class="num">EV</th>' +
+    '</tr></thead><tbody>';
+  const bestIdx = bestRowIndex(rows);
+
+  rows.forEach((r, i) => {
+    const evClass = r.ev >= 0 ? 'ev-pos' : 'ev-neg';
+    const isBest = i === bestIdx;
+    html += '<tr' + (isBest ? ' class="best-row"' : '') + '>' +
+      '<td>' + (isBest ? '<span class="best-star">★</span>' : '') + '<strong>' + r.days + ' gg</strong></td>' +
+      (hasTP ? ('<td class="num"><span class="badge ' + badgeClass(r.pTP) + '">' + fmtPct(r.pTP) + '</span></td>') : '') +
+      (trailingEnabled
+        ? ('<td class="num"><span class="badge ' + badgeClass(r.pSLOriginal) + '">' + fmtPct(r.pSLOriginal) + '</span></td>' +
+           '<td class="num"><span class="badge ' + badgeClass(r.pTrailExit) + '">' + fmtPct(r.pTrailExit) + '</span></td>')
+        : ('<td class="num"><span class="badge ' + badgeClass(r.pSL) + '">' + fmtPct(r.pSL) + '</span></td>')) +
+      '<td class="num">' + fmtPct(r.pNone) + '</td>' +
+      '<td class="num ' + evClass + '">' + fmtMoney(r.ev) + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div id="bestLegend"><span class="best-star">★</span> Questa è la combinazione di tempistica e probabilità di guadagno migliore tra tutte quelle analizzate finora.</div>';
+  html += '<div id="evNote"><strong>Valore Atteso (EV).</strong> Immagina di poter ripetere questa stessa operazione 10.000 volte. Sommando tutti i risultati e dividendoli per 10.000, otterresti l\'EV. Se l\'EV è ±X $, significa che ogni operazione "vale", in media, ±X $.</div>';
+  document.getElementById('resultsWrap').innerHTML = html;
+}
+
+let lastTrade = null;
+const DEMO_KEY = 'sigmaDemoOrder';
+
+function renderBuyPanel(trade){
+  lastTrade = trade;
+  const dirLabel = trade.long ? 'LONG (acquisto)' : 'SHORT (vendita)';
+  let html = '';
+  html += buyField('Ticker', trade.ticker);
+  html += buyField('Direzione', dirLabel);
+  html += buyField('Prezzo attuale', trade.S0.toFixed(2));
+  html += buyField('Stop Loss', trade.sl.toFixed(2));
+  html += buyField('Take Profit', trade.hasTP ? trade.tp.toFixed(2) : 'Nessuno');
+  html += buyField('Trailing Stop', trade.trailing.enabled ? ((trade.trailing.pct*100).toFixed(1) + '%') : 'Disattivato');
+  html += buyField('Size', trade.shares + ' az.');
+  html += buyField('Rischio', fmtMoney(trade.actualRisk));
+  document.getElementById('buyGrid').innerHTML = html;
+  document.getElementById('buyPanel').classList.add('active');
+}
+
+function buyField(label, value){
+  return '<div class="buy-field"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+}
+
+function orderRow(k, v){
+  return '<div class="order-row"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
+}
+
+function bestRowIndex(rows){
+  let bestIdx = 0;
+  for (let i = 1; i < rows.length; i++){
+    if (rows[i].ev > rows[bestIdx].ev) bestIdx = i;
+  }
+  return bestIdx;
+}
+
+function saveDemoOrder(trade){
+  const bestIdx = bestRowIndex(trade.rows);
+  const demo = {
+    ticker: trade.ticker,
+    sl: trade.sl,
+    tp: trade.hasTP ? trade.tp : null,
+    hasTP: trade.hasTP,
+    riskAmount: trade.actualRisk,
+    trailingEnabled: trade.trailing.enabled,
+    trailingPct: trade.trailing.pct,
+    horizons: HORIZONS.slice(),
+    initialRows: trade.rows,
+    bestDays: trade.rows[bestIdx].days,
+    S0AtCreation: trade.S0,
+    currency: currency,
+    createdAt: Date.now()
+  };
+  localStorage.setItem(DEMO_KEY, JSON.stringify(demo));
+  return demo;
+}
+
+function loadDemoOrder(){
+  try {
+    const raw = localStorage.getItem(DEMO_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e){ return null; }
+}
+
+function clearDemoOrder(){
+  localStorage.removeItem(DEMO_KEY);
+  document.getElementById('orderScreen').classList.remove('active');
+}
+
+function formatElapsed(ms){
+  const hours = ms / 3600000;
+  if (hours < 1) return Math.max(1, Math.round(ms/60000)) + ' minuti fa';
+  if (hours < 48) return Math.round(hours) + ' ore fa';
+  return Math.round(hours/24) + ' giorni fa';
+}
+
+// --- Motore 2: motore "shadow" che, dopo la chiusura di un'operazione, continua a
+// seguirla con i prezzi storici REALI (non simulati) per confrontare la decisione di
+// chiudere con l'alternativa di restare aperti. ---
+const CLOSED_KEY = 'sigmaDemoClosedTrades';
+
+function fmtMoneyC(v, cur){
+  const sign = v < 0 ? '-' : '';
+  return sign + cur + Math.abs(v).toLocaleString('it-IT', { maximumFractionDigits: 0 });
+}
+
+function loadClosedTrades(){
+  try {
+    const raw = localStorage.getItem(CLOSED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e){ return []; }
+}
+
+function saveClosedTrades(list){
+  localStorage.setItem(CLOSED_KEY, JSON.stringify(list));
+}
+
+function sharesOf(rec){
+  return Math.max(1, Math.round(rec.riskAmount / Math.abs(rec.S0AtCreation - rec.sl)));
+}
+
+// Chiude l'operazione demo attualmente aperta: verifica prima se, nella realtà, il prezzo
+// ha già toccato TP o SL da quando è stata creata (in tal caso l'esito è già determinato e
+// non c'è nulla da confrontare); altrimenti archivia la decisione di chiusura al prezzo di
+// oggi, e conserva lo stato del trailing per poter continuare a seguire il prezzo reale.
+async function closeOperation(){
+  const demo = loadDemoOrder();
+  if (!demo) return;
+  const btn = document.getElementById('closeOpBtn');
+  btn.disabled = true;
+  btn.textContent = 'Chiudo operazione...';
+
+  try {
+    const { contractId } = await resolveUnderlying(demo.ticker);
+    const long = demo.sl < demo.S0AtCreation;
+    const allBars = await fetchDailyCloses(contractId, 'ONE_YEAR');
+    const sinceCreation = allBars.filter(b => b.t >= demo.createdAt);
+
+    const walk = walkRealPath(sinceCreation, demo.sl, demo.tp, demo.hasTP, long, demo.trailingEnabled, demo.trailingPct, demo.S0AtCreation, demo.sl);
+
+    const shares = sharesOf(demo);
+    const rec = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      ticker: demo.ticker,
+      sl: demo.sl,
+      tp: demo.tp,
+      hasTP: demo.hasTP,
+      riskAmount: demo.riskAmount,
+      trailingEnabled: demo.trailingEnabled,
+      trailingPct: demo.trailingPct,
+      S0AtCreation: demo.S0AtCreation,
+      createdAt: demo.createdAt,
+      currency: demo.currency || '$',
+      closedAt: Date.now()
+    };
+
+    if (walk.hit !== 'NONE'){
+      // Il prezzo ha già toccato TP o SL nella realtà prima di oggi: l'esito è già scritto,
+      // non c'è una vera decisione da confrontare con un'alternativa.
+      const resolvedPnL = walk.hit === 'TP'
+        ? shares * Math.abs(demo.tp - demo.S0AtCreation)
+        : (long ? (walk.exitPrice - demo.S0AtCreation) * shares : (demo.S0AtCreation - walk.exitPrice) * shares);
+      rec.resolved = true;
+      rec.resolvedHit = walk.hit;
+      rec.resolvedPnL = resolvedPnL;
+      rec.resolvedDate = walk.exitDate;
+    } else {
+      const { price: currentPrice } = await getSpotAndHV(contractId);
+      const decisionPnL = long ? (currentPrice - demo.S0AtCreation) * shares : (demo.S0AtCreation - currentPrice) * shares;
+      rec.resolved = false;
+      rec.priceAtClose = currentPrice;
+      rec.decisionPnL = decisionPnL;
+      rec.effectiveSLAtClose = walk.effectiveSL;
+      rec.runningExtremeAtClose = walk.runningExtreme;
+      rec.verifica = null;
+    }
+
+    const list = loadClosedTrades();
+    list.push(rec);
+    saveClosedTrades(list);
+    clearDemoOrder();
+    renderArchive();
+  } catch (err){
+    setStatus('Errore nella chiusura: ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Chiudi operazione';
+  }
+}
+
+// Per un'operazione già chiusa e non ancora risolta nella realtà al momento della chiusura,
+// controlla i prezzi reali da allora ad oggi e confronta "la tua decisione" (aver chiuso)
+// con "l'alternativa" (cosa sarebbe successo restando aperti).
+async function verificaEsito(id){
+  const list = loadClosedTrades();
+  const rec = list.find(r => r.id === id);
+  if (!rec) return;
+  const btn = document.querySelector('button[data-verifica="' + id + '"]');
+  if (btn){ btn.disabled = true; btn.textContent = 'Verifico...'; }
+
+  try {
+    const { contractId } = await resolveUnderlying(rec.ticker);
+    const long = rec.sl < rec.S0AtCreation;
+    const shares = sharesOf(rec);
+    const allBars = await fetchDailyCloses(contractId, 'SIX_MONTHS');
+    const sinceClose = allBars.filter(b => b.t >= rec.closedAt);
+
+    const walk = walkRealPath(sinceClose, rec.sl, rec.tp, rec.hasTP, long, rec.trailingEnabled, rec.trailingPct, rec.runningExtremeAtClose, rec.effectiveSLAtClose);
+
+    let alternativePnL, statusText;
+    if (walk.hit === 'TP'){
+      alternativePnL = shares * Math.abs(rec.tp - rec.S0AtCreation);
+      statusText = 'Avrebbe toccato il Take Profit il ' + new Date(walk.exitDate).toLocaleDateString('it-IT');
+    } else if (walk.hit === 'SL'){
+      alternativePnL = long ? (walk.exitPrice - rec.S0AtCreation) * shares : (rec.S0AtCreation - walk.exitPrice) * shares;
+      statusText = 'Avrebbe toccato lo Stop il ' + new Date(walk.exitDate).toLocaleDateString('it-IT');
+    } else {
+      const { price: currentPrice } = await getSpotAndHV(contractId);
+      alternativePnL = long ? (currentPrice - rec.S0AtCreation) * shares : (rec.S0AtCreation - currentPrice) * shares;
+      statusText = 'Sarebbe ancora aperta oggi';
+    }
+
+    rec.verifica = { checkedAt: Date.now(), alternativePnL, statusText, hit: walk.hit };
+    saveClosedTrades(list);
+    renderArchive();
+
+    // Al primo "Verifica esito" mai fatto dall'utente, mostra l'hook per l'account gratuito:
+    // ha appena visto con i propri occhi il valore del monitoraggio su un singolo trade, è il
+    // momento migliore per fargli immaginare la stessa cosa su tutto il portafoglio.
+    if (localStorage.getItem(HOOK_SHOWN_KEY) !== '1'){
+      localStorage.setItem(HOOK_SHOWN_KEY, '1');
+    }
+    renderGrowthHook();
+  } catch (err){
+    if (btn){ btn.disabled = false; btn.textContent = 'Verifica esito'; }
+    alert('Errore nella verifica: ' + err.message);
+  }
+}
+
+const HOOK_SHOWN_KEY = 'sigmaDemoGrowthHookShown';
+const HOOK_DISMISSED_KEY = 'sigmaDemoGrowthHookDismissed';
+
+function renderGrowthHook(){
+  const el = document.getElementById('growthHook');
+  if (!el) return;
+  const shown = localStorage.getItem(HOOK_SHOWN_KEY) === '1';
+  const dismissed = localStorage.getItem(HOOK_DISMISSED_KEY) === '1';
+  if (!shown || dismissed){ el.innerHTML = ''; return; }
+
+  el.innerHTML =
+    '<div class="growth-hook">' +
+      '<button class="gh-close" onclick="dismissGrowthHook()" title="Chiudi">✕</button>' +
+      '<div class="gh-title">Hai trovato utile seguire questo trade?</div>' +
+      '<div class="gh-sub">Immagina di fare la stessa cosa con tutto il tuo portafoglio.</div>' +
+      '<div class="gh-sub" style="margin-bottom:8px;"><strong>Con un account gratuito Sigma può:</strong></div>' +
+      '<ul>' +
+        '<li>✅ monitorare automaticamente tutte le tue operazioni</li>' +
+        '<li>✅ avvisarti quando un trade migliora o peggiora</li>' +
+        '<li>✅ costruire il tuo storico decisionale</li>' +
+      '</ul>' +
+      '<button id="createAccountBtn" onclick="mockCreateAccount()">Crea un account gratuito</button>' +
+    '</div>';
+}
+
+function dismissGrowthHook(){
+  localStorage.setItem(HOOK_DISMISSED_KEY, '1');
+  renderGrowthHook();
+}
+
+function mockCreateAccount(){
+  const btn = document.getElementById('createAccountBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Richiesta inviata ✓';
+}
+
+function deleteClosedTrade(id){
+  const list = loadClosedTrades().filter(r => r.id !== id);
+  saveClosedTrades(list);
+  renderArchive();
+}
+
+function archiveCard(rec){
+  const cur = rec.currency || '$';
+  let html = '<div class="archive-card">';
+  html += '<div class="archive-head"><span class="tk">' + rec.ticker + '</span>' +
+    '<span style="display:flex;align-items:center;gap:10px;">' +
+    '<span class="dt">Chiusa ' + formatElapsed(Date.now() - rec.closedAt) + '</span>' +
+    '<button class="delete-archive-btn" onclick="deleteClosedTrade(\'' + rec.id + '\')" title="Cancella operazione chiusa">🗑 Cancella</button>' +
+    '</span></div>';
+
+  if (rec.resolved){
+    const pnlClass = rec.resolvedPnL >= 0 ? 'ev-pos' : 'ev-neg';
+    html += '<div class="archive-resolved-note">Nella realtà il prezzo aveva già toccato ' + (rec.resolvedHit === 'TP' ? 'il Take Profit' : 'lo Stop') +
+      ' il ' + new Date(rec.resolvedDate).toLocaleDateString('it-IT') + ', prima ancora che tu chiudessi: l\'esito era già determinato, niente da confrontare. Risultato: <strong class="' + pnlClass + '">' + fmtMoneyC(rec.resolvedPnL, cur) + '</strong></div>';
+  } else {
+    const decClass = rec.decisionPnL >= 0 ? 'ev-pos' : 'ev-neg';
+    html += '<div class="decision-line">Hai chiuso a ' + rec.priceAtClose.toFixed(2) + ' — risultato: <strong class="' + decClass + '">' + fmtMoneyC(rec.decisionPnL, cur) + '</strong></div>';
+
+    if (rec.verifica){
+      const altClass = rec.verifica.alternativePnL >= 0 ? 'ev-pos' : 'ev-neg';
+      html += '<div class="compare-box">';
+      html += '<div class="col"><div class="ctitle">La tua decisione</div><div class="cval ' + decClass + '">' + fmtMoneyC(rec.decisionPnL, cur) + '</div><div class="csub">Hai chiuso oggi</div></div>';
+      html += '<div class="col"><div class="ctitle">L\'alternativa</div><div class="cval ' + altClass + '">' + fmtMoneyC(rec.verifica.alternativePnL, cur) + '</div><div class="csub">' + rec.verifica.statusText + '</div></div>';
+      html += '</div>';
+      const better = rec.verifica.alternativePnL > rec.decisionPnL;
+      html += '<p style="font-size:13px;font-weight:700;margin-top:10px;color:' + (better ? '#b7791f' : '#1e7e34') + ';">' +
+        (better ? 'Aspettare avrebbe reso di più.' : 'Chiudere è stata la scelta migliore.') + '</p>';
+      html += '<button class="verifica-btn" data-verifica="' + rec.id + '" onclick="verificaEsito(\'' + rec.id + '\')">Aggiorna verifica</button>';
+    } else {
+      html += '<button class="verifica-btn" data-verifica="' + rec.id + '" onclick="verificaEsito(\'' + rec.id + '\')">Verifica esito</button>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderArchive(){
+  const list = loadClosedTrades();
+  const container = document.getElementById('archiveList');
+  if (list.length === 0){
+    container.innerHTML = '<div class="hint">Nessuna operazione chiusa finora. Quando chiuderai un\'operazione, la troverai qui insieme al confronto con l\'alternativa di restare aperti.</div>';
+    return;
+  }
+  container.innerHTML = list.slice().reverse().map(archiveCard).join('');
+}
+
+// Monitoraggio in tempo reale del trade ANCORA APERTO: usa i prezzi storici reali (non
+// simulati) da quando è stato creato a oggi per dire, concretamente, se il prezzo si sta
+// muovendo a favore o contro la posizione — senza dover chiudere l'operazione per saperlo.
+async function refreshRealMonitor(){
+  const demo = loadDemoOrder();
+  if (!demo) return;
+  await renderRealMonitor(demo);
+}
+
+async function renderRealMonitor(demo){
+  const el = document.getElementById('realMonitor');
+  if (!el) return;
+  el.innerHTML = '<div class="rm-card"><div class="rm-head"><span class="rm-title">📡 Monitoraggio in tempo reale</span><button class="rm-refresh" disabled>Aggiornamento...</button></div><div class="rm-note">Sto controllando il prezzo reale...</div></div>';
+
+  try {
+    const { contractId } = await resolveUnderlying(demo.ticker);
+    const long = demo.sl < demo.S0AtCreation;
+    const allBars = await fetchDailyCloses(contractId, 'ONE_YEAR');
+    const sinceCreation = allBars.filter(b => b.t >= demo.createdAt);
+    const walk = walkRealPath(sinceCreation, demo.sl, demo.tp, demo.hasTP, long, demo.trailingEnabled, demo.trailingPct, demo.S0AtCreation, demo.sl);
+    const shares = sharesOf(demo);
+    const cur = demo.currency || '$';
+
+    let html = '<div class="rm-card"><div class="rm-head"><span class="rm-title">📡 Monitoraggio in tempo reale</span><button class="rm-refresh" onclick="refreshRealMonitor()">Aggiorna</button></div>';
+
+    if (walk.hit !== 'NONE'){
+      const pnl = walk.hit === 'TP'
+        ? shares * Math.abs(demo.tp - demo.S0AtCreation)
+        : (long ? (walk.exitPrice - demo.S0AtCreation) * shares : (demo.S0AtCreation - walk.exitPrice) * shares);
+      html += '<span class="rm-verdict hit">⚠️ ' + (walk.hit === 'TP' ? 'Take Profit già toccato' : 'Stop già toccato') + '</span>';
+      html += '<div class="rm-note">Nella realtà il prezzo ha già toccato ' + (walk.hit === 'TP' ? 'il Take Profit' : 'lo Stop') +
+        ' il ' + new Date(walk.exitDate).toLocaleDateString('it-IT') + ' (risultato: <strong class="' + (pnl >= 0 ? 'ev-pos' : 'ev-neg') + '">' + fmtMoneyC(pnl, cur) + '</strong>). ' +
+        'Premi "Chiudi operazione" per registrare l\'esito.</div>';
+    } else {
+      const { price: currentPrice } = await getSpotAndHV(contractId);
+      const pnl = long ? (currentPrice - demo.S0AtCreation) * shares : (demo.S0AtCreation - currentPrice) * shares;
+      const improving = pnl >= 0;
+      html += '<span class="rm-verdict ' + (improving ? 'up' : 'down') + '">' + (improving ? '📈 Il trade sta migliorando' : '📉 Il trade sta peggiorando') + '</span>';
+      html += '<div class="rm-grid">';
+      html += '<div class="rm-stat"><div class="rm-label">Prezzo reale attuale</div><div class="rm-value">' + currentPrice.toFixed(2) + '</div></div>';
+      html += '<div class="rm-stat"><div class="rm-label">P&L non realizzato</div><div class="rm-value ' + (pnl >= 0 ? 'ev-pos' : 'ev-neg') + '">' + fmtMoneyC(pnl, cur) + '</div></div>';
+      if (demo.hasTP) html += '<div class="rm-stat"><div class="rm-label">Distanza da TP</div><div class="rm-value">' + Math.abs(demo.tp - currentPrice).toFixed(2) + '</div></div>';
+      html += '<div class="rm-stat"><div class="rm-label">' + (demo.trailingEnabled ? 'Stop trailing attuale' : 'Distanza da SL') + '</div><div class="rm-value">' +
+        (demo.trailingEnabled ? walk.effectiveSL.toFixed(2) : Math.abs(walk.effectiveSL - currentPrice).toFixed(2)) + '</div></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch (err){
+    el.innerHTML = '<div class="rm-card"><div class="rm-note" style="color:#c0392b;">Non riesco ad aggiornare il monitoraggio in tempo reale: ' + err.message + '</div></div>';
+  }
+}
+
+function renderDemoConfirmation(demo){
+  let html = '';
+  html += '<div class="order-row" style="border:none;"><span class="k" style="font-weight:700;color:#1e7e34;">✅ Ordine Demo creato</span><span class="v"></span></div>';
+  html += '<p style="font-size:13.5px;color:#333;line-height:1.6;margin:10px 0 16px;">Da questo momento il motore seguirà questa operazione come se fosse realmente aperta. Le probabilità cambiano continuamente insieme al mercato.</p>';
+  html += '<p style="font-size:13.5px;color:#333;line-height:1.6;margin:0 0 10px;"><strong>Cosa succederà adesso?</strong><br>Tra qualche ora (o domani) clicca <strong>Analisi</strong>. Vedrai come il mercato ha cambiato le probabilità del tuo trade.</p>';
+  html += '<p style="font-size:13.5px;color:#333;line-height:1.6;margin:0 0 16px;">Potresti scoprire, ad esempio:<br>✅ la probabilità di stop è diminuita<br>✅ il valore atteso (EV) è aumentato<br>oppure<br>⚠️ il trade sta perdendo qualità statistica.</p>';
+  html += orderRow('Ticker', demo.ticker);
+  html += orderRow('Stop Loss', demo.sl.toFixed(2));
+  html += orderRow('Take Profit', demo.hasTP ? demo.tp.toFixed(2) : 'Nessuno');
+  html += orderRow('Trailing Stop', demo.trailingEnabled ? ((demo.trailingPct*100).toFixed(1) + '%') : 'Disattivato');
+  html += orderRow('Creato', formatElapsed(Date.now() - demo.createdAt));
+  document.getElementById('orderDetails').innerHTML = html;
+  document.getElementById('buyPanel').classList.remove('active');
+  document.getElementById('orderScreen').classList.add('active');
+  document.getElementById('orderScreen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  renderRealMonitor(demo);
+}
+
+async function runAnalysisOnDemo(){
+  const demo = loadDemoOrder();
+  if (!demo) return;
+  const analisiBtn = document.getElementById('analisiBtn');
+  analisiBtn.disabled = true;
+  analisiBtn.textContent = 'Analisi in corso...';
+
+  try {
+    const elapsedDays = Math.max(0, (Date.now() - demo.createdAt) / 86400000);
+    const remaining = demo.horizons
+      .map(h => ({ original: h, left: Math.min(h, Math.round(h - elapsedDays)) }))
+      .filter(h => h.left > 0);
+
+    if (remaining.length === 0){
+      document.getElementById('orderDetails').innerHTML += '<p style="margin-top:14px;font-size:13px;color:#b7791f;">Tutti gli orizzonti previsti alla creazione sono ormai scaduti. Chiudi questa operazione demo e aprine una nuova per continuare a monitorarla.</p>';
+      return;
+    }
+
+    const trade = await computeTradeAnalysis(
+      demo.ticker, demo.sl, demo.hasTP ? demo.tp : NaN, demo.riskAmount,
+      demo.trailingEnabled, demo.trailingEnabled ? demo.trailingPct*100 : NaN,
+      remaining.map(r => r.left), null
+    );
+
+    // Segue nel tempo lo stesso orizzonte che era il migliore alla creazione, se ancora residuo;
+    // altrimenti usa il migliore tra gli orizzonti ancora aperti oggi.
+    let matchIdx = remaining.findIndex(r => r.original === demo.bestDays);
+    let noteExpired = false;
+    if (matchIdx === -1){
+      matchIdx = bestRowIndex(trade.rows);
+      noteExpired = true;
+    }
+
+    const initialRow = demo.initialRows.find(ir => ir.days === remaining[matchIdx].original);
+    const nowRow = trade.rows[matchIdx];
+    const evThen = initialRow ? initialRow.ev : null;
+    const stopThen = initialRow ? initialRow.pSL : null;
+    const evNow = nowRow.ev;
+    const stopNow = nowRow.pSL;
+    // Il confronto si basa sui valori arrotondati che l'utente vede a schermo (stesso arrotondamento
+    // di fmtMoney/fmtPct): se EV e probabilità di stop mostrati sono identici, lo stato è "invariato",
+    // non "peggiorato" (un confronto booleano nudo su evNow > evThen darebbe erroneamente "peggiorato"
+    // anche a parità di valori, per via di differenze minime non visibili nell'arrotondamento).
+    // profileState: 'none' (nessun dato iniziale), 'unchanged', 'improved', 'worsened'.
+    let profileState = 'none';
+    if (evThen != null){
+      const evThenR = Math.round(evThen);
+      const evNowR = Math.round(evNow);
+      const stopThenR = Math.round(stopThen * 1000);
+      const stopNowR = Math.round(stopNow * 1000);
+      if (evThenR === evNowR && stopThenR === stopNowR) profileState = 'unchanged';
+      else if (evNowR !== evThenR) profileState = evNowR > evThenR ? 'improved' : 'worsened';
+      else profileState = stopNowR < stopThenR ? 'improved' : 'worsened';
+    }
+
+    let html = '<h3 style="font-size:14px;margin:18px 0 12px;">Situazione aggiornata</h3>';
+    if (noteExpired){
+      html += '<p style="font-size:12px;color:#b7791f;margin:0 0 10px;">L\'orizzonte migliore alla creazione (' + demo.bestDays + ' gg) è scaduto: qui sotto il migliore tra quelli ancora aperti oggi (' + remaining[matchIdx].original + ' gg).</p>';
+    }
+    html += '<div style="display:flex; gap:24px; flex-wrap:wrap; margin-bottom:12px;">';
+    html += '<div><div style="font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.03em;">Quando hai aperto il trade</div>' +
+      '<div style="font-size:15px;margin-top:4px;">EV <strong class="' + (evThen != null && evThen >= 0 ? 'ev-pos' : 'ev-neg') + '">' + (evThen != null ? fmtMoney(evThen) : '—') + '</strong></div>' +
+      '<div style="font-size:15px;">Probabilità stop <strong>' + (stopThen != null ? fmtPct(stopThen) : '—') + '</strong></div></div>';
+    html += '<div><div style="font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.03em;">Oggi</div>' +
+      '<div style="font-size:15px;margin-top:4px;">EV <strong class="' + (evNow >= 0 ? 'ev-pos' : 'ev-neg') + '">' + fmtMoney(evNow) + '</strong></div>' +
+      '<div style="font-size:15px;">Probabilità stop <strong>' + fmtPct(stopNow) + '</strong></div></div>';
+    html += '</div>';
+    if (profileState !== 'none'){
+      const verdictText = profileState === 'unchanged' ? 'Il profilo statistico è invariato.'
+        : (profileState === 'improved' ? 'Il profilo statistico è migliorato.' : 'Il profilo statistico è peggiorato.');
+      const verdictColor = profileState === 'unchanged' ? '#666' : (profileState === 'improved' ? '#1e7e34' : '#c0392b');
+      html += '<p style="font-size:14px;font-weight:700;color:' + verdictColor + ';">' + verdictText + '</p>';
+    }
+    document.getElementById('demoComparison').innerHTML = html;
+
+  } catch (err){
+    document.getElementById('demoComparison').innerHTML = '<p style="color:#c0392b;font-size:13px;margin-top:14px;">Errore nell\'aggiornare l\'analisi: ' + err.message + '</p>';
+  } finally {
+    analisiBtn.disabled = false;
+    analisiBtn.textContent = 'Analisi';
+  }
+}
+
+function checkForOpenDemoOnLoad(){
+  const demo = loadDemoOrder();
+  if (demo){
+    renderDemoConfirmation(demo);
+  }
+}
+
+document.getElementById('runBtn').addEventListener('click', run);
+['ticker','sl','tp','riskAmount'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+});
+document.getElementById('buyBtn').addEventListener('click', () => {
+  if (!lastTrade) return;
+  const demo = saveDemoOrder(lastTrade);
+  renderDemoConfirmation(demo);
+});
+document.getElementById('backBtn').addEventListener('click', () => {
+  document.getElementById('orderScreen').classList.remove('active');
+  document.getElementById('buyPanel').classList.add('active');
+  document.getElementById('buyPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+document.getElementById('analisiBtn').addEventListener('click', runAnalysisOnDemo);
+document.getElementById('closeOpBtn').addEventListener('click', closeOperation);
+document.getElementById('closeDemoBtn').addEventListener('click', clearDemoOrder);
+document.getElementById('trustPrompt').addEventListener('click', () => {
+  document.getElementById('trustPrompt').classList.toggle('open');
+  document.getElementById('trustDetail').classList.toggle('open');
+});
+
+checkForOpenDemoOnLoad();
+renderArchive();
+renderGrowthHook();
+</script>
+</body>
+</html>
