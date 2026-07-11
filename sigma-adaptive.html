@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sigma Trade Coach — Prototipo adattivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fog:#EEF1F4; --paper:#FFFFFF; --ink:#10233A; --ink2:#5B6B7E;
+  --amber:#E8A013; --green:#0F6E5D; --red:#C6402E;
+  --line:rgba(16,35,58,.10); --grid:rgba(16,35,58,.055);
+  --r:14px; --shadow:0 10px 30px rgba(16,35,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  background:var(--fog); color:var(--ink);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  min-height:100vh;
+}
+h1,h2,h3,.wordmark{font-family:'Archivo',sans-serif}
+.mono{font-family:'IBM Plex Mono',monospace}
+button{font-family:inherit;cursor:pointer}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+
+/* ---------- ANTICAMERA ---------- */
+#anticamera{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;position:relative;overflow:hidden}
+#fan{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}
+.gate{position:relative;max-width:880px;width:100%;text-align:center}
+.wordmark{font-weight:800;font-size:1.05rem;letter-spacing:.32em;color:var(--ink)}
+.wordmark .sig{color:var(--amber)}
+.gate h1{font-size:clamp(1.9rem,5.4vw,3.1rem);font-weight:800;line-height:1.08;margin:18px 0 12px;letter-spacing:-.015em}
+.gate p.sub{color:var(--ink2);max-width:540px;margin:0 auto 38px;font-size:1.02rem;line-height:1.55}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:left}
+.card{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px 20px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
+  transition:transform .18s ease,border-color .18s ease;
+}
+.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:var(--ink)}
+.card:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.card svg{width:100%;height:44px}
+.card h3{font-size:1.02rem;font-weight:700}
+.card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
+.card .go{margin-top:auto;font-size:.78rem;font-weight:600;color:var(--green);letter-spacing:.04em}
+.gate .note{margin-top:30px;font-size:.78rem;color:var(--ink2)}
+@media (max-width:720px){.cards{grid-template-columns:1fr}}
+
+/* ---------- APP ---------- */
+#app{display:none;max-width:880px;margin:0 auto;padding:0 18px 140px}
+#app.attivo{display:block}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 26px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);
+  border-radius:999px;padding:7px 14px;font-size:.8rem;font-weight:600;color:var(--ink)
+}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.pill:hover{border-color:var(--ink)}
+.blocco{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:26px 24px;margin-bottom:18px;position:relative}
+.blocco.hi{outline:3px solid var(--amber);outline-offset:3px}
+.blocco h2{font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-.01em}
+.blocco .lead{color:var(--ink2);font-size:.94rem;line-height:1.55;margin-bottom:18px}
+.guida{background:var(--ink);color:#fff;border:none}
+.guida .eyebrow{color:var(--amber)}
+.guida h2{color:#fff}
+.guida p{color:rgba(255,255,255,.85);font-size:.94rem;line-height:1.6}
+.guida .passi{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.guida .passi button{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;
+  border-radius:999px;padding:7px 14px;font-size:.82rem;font-weight:600
+}
+.guida .passi button:hover{background:rgba(255,255,255,.22)}
+
+.riga{display:grid;grid-template-columns:1fr 1fr 120px;gap:12px;margin-bottom:14px}
+@media (max-width:640px){.riga{grid-template-columns:1fr}}
+.campo label{display:block;font-size:.78rem;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.campo select,.campo input{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--fog);
+  font-family:'IBM Plex Mono',monospace;font-size:.95rem;color:var(--ink)
+}
+.campo select:focus,.campo input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.aiuto{font-size:.8rem;color:var(--ink2);line-height:1.5;margin-bottom:16px}
+.cta{
+  background:var(--green);color:#fff;border:none;border-radius:10px;padding:13px 26px;
+  font-size:.95rem;font-weight:700;letter-spacing:.02em
+}
+.cta:hover{filter:brightness(1.08)}
+.modi{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.modo{background:var(--fog);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:.84rem;font-weight:600;color:var(--ink2)}
+.modo.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+#risultato{display:none;margin-top:22px;border-top:1px dashed var(--line);padding-top:20px}
+#risultato.mostra{display:block}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+@media (max-width:640px){.kpi{grid-template-columns:1fr 1fr}}
+.kpi .k{background:var(--fog);border-radius:10px;padding:14px}
+.kpi .k b{display:block;font-family:'IBM Plex Mono',monospace;font-size:1.35rem;font-weight:500;margin-bottom:2px}
+.kpi .k span{font-size:.74rem;color:var(--ink2);font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.k.buono b{color:var(--green)} .k.cattivo b{color:var(--red)}
+.barra{height:10px;border-radius:999px;background:#E3E8ED;overflow:hidden;margin:4px 0 6px}
+.barra i{display:block;height:100%;background:var(--green);border-radius:999px;transition:width .6s ease}
+.verdetto{font-size:.92rem;line-height:1.55}
+.esperto-extra{display:none;margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
+body[data-profilo="esperto"] .esperto-extra{display:block}
+.metriche{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.metriche{grid-template-columns:1fr 1fr}}
+.metriche .m{font-size:.78rem;color:var(--ink2)}
+.metriche .m b{display:block;font-family:'IBM Plex Mono',monospace;font-size:1rem;color:var(--ink);font-weight:500}
+
+.step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:none}
+.step .n{font-family:'IBM Plex Mono',monospace;color:var(--amber);font-weight:500;font-size:.9rem;min-width:26px}
+.step h3{font-size:.98rem;font-weight:700;margin-bottom:3px}
+.step p{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.vuoto{color:var(--ink2);font-size:.9rem;background:var(--fog);border-radius:10px;padding:18px;text-align:center}
+
+/* idea chiave: probabilità che si aggiornano */
+.stadi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+@media (max-width:640px){.stadi{grid-template-columns:1fr}}
+.stadio{background:var(--fog);border-radius:10px;padding:14px;border:1.5px solid transparent;transition:border-color .35s,background .35s}
+.stadio.on{border-color:var(--amber);background:#FDF6E7}
+.stadio .ev{font-size:.78rem;font-weight:600;color:var(--ink2);margin-bottom:8px;display:block}
+.stadio b{font-family:'IBM Plex Mono',monospace;font-size:1.25rem;font-weight:500}
+.stadio .mini{height:6px;border-radius:999px;background:#E3E8ED;margin-top:9px;overflow:hidden}
+.stadio .mini i{display:block;height:100%;background:var(--green);transition:width .6s ease}
+.idea-nota{margin-top:14px;font-size:.85rem;color:var(--ink2);line-height:1.55}
+
+/* sistemi Sigma (teaser trader) */
+.sistemi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+@media (max-width:640px){.sistemi{grid-template-columns:1fr}}
+.sistema{background:var(--fog);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px}
+.sistema h3{font-size:.95rem;font-weight:700}
+.sistema p{font-size:.83rem;color:var(--ink2);line-height:1.5}
+.badge{align-self:flex-start;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);border-radius:999px;padding:3px 9px}
+
+/* profili: visibilità */
+[data-solo]{display:none}
+body[data-profilo="neofita"] [data-solo~="neofita"],
+body[data-profilo="intermedio"] [data-solo~="intermedio"],
+body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
+
+/* ---------- AGENTE ---------- */
+#agente-btn{
+  position:fixed;right:18px;bottom:18px;z-index:50;
+  background:var(--ink);color:#fff;border:none;border-radius:999px;
+  padding:14px 20px;font-size:.9rem;font-weight:700;letter-spacing:.02em;
+  box-shadow:0 12px 30px rgba(16,35,58,.35);display:none;align-items:center;gap:9px
+}
+#agente-btn.mostra{display:flex}
+#agente-btn .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);animation:pulsa 2.4s infinite}
+@keyframes pulsa{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
+#agente{
+  position:fixed;right:18px;bottom:18px;z-index:60;width:min(380px,calc(100vw - 24px));
+  background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(16,35,58,.3);
+  display:none;flex-direction:column;max-height:min(560px,78vh);overflow:hidden
+}
+#agente.aperto{display:flex}
+#agente header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--ink);color:#fff}
+#agente header b{font-family:'Archivo',sans-serif;letter-spacing:.18em;font-size:.85rem}
+#agente header b i{color:var(--amber);font-style:normal}
+#agente header button{background:none;border:none;color:#fff;font-size:1.2rem;line-height:1;padding:4px 6px}
+#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 13px;border-radius:12px;font-size:.88rem;line-height:1.5;white-space:pre-wrap}
+.msg.ai{background:var(--fog);color:var(--ink);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.io{background:var(--ink);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg.pensa{color:var(--ink2);font-style:italic;background:none;padding:2px 4px}
+#agente form,#agente .invio{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+#agente .invio input{flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:.9rem;background:var(--fog)}
+#agente .invio input:focus{outline:2px solid var(--ink)}
+#agente .invio button{background:var(--amber);border:none;border-radius:10px;padding:0 16px;font-weight:700;color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-profilo="">
+
+<!-- ============ ANTICAMERA ============ -->
+<section id="anticamera">
+  <canvas id="fan"></canvas>
+  <div class="gate">
+    <div class="wordmark"><span class="sig">Σ</span>IGMA · TRADE COACH</div>
+    <h1>Prima di rischiare un euro,<br>simulane diecimila.</h1>
+    <p class="sub">Sigma simula migliaia di scenari sul trade che hai in mente e ti dice, con i numeri, se conviene. Dimmi solo da dove parti: il resto si adatta a te.</p>
+    <div class="cards">
+      <button class="card" onclick="entra('neofita')">
+        <svg viewBox="0 0 120 44" preserveAspectRatio="none"><path d="M4 38 C 30 36, 55 30, 78 22 S 110 10, 116 6" fill="none" stroke="#0F6E5D" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h3>Non ho mai fatto trading</h3>
+        <span>Ti accompagno passo per passo, senza gergo. Niente soldi veri: prima capiamo, poi si decide.</span>
+        <span class="go">Inizia da zero →</span>
+      </button>
+      <button class="card" onclick="entra('intermedio')">
+        <svg viewBox="0 0 120 44" preserveAspectRatio="none"><path d="M4 30 C 30 26, 50 32, 70 24 S 100 18, 116 14" fill="none" stroke="#10233A" stroke-width="2.5" stroke-linecap="round"/><path d="M4 36 C 30 34, 50 38, 70 34 S 100 30, 116 28" fill="none" stroke="#10233A" stroke-width="1.2" opacity=".35"/></svg>
+        <h3>Ho già investimenti</h3>
+        <span>Hai un portafoglio o qualche operazione alle spalle. Sigma valuta i tuoi trade prima che li apri.</span>
+        <span class="go">Analizza un trade →</span>
+      </button>
+      <button class="card" onclick="entra('esperto')">
+        <svg viewBox="0 0 120 44" preserveAspectRatio="none"><g stroke="#10233A" fill="none" stroke-width="1"><path d="M4 32 C 40 28, 80 14, 116 4" opacity=".9"/><path d="M4 32 C 40 30, 80 22, 116 14" opacity=".6"/><path d="M4 32 C 40 32, 80 30, 116 26" opacity=".4"/><path d="M4 32 C 40 34, 80 36, 116 38" opacity=".25"/></g><path d="M4 32 C 40 30, 80 24, 116 18" fill="none" stroke="#E8A013" stroke-width="2.2"/></svg>
+        <h3>Faccio trading attivamente</h3>
+        <span>Vai dritto al motore: distribuzioni Monte Carlo, EV, percentili e metriche di volatilità in chiaro.</span>
+        <span class="go">Apri il motore →</span>
+      </button>
+    </div>
+    <p class="note">Versione dimostrativa · dati reali congelati al 9 luglio 2026 per AAPL, MSFT, TSLA · nessun ordine reale viene inviato</p>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<main id="app">
+  <div class="topbar">
+    <div class="wordmark"><span class="sig" style="color:var(--amber)">Σ</span>IGMA</div>
+    <button class="pill" onclick="tornaAnticamera()" title="Cambia profilo"><span class="dot"></span><span id="pill-label">profilo</span> · cambia</button>
+  </div>
+
+  <section class="blocco guida" data-solo="neofita" id="sez-guida">
+    <div class="eyebrow">Partiamo da qui</div>
+    <h2>Il trading non è magia nera. È matematica.</h2>
+    <p>Nessuno può predire il futuro — nemmeno Sigma, nemmeno i professionisti. Ma il calcolo delle probabilità può dirti due cose concrete: <b>prima</b>, se un'operazione ha senso oppure no. <b>Dopo</b>, come stanno cambiando le cose mentre l'operazione è in corso — come in una partita, dove a ogni gol le probabilità si spostano e la squadra si adatta. Tutto qui: niente istinto, niente fortuna, solo numeri letti nel modo giusto. E qui puoi provarlo senza rischiare un euro: è tutto simulato.</p>
+    <div class="passi">
+      <button onclick="agentePrompt('Spiegami perché il trading non è come giocare d\u0027azzardo')">Ma non è azzardo?</button>
+      <button onclick="agentePrompt('Cosa può dirmi davvero il calcolo delle probabilità e cosa no?')">Cosa dicono le probabilità?</button>
+      <button onclick="agentePrompt('Guidami passo passo nel primo trade simulato')">Guidami tu</button>
+    </div>
+  </section>
+
+  <section class="blocco guida" data-solo="intermedio" id="sez-ponte">
+    <div class="eyebrow">Partiamo da qui</div>
+    <h2>Investire lo fai già. Qui decidi il rischio prima.</h2>
+    <p>Col tuo portafoglio accetti le oscillazioni del mercato e aspetti. Un trade è un'altra cosa: ha un ingresso, un'uscita e — soprattutto — una <b>perdita massima decisa prima</b>, non subita dopo. Sigma fa due cose per te: prima di aprire, ti dice se i numeri giustificano l'operazione; a operazione aperta, ricalcola le probabilità a ogni movimento del mercato, come un navigatore col traffico. Nessuna previsione del futuro: solo sapere sempre dove sei.</p>
+    <div class="passi">
+      <button onclick="agentePrompt('Che differenza c\u0027è tra investire come faccio già e fare un trade?')">Investire vs trading</button>
+      <button onclick="agentePrompt('Perché la perdita massima si decide prima di aprire?')">Perché il rischio si decide prima?</button>
+      <button onclick="agentePrompt('Valutiamo insieme un trade di prova sul simulatore')">Proviamo un trade</button>
+    </div>
+  </section>
+
+  <section class="blocco" id="sez-builder">
+    <div class="eyebrow">Simulatore</div>
+    <h2 data-solo="neofita">Prova un'operazione, senza rischiare nulla</h2>
+    <h2 data-solo="intermedio">Valuta il trade prima di aprirlo</h2>
+    <h2 data-solo="esperto">Motore di valutazione</h2>
+    <p class="lead" data-solo="neofita">Scegli un'azienda tra le tre disponibili nella demo e indica la cifra che, male che vada, saresti pronto a perdere. Da lì calcoliamo tutto noi, comprese quante azioni avrebbe senso comprare.</p>
+    <p class="lead" data-solo="intermedio">Il motore simula ~10.000 trade con le stesse caratteristiche del tuo e ti restituisce una base statistica su cui decidere.</p>
+    <p class="lead" data-solo="esperto">Come al poker: le percentuali cambiano a ogni carta che arriva, e vanno gestite — non subìte. Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
+    <div data-solo="intermedio esperto">
+      <div class="modi">
+        <button class="modo on" id="modo-nuovo" onclick="modo('nuovo')">Nuovo trade</button>
+        <button class="modo" id="modo-pos" onclick="modo('pos')">Ho già una posizione</button>
+      </div>
+    </div>
+    <div id="pannello-nuovo">
+    <div class="riga">
+      <div class="campo">
+        <label for="ticker">Ticker</label>
+        <select id="ticker">
+          <option value="AAPL">AAPL — Apple</option>
+          <option value="MSFT">MSFT — Microsoft</option>
+          <option value="TSLA">TSLA — Tesla</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="perdita">Perdita massima</label>
+        <input id="perdita" type="number" inputmode="decimal" placeholder="es. 200" min="10">
+      </div>
+      <div class="campo">
+        <label for="valuta">Valuta</label>
+        <select id="valuta"><option>$</option><option>€</option></select>
+      </div>
+    </div>
+    <p class="aiuto" data-solo="neofita">La "perdita massima" è la tua rete di sicurezza: la cifra oltre la quale l'operazione si chiude da sola. È il numero più importante di tutti, per questo si parte da qui.</p>
+    <p class="aiuto" data-solo="intermedio">Quanto sei disposto a perdere al massimo su questa operazione: da qui calcoliamo automaticamente quante azioni comprare.</p>
+    <p class="aiuto" data-solo="esperto">Il sizing è derivato dal max loss: n = ⌊maxLoss / (entry − stop)⌋. Stop e target ottimali selezionati per EV.</p>
+    <button class="cta" onclick="calcola()">Calcola</button>
+
+    <div id="risultato">
+      <div class="kpi">
+        <div class="k buono"><b id="r-prob">—</b><span>Probabilità di profitto</span></div>
+        <div class="k"><b id="r-azioni" >—</b><span>Azioni da comprare</span></div>
+        <div class="k" id="r-ev-box"><b id="r-ev">—</b><span>Guadagno atteso</span></div>
+      </div>
+      <div class="barra"><i id="r-barra" style="width:0%"></i></div>
+      <p class="verdetto" id="r-verdetto"></p>
+      <div class="esperto-extra">
+        <div class="metriche">
+          <div class="m"><b id="m-vrp">—</b>VRP</div>
+          <div class="m"><b id="m-sharpe">—</b>EV/σ</div>
+          <div class="m"><b id="m-p5">—</b>P5 (drawdown)</div>
+          <div class="m"><b id="m-p95">—</b>P95 (upside)</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div id="pannello-pos" style="display:none">
+      <div class="riga">
+        <div class="campo">
+          <label for="pos-ticker">Ticker</label>
+          <select id="pos-ticker">
+            <option value="AAPL">AAPL — Apple</option>
+            <option value="MSFT">MSFT — Microsoft</option>
+            <option value="TSLA">TSLA — Tesla</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="pos-stop">Prezzo di stop loss</label>
+          <input id="pos-stop" type="number" inputmode="decimal" placeholder="es. 215">
+        </div>
+        <div class="campo">
+          <label for="pos-target">Prezzo obiettivo</label>
+          <input id="pos-target" type="number" inputmode="decimal" placeholder="es. 250">
+        </div>
+      </div>
+      <p class="aiuto">Qualunque sia il tuo metodo, bastano questi due prezzi: Sigma calcola la probabilità che il mercato, da dove si trova <b>adesso</b>, arrivi al tuo obiettivo prima di toccare lo stop. Vale anche per una zona: indica il prezzo d'ingresso della zona.</p>
+      <button class="cta" onclick="valutaPosizione()">Calcola probabilità</button>
+      <div id="pos-risultato" style="display:none;margin-top:22px;border-top:1px dashed var(--line);padding-top:20px">
+        <div class="kpi">
+          <div class="k buono"><b id="p-target">—</b><span>Arriva all'obiettivo</span></div>
+          <div class="k cattivo"><b id="p-stop">—</b><span>Tocca prima lo stop</span></div>
+          <div class="k"><b id="p-rr">—</b><span>Rapporto premio/rischio</span></div>
+        </div>
+        <div class="barra"><i id="p-barra" style="width:0%"></i></div>
+        <p class="verdetto" id="p-verdetto"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="blocco" id="sez-idea">
+    <div class="eyebrow">L'idea chiave</div>
+    <h2 data-solo="neofita">Le probabilità cambiano mentre la partita è in corso</h2>
+    <h2 data-solo="intermedio">Il navigatore ricalcola. Sigma anche.</h2>
+    <h2 data-solo="esperto">Equity dinamica, come al tavolo</h2>
+    <p class="lead" data-solo="neofita">Pensa a una partita di calcio: al fischio d'inizio le due squadre partono quasi alla pari, ma ogni gol, ogni espulsione, ogni minuto che passa cambia le probabilità di vittoria. Il tuo trade funziona allo stesso modo — e Sigma ricalcola le probabilità a ogni "gol" del mercato.</p>
+    <p class="lead" data-solo="intermedio">Come un navigatore che ricalcola il percorso quando trova traffico, Sigma rivaluta il tuo trade a ogni variazione del mercato: la probabilità di arrivare a target non è quella del giorno di apertura, è quella di adesso.</p>
+    <p class="lead" data-solo="esperto">Al tavolo l'equity non è mai quella del preflop: cambia a ogni carta che scende, e va gestita street per street. Sul mercato è identico — P(target) ed EV residuo del tuo trade si muovono con ogni sessione, e Sigma li ricalcola per te.</p>
+    <div class="stadi" data-analogia></div>
+    <p class="idea-nota" data-solo="neofita">Quello che conta non è indovinare il risultato: è prendere buone decisioni con le informazioni che hai in quel momento. Sigma esiste per questo.</p>
+    <p class="idea-nota" data-solo="intermedio">Il piano fatto all'apertura invecchia in fretta: Sigma ti dice quando il percorso è ancora buono e quando conviene ricalcolare.</p>
+    <p class="idea-nota" data-solo="esperto">Decisione ≠ esito: Sigma valuta la qualità della decisione date le informazioni disponibili al momento, non il risultato a posteriori.</p>
+  </section>
+
+  <section class="blocco" id="sez-come">
+    <div class="eyebrow">Il metodo</div>
+    <h2>Come funziona Sigma</h2>
+    <div class="step"><span class="n">01</span><div><h3>Crea il trade</h3><p data-solo="neofita">Descrivi l'operazione che hai in mente e ricevi una fotografia chiara: quante probabilità ha di andare bene e quanto potresti guadagnare o perdere.</p><p data-solo="intermedio">Ricevi una fotografia statistica dell'operazione e scopri quale combinazione di rischio, stop e target è statisticamente più vantaggiosa.</p><p data-solo="esperto">Il motore esplora la griglia stop/target e restituisce la combinazione a EV massimo, con distribuzione completa dei percorsi.</p></div></div>
+    <div class="step"><span class="n">02</span><div><h3>Monitora il mercato</h3><p data-solo="neofita">Il mercato cambia ogni giorno, e con lui le probabilità del tuo trade. Torna quando vuoi: ti diciamo se sta migliorando o peggiorando, in parole semplici.</p><p data-solo="intermedio">Le probabilità cambiano insieme al mercato. Se il profilo statistico si deteriora, decidi tu se mantenere o chiudere.</p><p data-solo="esperto">Rivalutazione continua su mark correnti: delta di probabilità, EV residuo e segnale di deterioramento del profilo.</p></div></div>
+    <div class="step"><span class="n">03</span><div><h3>Chiudi il trade</h3><p>Anche dopo la chiusura, Sigma continua a seguire il trade e confronta la tua decisione con ciò che sarebbe successo restando nel mercato.</p></div></div>
+    <div class="step"><span class="n">04</span><div><h3>Migliora il tuo metodo</h3><p>Ogni operazione diventa un caso di studio: più trade accumuli, più Sigma identifica punti di forza, errori ricorrenti e decisioni che hanno davvero migliorato i risultati.</p></div></div>
+  </section>
+
+  <section class="blocco" data-solo="esperto" id="sez-sistemi">
+    <div class="eyebrow">In arrivo</div>
+    <h2>Sistemi Sigma: nuovi strumenti, stesso linguaggio</h2>
+    <p class="lead">Sigma lavora su due fronti: da una parte analizza il portafoglio e i trade che già fai; dall'altra ti mette in mano sistemi su strumenti che magari non usi ancora — tradotti tutti nello stesso linguaggio: probabilità, EV, rischio massimo definito.</p>
+    <div class="sistemi">
+      <div class="sistema"><span class="badge">In arrivo</span><h3>Trend following</h3><p>Segnali di tendenza con P(target) ricalcolata a ogni sessione: entri, esci e ridimensioni sui numeri, non sulle sensazioni.</p></div>
+      <div class="sistema"><span class="badge">In arrivo</span><h3>Spread trading</h3><p>Strutture a rischio definito per costruzione: sai il massimo che puoi perdere prima ancora di aprire, e il motore ti dice se il premio lo giustifica.</p></div>
+      <div class="sistema"><span class="badge">In arrivo</span><h3>Trading in opzioni</h3><p>Le opzioni tradotte in probabilità: niente greche da decifrare — ogni struttura letta come P(profitto), guadagno atteso e perdita massima. Le usi con controllo, non con fede.</p></div>
+    </div>
+  </section>
+
+  <section class="blocco" id="sez-storico">
+    <div class="eyebrow">Storico</div>
+    <h2>Operazioni chiuse</h2>
+    <p class="vuoto">Nessuna operazione ancora. Il primo trade che simuli comparirà qui — e Sigma continuerà a studiarlo anche dopo la chiusura.</p>
+  </section>
+</main>
+
+<!-- ============ AGENTE ============ -->
+<button id="agente-btn" onclick="apriAgente()"><span class="dot"></span> Assistente Sigma</button>
+<div id="agente" role="dialog" aria-label="Assistente Sigma">
+  <header><b><i>Σ</i> ASSISTENTE</b><button onclick="chiudiAgente()" aria-label="Chiudi">×</button></header>
+  <div id="chat"></div>
+  <div class="invio">
+    <input id="agente-input" placeholder="Scrivi qui…" onkeydown="if(event.key==='Enter')inviaAgente()">
+    <button onclick="inviaAgente()">Invia</button>
+  </div>
+</div>
+
+<script>
+/* ================= DATI DEMO ================= */
+const DEMO = {
+  AAPL:{prezzo:228.4, prob:.63, ev:.42, vrp:'+3.1%', sharpe:'0.38', p5:'-14%', p95:'+21%'},
+  MSFT:{prezzo:471.2, prob:.66, ev:.55, vrp:'+2.4%', sharpe:'0.44', p5:'-11%', p95:'+19%'},
+  TSLA:{prezzo:312.7, prob:.51, ev:.12, vrp:'+7.8%', sharpe:'0.09', p5:'-28%', p95:'+41%'}
+};
+const NOMI = {neofita:'Principiante', intermedio:'Investitore', esperto:'Trader'};
+
+/* Analogia per profilo: le probabilità si aggiornano a ogni evento */
+const ANALOGIE = {
+  neofita:[
+    {ev:"⚽ Fischio d'inizio", p:50, lab:'Vittoria 50%'},
+    {ev:"⚽ Gol al 20'", p:68, lab:'Vittoria 68%'},
+    {ev:'⚽ Espulsione avversaria', p:81, lab:'Vittoria 81%'}
+  ],
+  intermedio:[
+    {ev:'Apertura del trade', p:63, lab:'P(target) 63%'},
+    {ev:'Trimestrale sopra le attese', p:74, lab:'P(target) 74%'},
+    {ev:'Mercato in indebolimento', p:58, lab:'P(target) 58%'}
+  ],
+  esperto:[
+    {ev:'Apertura del trade', p:63, lab:'P(target) 63%'},
+    {ev:'Breakout confermato', p:78, lab:'P(target) 78%'},
+    {ev:'Vol in espansione contro', p:61, lab:'P(target) 61%'}
+  ]
+};
+let cicloId = null;
+function montaAnalogia(){
+  const box = document.querySelector('[data-analogia]');
+  const st = ANALOGIE[profilo];
+  if(!box || !st) return;
+  box.innerHTML = st.map(s=>'<div class="stadio"><span class="ev">'+s.ev+'</span><b>'+s.lab+'</b><div class="mini"><i style="width:'+s.p+'%"></i></div></div>').join('');
+  clearInterval(cicloId);
+  const nodi = [...box.children];
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ nodi[nodi.length-1].classList.add('on'); return; }
+  let i = 0; nodi[0].classList.add('on');
+  cicloId = setInterval(()=>{ nodi.forEach(n=>n.classList.remove('on')); i=(i+1)%nodi.length; nodi[i].classList.add('on'); }, 2200);
+}
+
+/* ================= PROFILO / ANTICAMERA ================= */
+let profilo = '';
+function entra(p){
+  profilo = p;
+  document.body.dataset.profilo = p;
+  document.getElementById('anticamera').style.display = 'none';
+  document.getElementById('app').classList.add('attivo');
+  document.getElementById('pill-label').textContent = NOMI[p];
+  document.getElementById('agente-btn').classList.add('mostra');
+  montaAnalogia();
+  if(p !== 'neofita') modo('nuovo');
+  window.scrollTo(0,0);
+  benvenutoAgente();
+}
+function tornaAnticamera(){
+  document.getElementById('app').classList.remove('attivo');
+  document.getElementById('anticamera').style.display = 'flex';
+  document.getElementById('agente-btn').classList.remove('mostra');
+  chiudiAgente();
+  storia = []; document.getElementById('chat').innerHTML='';
+  window.scrollTo(0,0);
+}
+
+/* ================= SIMULATORE (demo deterministica) ================= */
+function calcola(){
+  const t = document.getElementById('ticker').value;
+  const perdita = parseFloat(document.getElementById('perdita').value);
+  const val = document.getElementById('valuta').value;
+  if(!perdita || perdita < 10){
+    agenteDì("Per calcolare mi serve la perdita massima: scrivi nel campo la cifra che, male che vada, sei pronto a perdere (minimo 10). Da lì derivo io il numero di azioni.");
+    return;
+  }
+  const d = DEMO[t];
+  const stopDist = d.prezzo * 0.06;
+  const azioni = Math.max(1, Math.floor(perdita / stopDist));
+  const ev = (perdita * d.ev).toFixed(0);
+  document.getElementById('r-prob').textContent = Math.round(d.prob*100)+'%';
+  document.getElementById('r-azioni').textContent = azioni;
+  const evBox = document.getElementById('r-ev-box');
+  evBox.className = 'k ' + (d.ev > .2 ? 'buono' : 'cattivo');
+  document.getElementById('r-ev').textContent = (d.ev>0?'+':'')+ev+' '+val;
+  document.getElementById('r-barra').style.width = Math.round(d.prob*100)+'%';
+  const buono = d.ev > .2;
+  const verdetti = {
+    neofita: buono
+      ? `Su 10.000 simulazioni, questo trade finisce in profitto ${Math.round(d.prob*100)} volte su 100 e in media ti lascia ${ev} ${val} in tasca. È un profilo sano: il guadagno possibile ripaga il rischio che ti prendi.`
+      : `Su 10.000 simulazioni questo trade vince solo ${Math.round(d.prob*100)} volte su 100, e il guadagno medio (${ev} ${val}) è piccolo rispetto a quello che rischi. Tradotto: così com'è, non conviene. Prova un altro titolo o chiedimi perché.`,
+    intermedio: buono
+      ? `Profilo statistico favorevole: probabilità ${Math.round(d.prob*100)}%, expectancy +${ev} ${val} sul capitale a rischio. La combinazione stop/target selezionata è quella a valore atteso massimo.`
+      : `Profilo debole: expectancy di soli ${ev} ${val} a fronte di ${perdita} ${val} a rischio. Il rapporto rischio/rendimento non giustifica l'apertura ai prezzi attuali.`,
+    esperto: buono
+      ? `EV +${ev} ${val} · P(win) ${Math.round(d.prob*100)}% · sizing ${azioni} @ stop -6%. Griglia esplorata: il nodo selezionato massimizza EV/σ. Distribuzione e percentili sotto.`
+      : `EV marginale (+${ev} ${val}) con P(win) ${Math.round(d.prob*100)}%. EV/σ ${d.sharpe}: il premio non compensa la varianza. Skew e VRP sotto — valuta struttura in opzioni invece del sottostante.`
+  };
+  document.getElementById('r-verdetto').textContent = verdetti[profilo];
+  document.getElementById('m-vrp').textContent = d.vrp;
+  document.getElementById('m-sharpe').textContent = d.sharpe;
+  document.getElementById('m-p5').textContent = d.p5;
+  document.getElementById('m-p95').textContent = d.p95;
+  document.getElementById('risultato').classList.add('mostra');
+}
+
+/* ================= MODALITÀ E VALUTAZIONE POSIZIONE ================= */
+function modo(m){
+  document.getElementById('modo-nuovo').classList.toggle('on', m==='nuovo');
+  document.getElementById('modo-pos').classList.toggle('on', m==='pos');
+  document.getElementById('pannello-nuovo').style.display = m==='nuovo' ? 'block' : 'none';
+  document.getElementById('pannello-pos').style.display = m==='pos' ? 'block' : 'none';
+}
+function valutaPosizione(){
+  const t = document.getElementById('pos-ticker').value;
+  const stop = parseFloat(document.getElementById('pos-stop').value);
+  const target = parseFloat(document.getElementById('pos-target').value);
+  const d = DEMO[t];
+  if(!stop || !target){
+    agenteDì("Mi servono entrambi i prezzi: dove hai messo lo stop loss e dove vuoi arrivare (o l'inizio della tua zona obiettivo). Con quei due numeri calcolo le probabilità da qui.");
+    return;
+  }
+  const sopra = target > d.prezzo, sotto = stop < d.prezzo;
+  if(sopra === !sotto){
+    agenteDì("Controlla i livelli: il prezzo attuale di "+t+" è "+d.prezzo+". Lo stop e l'obiettivo devono stare uno sotto e uno sopra il prezzo di adesso (long: stop sotto, obiettivo sopra; short: il contrario).");
+    return;
+  }
+  const dStop = Math.abs(d.prezzo - stop), dTarget = Math.abs(target - d.prezzo);
+  let pT = dStop / (dStop + dTarget);            // prima approssimazione: passeggiata senza deriva
+  pT = Math.min(.97, Math.max(.03, pT + (d.ev - .3) * 0.06)); // correzione demo per regime del titolo
+  const pS = 1 - pT, rr = (dTarget / dStop);
+  document.getElementById('p-target').textContent = Math.round(pT*100)+'%';
+  document.getElementById('p-stop').textContent = Math.round(pS*100)+'%';
+  document.getElementById('p-rr').textContent = rr.toFixed(1)+' : 1';
+  document.getElementById('p-barra').style.width = Math.round(pT*100)+'%';
+  const evPos = pT * dTarget - pS * dStop;
+  const buono = evPos > 0;
+  const verdetti = {
+    intermedio: buono
+      ? `Da dove si trova ora il mercato (${d.prezzo}), la probabilità di raggiungere ${target} prima di toccare ${stop} è del ${Math.round(pT*100)}%. Con un premio ${rr.toFixed(1)} volte il rischio, i numeri giustificano la posizione: il piano regge.`
+      : `Da qui (${d.prezzo}), il mercato tocca il tuo stop più spesso di quanto raggiunga l'obiettivo, e il premio non compensa: valore atteso negativo. Il tuo metodo resta tuo — ma questi livelli, oggi, non sono a tuo favore. Puoi rivedere obiettivo o stop e ricalcolare.`,
+    esperto: buono
+      ? `P(target prima di stop) = ${Math.round(pT*100)}% da ${d.prezzo}. RR ${rr.toFixed(1)}:1, EV per unità +${evPos.toFixed(2)}. First-passage favorevole ai livelli correnti.`
+      : `P(target) ${Math.round(pT*100)}% vs P(stop) ${Math.round(pS*100)}% da ${d.prezzo}: EV per unità ${evPos.toFixed(2)}. RR ${rr.toFixed(1)}:1 insufficiente a compensare la geometria dei livelli. Rivedere target/stop o attendere prezzi migliori.`,
+    neofita: buono
+      ? `Buone notizie: da dove si trova ora il prezzo, arrivi al tuo obiettivo ${Math.round(pT*100)} volte su 100 prima di toccare lo stop. I numeri sono dalla tua parte.`
+      : `Da dove si trova ora il prezzo, lo stop viene toccato più spesso dell'obiettivo. Non significa che andrà male: significa che i numeri, oggi, non sono a tuo favore.`
+  };
+  document.getElementById('p-verdetto').textContent = verdetti[profilo] || verdetti.intermedio;
+  document.getElementById('pos-risultato').style.display = 'block';
+}
+
+/* ================= AGENTE ================= */
+let storia = [];
+let occupato = false;
+
+function apriAgente(){
+  document.getElementById('agente').classList.add('aperto');
+  document.getElementById('agente-btn').classList.remove('mostra');
+  document.getElementById('agente-input').focus();
+}
+function chiudiAgente(){
+  document.getElementById('agente').classList.remove('aperto');
+  if(profilo) document.getElementById('agente-btn').classList.add('mostra');
+}
+function agenteDì(testo){
+  apriAgente();
+  bolla('ai', testo);
+}
+function bolla(chi, testo){
+  const c = document.getElementById('chat');
+  const m = document.createElement('div');
+  m.className = 'msg ' + chi;
+  m.textContent = testo;
+  c.appendChild(m);
+  c.scrollTop = c.scrollHeight;
+  return m;
+}
+function benvenutoAgente(){
+  const benvenuti = {
+    neofita: "Ciao! Sono l'assistente di Sigma. Prima di tutto una cosa: il trading non è magia né fortuna — è calcolo delle probabilità. Non predice il futuro, ma ti dice se un'operazione ha senso e come cambiano le cose strada facendo. Qui è tutto simulato, non si rischia nulla: quando vuoi ti guido nel primo trade.",
+    intermedio: "Ciao! Visto che investi già, hai due strade nel simulatore: \"Nuovo trade\" per valutare un'operazione prima di aprirla, oppure \"Ho già una posizione\" — mi dai il tuo stop loss e il tuo prezzo obiettivo, qualunque sia il tuo metodo, e ti dico che probabilità ha il mercato, da qui, di arrivarci. Quale delle due?",
+    esperto: "Motore aperto in modalità completa: EV, EV/σ, percentili e VRP in chiaro. Dati demo congelati al 9/7. Se ti serve il dettaglio metodologico (GBM, griglia stop/target, repricing) chiedi qui."
+  };
+  storia = [];
+  setTimeout(()=>{ bolla('ai', benvenuti[profilo]); storia.push({role:'assistant', content: JSON.stringify({messaggio:benvenuti[profilo], azione:null})}); }, 400);
+  document.getElementById('agente-btn').classList.add('mostra');
+}
+function agentePrompt(testo){
+  apriAgente();
+  document.getElementById('agente-input').value = testo;
+  inviaAgente();
+}
+
+function sistemPrompt(){
+  return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
+
+L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
+- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita.
+- intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
+- esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
+
+La pagina ha queste sezioni (id): "sez-builder" (simulatore con due modalità per intermedio/esperto: "Nuovo trade" — ticker, perdita massima, valuta — e "Ho già una posizione" — l'utente inserisce prezzo di stop loss e prezzo obiettivo, qualunque sia il suo metodo, e Sigma calcola la probabilità che il mercato da dove si trova ora raggiunga l'obiettivo prima dello stop), "sez-idea" (l'idea chiave: le probabilità si riaggiornano a ogni evento), "sez-come" (il metodo in 4 passi), "sez-storico" (operazioni chiuse, vuoto), per i neofiti "sez-guida" (percorso guidato) e per gli intermedi "sez-ponte" (dal portafoglio al trade a rischio definito).
+
+ANALOGIA per spiegare la rivalutazione continua delle probabilità (concetto centrale di Sigma):
+- neofita → la partita di calcio: le probabilità di vittoria cambiano a ogni gol, espulsione, minuto che passa.
+- intermedio → il navigatore GPS che ricalcola il percorso quando trova traffico.
+- esperto → l'equity nel poker: A♠3♦ preflop vale poco, con due assi al flop diventa un mostro; puoi usare liberamente termini come equity, pot odds, street.
+VIETATO usare analogie con poker, carte, scommesse o gioco d'azzardo con neofita e intermedio: per loro il trading NON va mai accostato all'azzardo. Con tutti i profili, se emerge il tema azzardo, il messaggio è: Sigma serve a togliere l'azzardo dalle decisioni, separando la qualità della decisione dall'esito.
+
+REGOLE FERREE:
+1. Guidi SOLO sull'uso dello strumento e sui concetti didattici. MAI consigli d'investimento personalizzati, MAI dire quale titolo comprare o se aprire un trade reale. Se te lo chiedono, spiega che Sigma mostra statistiche ma la decisione resta all'utente, e che questa è una demo didattica.
+2. Risposte brevi: 2-4 frasi. In italiano.
+3. Se l'utente sembra nel profilo sbagliato (es. un neofita che chiede di VRP e skew, o un esperto confuso dalle basi), puoi proporre di cambiare profilo con l'azione cambia_profilo — ma solo dopo averlo suggerito.
+4. Rispondi SOLO con JSON valido, senza backtick né altro testo, in questo formato:
+{"messaggio":"testo per l'utente","azione":null}
+oppure azione = {"tipo":"evidenzia","target":"sez-builder|sez-come|sez-storico|sez-guida"} per far lampeggiare una sezione, oppure {"tipo":"cambia_profilo","profilo":"neofita|intermedio|esperto"}.
+Usa "evidenzia" quando spieghi dove si trova qualcosa nella pagina.`;
+}
+
+async function inviaAgente(){
+  if(occupato) return;
+  const input = document.getElementById('agente-input');
+  const testo = input.value.trim();
+  if(!testo) return;
+  input.value = '';
+  bolla('io', testo);
+  storia.push({role:'user', content: testo});
+  const pensa = bolla('pensa', 'Sigma sta pensando…');
+  occupato = true;
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system: sistemPrompt(),
+        messages: storia.slice(-12)
+      })
+    });
+    const data = await res.json();
+    pensa.remove();
+    const grezzo = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    let msg = grezzo, azione = null;
+    try{
+      const pulito = grezzo.replace(/```json|```/g,'').trim();
+      const j = JSON.parse(pulito);
+      msg = j.messaggio || grezzo;
+      azione = j.azione || null;
+    }catch(e){}
+    bolla('ai', msg);
+    storia.push({role:'assistant', content: grezzo});
+    if(azione) eseguiAzione(azione);
+  }catch(err){
+    pensa.remove();
+    bolla('ai', "Non riesco a raggiungere il motore in questo momento. Riprova tra qualche secondo.");
+  }
+  occupato = false;
+}
+
+function eseguiAzione(a){
+  if(a.tipo === 'evidenzia' && a.target){
+    const el = document.getElementById(a.target);
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('hi');
+    setTimeout(()=>el.classList.remove('hi'), 2600);
+  }
+  if(a.tipo === 'cambia_profilo' && a.profilo && NOMI[a.profilo]){
+    profilo = a.profilo;
+    document.body.dataset.profilo = a.profilo;
+    document.getElementById('pill-label').textContent = NOMI[a.profilo];
+    montaAnalogia();
+    bolla('ai', '→ Ho adattato la pagina al profilo "'+NOMI[a.profilo]+'".');
+  }
+}
+
+/* ================= FAN MONTE CARLO (anticamera) ================= */
+(function(){
+  const cv = document.getElementById('fan');
+  const ctx = cv.getContext('2d');
+  const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,percorsi=[],t=0;
+  function seedRand(s){ return function(){ s|=0; s=s+0x6D2B79F5|0; let r=Math.imul(s^s>>>15,1|s); r=r+Math.imul(r^r>>>7,61|r)^r; return ((r^r>>>14)>>>0)/4294967296; }; }
+  function init(){
+    W = cv.width = cv.offsetWidth * devicePixelRatio;
+    H = cv.height = cv.offsetHeight * devicePixelRatio;
+    percorsi = [];
+    for(let i=0;i<34;i++){
+      const rnd = seedRand(i*997+13);
+      const pts=[]; let y=0;
+      for(let x=0;x<=120;x++){ y += (rnd()-0.485)*0.9; pts.push(y); }
+      percorsi.push(pts);
+    }
+    disegna(ridotto?120:0);
+  }
+  function disegna(fino){
+    ctx.clearRect(0,0,W,H);
+    const cx = W*0.5, cy = H*0.52, sx = W/150, sy = H/46;
+    percorsi.forEach((pts,i)=>{
+      ctx.beginPath();
+      ctx.strokeStyle = i===0 ? 'rgba(232,160,19,.9)' : 'rgba(16,35,58,'+(0.05+0.10*((i*7)%10)/10)+')';
+      ctx.lineWidth = (i===0?2:1)*devicePixelRatio;
+      const n = Math.min(fino, pts.length-1);
+      for(let x=0;x<=n;x++){
+        const px = cx - (60*sx) + x*sx;
+        const py = cy - pts[x]*sy;
+        x===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    });
+  }
+  function anima(){
+    t += 0.7;
+    disegna(t);
+    if(t < 120) requestAnimationFrame(anima);
+  }
+  addEventListener('resize', init);
+  init();
+  if(!ridotto) requestAnimationFrame(anima);
+})();
+</script>
+</body>
+</html>
