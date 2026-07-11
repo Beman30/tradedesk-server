@@ -61,6 +61,12 @@ button{font-family:inherit;cursor:pointer}
 }
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
 .pill:hover{border-color:var(--ink)}
+.seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+.seg button{border:none;background:none;padding:7px 14px;border-radius:999px;font-size:.8rem;font-weight:600;color:var(--ink2);cursor:pointer;transition:background .15s,color .15s}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button:hover:not(.on){color:var(--ink)}
+@media (max-width:640px){.seg button{padding:7px 10px;font-size:.72rem}}
+.topbar .wordmark{cursor:pointer}
 .blocco{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:26px 24px;margin-bottom:18px;position:relative}
 .blocco.hi{outline:3px solid var(--amber);outline-offset:3px}
 .blocco h2{font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-.01em}
@@ -213,8 +219,12 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
 <!-- ============ APP ============ -->
 <main id="app">
   <div class="topbar">
-    <div class="wordmark"><span class="sig" style="color:var(--amber)">Σ</span>IGMA</div>
-    <button class="pill" onclick="tornaAnticamera()" title="Cambia profilo"><span class="dot"></span><span id="pill-label">profilo</span> · cambia</button>
+    <div class="wordmark" onclick="tornaAnticamera()" title="Torna all'inizio"><span class="sig" style="color:var(--amber)">Σ</span>IGMA</div>
+    <div class="seg" role="tablist" aria-label="Cambia percorso">
+      <button id="seg-neofita" onclick="cambiaProfilo('neofita')">Principiante</button>
+      <button id="seg-intermedio" onclick="cambiaProfilo('intermedio')">Investitore</button>
+      <button id="seg-esperto" onclick="cambiaProfilo('esperto')">Trader</button>
+    </div>
   </div>
 
   <section class="blocco guida" data-solo="neofita" id="sez-guida">
@@ -239,6 +249,17 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     </div>
   </section>
 
+  <section class="blocco guida" data-solo="esperto" id="sez-tavolo">
+    <div class="eyebrow">Partiamo da qui</div>
+    <h2>Come al poker: le percentuali cambiano a ogni carta.</h2>
+    <p>L'equity non è mai quella del preflop: si aggiorna a ogni street, e chi vince nel lungo periodo è chi la gestisce — non chi la subisce. Sigma applica la stessa logica ai tuoi trade: P(target) ed EV residuo ricalcolati a ogni sessione, così ogni decisione (tenere, ridurre, chiudere) è presa sui numeri di adesso, non sul piano di ieri.</p>
+    <div class="passi">
+      <button onclick="agentePrompt('Come calcola Sigma la P(target) e l\u0027EV residuo di un trade aperto?')">La metodologia</button>
+      <button onclick="agentePrompt('Come gestisco un trade il cui profilo statistico sta peggiorando?')">Gestire un trade che peggiora</button>
+      <button onclick="agentePrompt('Mostrami i sistemi Sigma in arrivo')">I sistemi in arrivo</button>
+    </div>
+  </section>
+
   <section class="blocco" id="sez-builder">
     <div class="eyebrow">Simulatore</div>
     <h2 data-solo="neofita">Prova un'operazione, senza rischiare nulla</h2>
@@ -246,7 +267,7 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <h2 data-solo="esperto">Motore di valutazione</h2>
     <p class="lead" data-solo="neofita">Scegli un'azienda tra le tre disponibili nella demo e indica la cifra che, male che vada, saresti pronto a perdere. Da lì calcoliamo tutto noi, comprese quante azioni avrebbe senso comprare.</p>
     <p class="lead" data-solo="intermedio">Il motore simula ~10.000 trade con le stesse caratteristiche del tuo e ti restituisce una base statistica su cui decidere.</p>
-    <p class="lead" data-solo="esperto">Come al poker: le percentuali cambiano a ogni carta che arriva, e vanno gestite — non subìte. Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
+    <p class="lead" data-solo="esperto">Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
     <div data-solo="intermedio esperto">
       <div class="modi">
         <button class="modo on" id="modo-nuovo" onclick="modo('nuovo')">Nuovo trade</button>
@@ -423,19 +444,29 @@ function montaAnalogia(){
 
 /* ================= PROFILO / ANTICAMERA ================= */
 let profilo = '';
-function entra(p){
+function cambiaProfilo(p){
+  const primo = !profilo;
   profilo = p;
   document.body.dataset.profilo = p;
-  document.getElementById('anticamera').style.display = 'none';
-  document.getElementById('app').classList.add('attivo');
-  document.getElementById('pill-label').textContent = NOMI[p];
-  document.getElementById('agente-btn').classList.add('mostra');
+  ['neofita','intermedio','esperto'].forEach(x=>{
+    document.getElementById('seg-'+x).classList.toggle('on', x===p);
+  });
   montaAnalogia();
   if(p !== 'neofita') modo('nuovo');
+  if(!primo && document.getElementById('agente').classList.contains('aperto')){
+    bolla('ai', '→ Pagina adattata al percorso "'+NOMI[p]+'".');
+  }
+}
+function entra(p){
+  document.getElementById('anticamera').style.display = 'none';
+  document.getElementById('app').classList.add('attivo');
+  document.getElementById('agente-btn').classList.add('mostra');
+  cambiaProfilo(p);
   window.scrollTo(0,0);
   benvenutoAgente();
 }
 function tornaAnticamera(){
+  profilo = '';
   document.getElementById('app').classList.remove('attivo');
   document.getElementById('anticamera').style.display = 'flex';
   document.getElementById('agente-btn').classList.remove('mostra');
@@ -579,7 +610,7 @@ L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 
-La pagina ha queste sezioni (id): "sez-builder" (simulatore con due modalità per intermedio/esperto: "Nuovo trade" — ticker, perdita massima, valuta — e "Ho già una posizione" — l'utente inserisce prezzo di stop loss e prezzo obiettivo, qualunque sia il suo metodo, e Sigma calcola la probabilità che il mercato da dove si trova ora raggiunga l'obiettivo prima dello stop), "sez-idea" (l'idea chiave: le probabilità si riaggiornano a ogni evento), "sez-come" (il metodo in 4 passi), "sez-storico" (operazioni chiuse, vuoto), per i neofiti "sez-guida" (percorso guidato) e per gli intermedi "sez-ponte" (dal portafoglio al trade a rischio definito).
+La pagina ha queste sezioni (id): "sez-builder" (simulatore con due modalità per intermedio/esperto: "Nuovo trade" — ticker, perdita massima, valuta — e "Ho già una posizione" — l'utente inserisce prezzo di stop loss e prezzo obiettivo, qualunque sia il suo metodo, e Sigma calcola la probabilità che il mercato da dove si trova ora raggiunga l'obiettivo prima dello stop), "sez-idea" (l'idea chiave: le probabilità si riaggiornano a ogni evento), "sez-come" (il metodo in 4 passi), "sez-storico" (operazioni chiuse, vuoto), per i neofiti "sez-guida" (percorso guidato), per gli intermedi "sez-ponte" (dal portafoglio al trade a rischio definito), per gli esperti "sez-tavolo" (cornice poker: le percentuali cambiano e vanno gestite) e "sez-sistemi" (sistemi in arrivo). L'utente può cambiare percorso in qualsiasi momento con il selettore in alto (Principiante / Investitore / Trader).
 
 ANALOGIA per spiegare la rivalutazione continua delle probabilità (concetto centrale di Sigma):
 - neofita → la partita di calcio: le probabilità di vittoria cambiano a ogni gol, espulsione, minuto che passa.
@@ -647,11 +678,7 @@ function eseguiAzione(a){
     setTimeout(()=>el.classList.remove('hi'), 2600);
   }
   if(a.tipo === 'cambia_profilo' && a.profilo && NOMI[a.profilo]){
-    profilo = a.profilo;
-    document.body.dataset.profilo = a.profilo;
-    document.getElementById('pill-label').textContent = NOMI[a.profilo];
-    montaAnalogia();
-    bolla('ai', '→ Ho adattato la pagina al profilo "'+NOMI[a.profilo]+'".');
+    cambiaProfilo(a.profilo);
   }
 }
 
