@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Sigma Trade Coach — Prototipo adattivo</title>
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1YD246YPC8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1YD246YPC8');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -470,6 +478,7 @@ function cambiaProfilo(p){
   }
 }
 function entra(p){
+  if(typeof gtag === 'function') gtag('event', 'seleziona_profilo', { profilo: p });
   document.getElementById('anticamera').style.display = 'none';
   document.getElementById('app').classList.add('attivo');
   document.getElementById('agente-btn').classList.add('mostra');
@@ -524,6 +533,7 @@ function calcola(){
   document.getElementById('m-p5').textContent = d.p5;
   document.getElementById('m-p95').textContent = d.p95;
   document.getElementById('risultato').classList.add('mostra');
+  if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'nuovo_trade', profilo: profilo, ticker: t });
 }
 
 /* ================= MODALITÀ E VALUTAZIONE POSIZIONE ================= */
@@ -570,6 +580,7 @@ function valutaPosizione(){
   };
   document.getElementById('p-verdetto').textContent = verdetti[profilo] || verdetti.intermedio;
   document.getElementById('pos-risultato').style.display = 'block';
+  if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'posizione_esistente', profilo: profilo, ticker: t });
 }
 
 /* ================= AGENTE ================= */
