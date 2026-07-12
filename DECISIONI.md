@@ -19,6 +19,12 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
 - Criterio didattico del trio sintetico: CALMO = "sì" lieve (EV
   leggermente positiva), MEDIO = "sì" netto, VIOLENTO = "no" (EV
   negativa/~zero). Curatela seed dichiarata nei commenti.
+- Palestra: tempo unico a sessioni. All'ingresso si genera
+  deterministicamente il futuro dei 3 sintetici (estendiSerie, 120gg,
+  seed di sessione), ciascuno col proprio carattere. Aggiorna = 1
+  giorno sull'unica serie estesa; prezzi, trade aperti e ombre camminano
+  tutti lì. Nessun aggancio alle ore reali. A fine serie: nuova
+  sessione, nuovi futuri.
 ## Motori
 - Motore 1 (valutaTrade): long-only sul sottostante, trailing stop
   silenzioso 10%, NO take profit. MC 10.000 percorsi GBM deterministici
@@ -40,6 +46,11 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
 - Coerenza obbligatoria: trade appena aperto → evResidua Motore 2 ≈ EV
   Motore 1 stesso orizzonte. Logica trailing identica tra simulazione e
   ricostruzione.
+- Motore 3 (ombraTrade): verifica della decisione. Wrapper di
+  statoPosizione che continua il trade oltre la chiusura dell'utente,
+  ignorandola. Nessuna simulazione: solo ricostruzione storica.
+  Giudizio congelato a +10 giorni-demo o allo stop dell'ombra.
+  Registro decisioni in localStorage sigma_journal.
 ## Guscio / UI
 - Verdetti in 3 registri linguistici per profilo; per il neofita output
   in euro e frasi semplici ("in X casi su 10"), mai percentuali nude.

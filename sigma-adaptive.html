@@ -532,6 +532,15 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <div class="eyebrow">Conto demo</div>
     <h2>I tuoi trade demo</h2>
     <p class="lead">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
+    <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi Aggiorna.</p>
+    <p data-solo="neofita">E c'è una cosa che nessun altro ti fa vedere: quando chiudi un trade, per noi non è finita. Sigma continua a seguirlo come se non lo avessi mai chiuso — è il suo trade ombra. Così scopri se chiudere è stata la decisione giusta o se ti sei fatto prendere dalla fretta. Nel trading non basta sapere come è andata: bisogna capire come sarebbe andata.</p>
+    <div data-solo="neofita" style="margin-bottom:14px">
+      <button class="cta" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+    </div>
+    <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
+      <p class="verdetto">sessione di allenamento completata — inizia una nuova sessione</p>
+      <button class="cta" onclick="nuovaSessioneAllenamento()">Nuova sessione</button>
+    </div>
     <div id="demo-lista"></div>
     <p class="vuoto" id="demo-vuoto">Nessun trade demo ancora. Analizza un'operazione qui sopra e premi "Apri in DEMO": comparirà qui, viva.</p>
   </section>
@@ -664,6 +673,7 @@ function cambiaProfilo(p){
   });
   popolaSelectTicker();
   montaAnalogia();
+  if(p === 'neofita'){ assicuraSessioneAllenamento(); renderConto(); }
   if(p !== 'neofita') modo('nuovo');
   if(!primo && document.getElementById('agente').classList.contains('aperto')){
     bolla('ai', '→ Pagina adattata al percorso "'+NOMI[p]+'".');
@@ -1007,7 +1017,15 @@ function apriInDemo(tipo){
   const rec = tipo === 'nuovo' ? ultimaAnalisi : ultimaPosizione;
   if(!rec) return;
   const c = leggiConto();
-  c.unshift(Object.assign({ id: Date.now(), ts: Date.now(), chiuso: false }, rec));
+  const extra = { id: Date.now(), ts: Date.now(), chiuso: false };
+  if(isTickerAllenamento(rec.ticker)){
+    // Sessione di allenamento: l'apertura si aggancia al giorno corrente
+    // dell'unico orologio del conto (indice nella serie storica+estesa),
+    // non alle ore reali - vedi ASSICURA_SESSIONE_ALLENAMENTO più sotto.
+    assicuraSessioneAllenamento();
+    extra.indiceApertura = clockCorrente();
+  }
+  c.unshift(Object.assign(extra, rec));
   salvaConto(c);
   renderConto();
   if(typeof gtag === 'function') gtag('event', 'demo_trade_aperto', { profilo: profilo, ticker: rec.ticker, origine: tipo });
@@ -1017,7 +1035,11 @@ function apriInDemo(tipo){
   agenteDì("Fatto: il trade su "+rec.ticker+" è nel tuo conto demo — vivo, ma senza un euro vero in ballo. I prezzi demo si muovono col tempo: torna tra qualche ora e ti dico come sta andando e cosa faresti al posto suo un trader esperto.");
 }
 function prezzoDemo(rec){
-  // il prezzo demo evolve in modo deterministico col passare delle ore
+  // il prezzo demo evolve in modo deterministico col passare delle ore.
+  // USATO SOLO per i ticker reali (AAPL/MSFT/TSLA): i ticker di allenamento
+  // (CALMO/MEDIO/VIOLENTO) usano l'orologio unico di sessione, vedi
+  // statoDemoAllenamento più sotto - non toccato per non alterare il conto
+  // demo di intermedio/esperto ne' il Livello 2 del neofita.
   const ore = Math.floor((Date.now() - rec.ts) / 3600000);
   const seedRand = s => () => { s|=0; s=s+0x6D2B79F5|0; let r=Math.imul(s^s>>>15,1|s); r=r+Math.imul(r^r>>>7,61|r)^r; return ((r^r>>>14)>>>0)/4294967296; };
   const rnd = seedRand(rec.id % 2147483647);
@@ -1042,6 +1064,8 @@ function renderConto(){
   vuoto.style.display = c.length ? 'none' : 'block';
   const etichette = { corso: ['stato-corso','In corso'], target: ['stato-target','Obiettivo raggiunto'], stop: ['stato-stop','Stop raggiunto'] };
   lista.innerHTML = c.map(rec=>{
+    if(isTickerAllenamento(rec.ticker)) return renderRigaAllenamento(rec, etichette);
+    // --- invariato: ticker reali (AAPL/MSFT/TSLA), qualunque profilo ---
     const cur = rec.chiuso ? { prezzo: rec.prezzoChiusura, stato: rec.statoFinale } : prezzoDemo(rec);
     const pnl = (cur.prezzo - rec.apertura) * rec.azioni * (rec.dir==='short' ? -1 : 1);
     const [cls, lab] = etichette[cur.stato];
@@ -1067,16 +1091,238 @@ function renderConto(){
       + oriz
       + '</div>';
   }).join('');
+  if(profilo === 'neofita' && serieSessione.CALMO) verificaFineSessione();
 }
 function chiudiDemo(id){
   const c = leggiConto();
   const rec = c.find(r=>r.id===id);
   if(!rec) return;
+  if(isTickerAllenamento(rec.ticker)){
+    // Sessione di allenamento: chiudere non congela il trade - lo mette
+    // "sotto osservazione". Da qui in poi il trade ombra (ombraTrade,
+    // Motore 3) continua a camminare sulla stessa serie, ignorando la
+    // chiusura, finche' non arriva il giudizio finale.
+    assicuraSessioneAllenamento();
+    const clock = clockCorrente();
+    const serie = serieSessione[rec.ticker];
+    const curPrezzo = serie[clock];
+    rec.chiuso = true;
+    rec.sottoOsservazione = true;
+    rec.indiceChiusura = clock;
+    rec.prezzoChiusura = curPrezzo;
+    rec.statoFinale = 'osservazione';
+    rec.pnlRealizzato = (curPrezzo - rec.apertura) * rec.azioni * (rec.dir==='short' ? -1 : 1);
+    salvaConto(c); renderConto();
+    agenteDì("Trade demo su "+rec.ticker+" chiuso a "+curPrezzo.toFixed(2)+" ("+(rec.pnlRealizzato>=0?'+':'')+rec.pnlRealizzato.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
+    return;
+  }
   const cur = prezzoDemo(rec);
   rec.chiuso = true; rec.prezzoChiusura = cur.prezzo; rec.statoFinale = cur.stato;
   salvaConto(c); renderConto();
   const pnl = (cur.prezzo - rec.apertura) * rec.azioni;
   agenteDì("Trade demo su "+rec.ticker+" chiuso a "+cur.prezzo.toFixed(2)+" ("+(pnl>=0?'+':'')+pnl.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
+}
+
+/* ========== SESSIONE DI ALLENAMENTO (Motore 3: trade ombra) ==========
+ * SOLO percorso neofita. Un solo orologio per tutto il conto demo dei
+ * ticker di allenamento (CALMO/MEDIO/VIOLENTO): "indiceCorrente" nella
+ * serie storica (250gg, DEMO_DATA) + estesa (120gg, estendiSerie),
+ * avanza di 1 SOLO col pulsante Aggiorna - nessun aggancio alle ore
+ * reali. I ticker reali (AAPL/MSFT/TSLA) e "Ho già una posizione"
+ * restano sul meccanismo esistente (prezzoDemo / serie storica pura).
+ */
+const CHIAVE_SESSIONE = 'sigma_sessione';
+const CHIAVE_CLOCK = 'sigma_demo_clock';
+const CHIAVE_JOURNAL = 'sigma_journal';
+const GIORNI_EXTRA_SESSIONE = 120;
+let serieSessione = {}; // { CALMO:[...370], MEDIO:[...], VIOLENTO:[...] } - rigenerata a ogni load dal seed salvato
+
+function isTickerAllenamento(ticker){
+  return TICKER_ALLENAMENTO.some(([tk]) => tk === ticker);
+}
+function giornoStoricoIniziale(){
+  return SigmaEngines._internals.DEMO_DATA.CALMO.close.length - 1;
+}
+function assicuraSessioneAllenamento(){
+  let seed = localStorage.getItem(CHIAVE_SESSIONE);
+  if(!seed){
+    seed = 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9);
+    localStorage.setItem(CHIAVE_SESSIONE, seed);
+    localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
+  }
+  TICKER_ALLENAMENTO.forEach(([tk])=>{
+    if(!serieSessione[tk]){
+      const storica = SigmaEngines._internals.DEMO_DATA[tk].close;
+      const estesa = SigmaEngines.estendiSerie({ ticker: tk, seedSessione: seed, giorniExtra: GIORNI_EXTRA_SESSIONE });
+      serieSessione[tk] = storica.concat(estesa);
+    }
+  });
+}
+function clockCorrente(){
+  return parseInt(localStorage.getItem(CHIAVE_CLOCK), 10);
+}
+function indiceMassimoSessione(){
+  return serieSessione.CALMO.length - 1;
+}
+// Cammina la stessa serie (storica+estesa) dall'apertura al giorno dato,
+// controllando stop/target del trade (grid di Motore 1) - stessa logica
+// di prima, cambia solo la fonte del prezzo (serie di sessione invece
+// del PRNG orario) cosi' l'orologio e' unico per tutto il conto.
+function statoDemoAllenamento(rec, serie, finoAIndice){
+  let cur = { prezzo: rec.apertura, stato: 'corso' };
+  for(let idx=(rec.indiceApertura||0)+1; idx<=finoAIndice; idx++){
+    const p = serie[idx];
+    if(rec.dir === 'short'){
+      if(p >= rec.stop) return { prezzo: rec.stop, stato: 'stop' };
+      if(p <= rec.target) return { prezzo: rec.target, stato: 'target' };
+    } else {
+      if(p <= rec.stop) return { prezzo: rec.stop, stato: 'stop' };
+      if(p >= rec.target) return { prezzo: rec.target, stato: 'target' };
+    }
+    cur = { prezzo: p, stato: 'corso' };
+  }
+  return cur;
+}
+function renderRigaAllenamento(rec, etichette){
+  assicuraSessioneAllenamento();
+  const clock = clockCorrente();
+  const serie = serieSessione[rec.ticker];
+
+  if(rec.sottoOsservazione){
+    let pnlOmbra;
+    if(rec.giudizioFinale){
+      pnlOmbra = rec.giudizioFinale.pnlOmbraFinale;
+    } else {
+      const ombra = SigmaEngines.ombraTrade({
+        ticker: rec.ticker, prezzoIngresso: rec.apertura, azioni: rec.azioni,
+        indiceGiornoApertura: rec.indiceApertura, indiceGiornoOggi: clock,
+        modalita: 'demo', serieClose: serie
+      });
+      pnlOmbra = ombra.pnlOmbra;
+    }
+    const differenza = pnlOmbra - rec.pnlRealizzato;
+    const classeDiff = (rec.pnlRealizzato >= pnlOmbra) ? 'pnl-pos' : 'pnl-neg';
+    return '<div class="pos-demo finita">'
+      + '<div class="info"><b>'+rec.ticker+'</b> <span class="stato-demo stato-corso">Chiuso da te — sotto osservazione</span>'
+      + '<span>'+rec.azioni+' azioni demo · aperto a '+rec.apertura.toFixed(2)+' · chiuso a '+rec.prezzoChiusura.toFixed(2)+'</span></div>'
+      + '<p class="aiuto"><b>TRADE OMBRA</b> — il tuo trade continua a vivere per giudicare la tua decisione</p>'
+      + '<p>Hai chiuso a '+(rec.pnlRealizzato>=0?'+':'')+rec.pnlRealizzato.toFixed(0)+'$ · Restando: '+(pnlOmbra>=0?'+':'')+pnlOmbra.toFixed(0)+'$ · Differenza: <span class="'+classeDiff+'">'+(differenza>=0?'+':'')+differenza.toFixed(0)+'$</span></p>'
+      + (rec.giudizioFinale ? '<p class="verdetto">'+rec.giudizioFinale.testo+'</p>' : '')
+      + '</div>';
+  }
+
+  const cur = statoDemoAllenamento(rec, serie, clock);
+  const pnl = (cur.prezzo - rec.apertura) * rec.azioni * (rec.dir==='short' ? -1 : 1);
+  const [cls, lab] = etichette[cur.stato];
+  const finita = cur.stato !== 'corso';
+  return '<div class="pos-demo'+(finita?' finita':'')+'">'
+    + '<div class="info"><b>'+rec.ticker+'</b> <span class="stato-demo '+cls+'">'+lab+'</span>'
+    + '<span>'+rec.azioni+' azioni demo · aperto a '+rec.apertura.toFixed(2)+' · stop '+rec.stop.toFixed(2)+' · obiettivo '+rec.target.toFixed(2)+'</span></div>'
+    + '<div class="num"><span class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+(pnl>=0?'+':'')+pnl.toFixed(0)+' $</span><small>prezzo demo '+cur.prezzo.toFixed(2)+'</small></div>'
+    + (finita ? '' : '<button class="chiudi" onclick="chiudiDemo('+rec.id+')">Chiudi</button>')
+    + '</div>';
+}
+function costruisciGiudizio(rec, pnlOmbra){
+  const differenzaGrezza = pnlOmbra - rec.pnlRealizzato;
+  const decisionePromossa = differenzaGrezza <= 0;
+  const differenza = Math.round(Math.abs(differenzaGrezza));
+  const testo = decisionePromossa
+    ? "Hai fatto bene a chiudere: l'ombra ha fatto peggio di te ("+differenza+"$). Decisione promossa."
+    : "L'ombra ha fatto meglio di te ("+differenza+"$): stavolta conveniva tenere. Nessun dramma — in palestra gli errori sono gratis, e adesso sai riconoscere questo.";
+  return { testo: testo, decisionePromossa: decisionePromossa, differenza: differenza, pnlOmbraFinale: pnlOmbra };
+}
+function leggiGiornale(){
+  try{ const r = localStorage.getItem(CHIAVE_JOURNAL); if(r) return JSON.parse(r); }catch(e){}
+  return [];
+}
+function salvaGiornale(voce){
+  const j = leggiGiornale();
+  j.push(voce);
+  try{ localStorage.setItem(CHIAVE_JOURNAL, JSON.stringify(j)); }catch(e){}
+}
+function costruisciVoceGiornale(rec, giudizio){
+  return {
+    ticker: rec.ticker,
+    esito: giudizio.decisionePromossa ? 'promossa' : 'bocciata',
+    differenza: giudizio.differenza,
+    // non disponibile: il percorso neofita apre solo da "Nuovo trade"
+    // (Motore 1), che non calcola evResidua (quello e' Motore 2).
+    evResiduaAllaChiusura: null,
+    giorniTenuto: rec.indiceChiusura - rec.indiceApertura,
+    ts: Date.now()
+  };
+}
+function aggiornaOmbreEGiudizi(){
+  const c = leggiConto();
+  const clock = clockCorrente();
+  let cambiato = false;
+  c.forEach(rec=>{
+    if(!isTickerAllenamento(rec.ticker) || !rec.sottoOsservazione || rec.giudizioFinale) return;
+    const serie = serieSessione[rec.ticker];
+    const ombra = SigmaEngines.ombraTrade({
+      ticker: rec.ticker, prezzoIngresso: rec.apertura, azioni: rec.azioni,
+      indiceGiornoApertura: rec.indiceApertura, indiceGiornoOggi: clock,
+      modalita: 'demo', serieClose: serie
+    });
+    const giorniSottoOsservazione = clock - rec.indiceChiusura;
+    if(ombra.stoppata || giorniSottoOsservazione >= 10){
+      const giudizio = costruisciGiudizio(rec, ombra.pnlOmbra);
+      rec.giudizioFinale = giudizio;
+      salvaGiornale(costruisciVoceGiornale(rec, giudizio));
+      cambiato = true;
+    }
+  });
+  if(cambiato) salvaConto(c);
+}
+function verificaFineSessione(){
+  const el = document.getElementById('sessione-conclusa');
+  const btn = document.getElementById('btn-aggiorna-giorno');
+  if(!el) return;
+  const finita = clockCorrente() >= indiceMassimoSessione();
+  el.style.display = finita ? 'block' : 'none';
+  if(btn) btn.disabled = finita;
+}
+function avanzaGiornoDemo(){
+  assicuraSessioneAllenamento();
+  const max = indiceMassimoSessione();
+  let clock = clockCorrente();
+  if(clock < max) clock++;
+  localStorage.setItem(CHIAVE_CLOCK, String(clock));
+  aggiornaOmbreEGiudizi();
+  renderConto();
+}
+function nuovaSessioneAllenamento(){
+  assicuraSessioneAllenamento();
+  const c = leggiConto();
+  const clock = clockCorrente();
+  c.forEach(rec=>{
+    if(!isTickerAllenamento(rec.ticker)) return;
+    const serie = serieSessione[rec.ticker];
+    if(rec.sottoOsservazione && !rec.giudizioFinale){
+      const ombra = SigmaEngines.ombraTrade({
+        ticker: rec.ticker, prezzoIngresso: rec.apertura, azioni: rec.azioni,
+        indiceGiornoApertura: rec.indiceApertura, indiceGiornoOggi: clock,
+        modalita: 'demo', serieClose: serie
+      });
+      const giudizio = costruisciGiudizio(rec, ombra.pnlOmbra);
+      rec.giudizioFinale = giudizio;
+      salvaGiornale(costruisciVoceGiornale(rec, giudizio));
+    } else if(!rec.chiuso){
+      const cur = statoDemoAllenamento(rec, serie, clock);
+      rec.chiuso = true;
+      rec.prezzoChiusura = cur.prezzo;
+      rec.statoFinale = cur.stato;
+    }
+  });
+  salvaConto(c);
+
+  const nuovoSeed = 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9);
+  localStorage.setItem(CHIAVE_SESSIONE, nuovoSeed);
+  localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
+  serieSessione = {};
+  assicuraSessioneAllenamento();
+  renderConto();
+  agenteDì("Nuova sessione di allenamento: i tre titoli ripartono da oggi con un futuro diverso, generato apposta per questa sessione.");
 }
 
 /* ================= AGENTE ================= */
@@ -1125,7 +1371,7 @@ function sistemPrompt(){
   return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
 
 L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
-- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva. Il percorso ha 3 tappe: 1) palestra sui titoli di allenamento (dove si trova ora), 2) titoli veri in demo, 3) mercato reale. Se chiede quando può passare ai titoli veri, rispondi che dopo qualche esercizio completato sarai tu stesso a proporglielo.
+- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva. Il percorso ha 3 tappe: 1) palestra sui titoli di allenamento (dove si trova ora), 2) titoli veri in demo, 3) mercato reale. Se chiede quando può passare ai titoli veri, rispondi che dopo qualche esercizio completato sarai tu stesso a proporglielo. Il trade ombra: quando l'utente chiude un trade, Sigma continua a simularlo come se fosse rimasto aperto, per confrontare la decisione presa con l'alternativa. Se l'utente chiede perché il trade chiuso si muove ancora, spiega che è l'ombra e che serve a valutare la QUALITÀ della decisione, non a fargli rimpianti: decisione ed esito sono cose diverse.
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 

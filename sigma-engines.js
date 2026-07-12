@@ -593,7 +593,12 @@
     if (!(azioni > 0)) {
       throw new Error('azioni deve essere un numero positivo.');
     }
-    var maxIdx = d.close.length - 1;
+    // Retrocompatibile: se viene passata input.serieClose (es. la serie
+    // estesa di una sessione di allenamento, vedi estendiSerie), si cammina
+    // su quella invece che su DEMO_DATA[key].close. Se non viene passata,
+    // comportamento identico a prima.
+    var serieClose = input.serieClose || d.close;
+    var maxIdx = serieClose.length - 1;
     if (!(Number.isInteger(indiceGiornoApertura) && indiceGiornoApertura >= 0 && indiceGiornoApertura <= maxIdx)) {
       throw new Error('indiceGiornoApertura deve essere un indice intero tra 0 e ' + maxIdx + '.');
     }
@@ -612,7 +617,7 @@
     // aggiornano prima massimo/stop, poi si verifica la rottura con quello
     // stesso prezzo.
     for (var idx = indiceGiornoApertura + 1; idx <= indiceGiornoOggi; idx++) {
-      var price = d.close[idx];
+      var price = serieClose[idx];
       if (long) {
         runningExtreme = Math.max(runningExtreme, price);
         effectiveSL = Math.max(effectiveSL, runningExtreme * (1 - SILENT_TRAILING_PCT));
@@ -627,7 +632,7 @@
     }
 
     var indiceFinale = chiusaAnticipata ? indiceUscita : indiceGiornoOggi;
-    var prezzoCorrente = chiusaAnticipata ? prezzoUscita : d.close[indiceGiornoOggi];
+    var prezzoCorrente = chiusaAnticipata ? prezzoUscita : serieClose[indiceGiornoOggi];
 
     return {
       prezzoCorrente: prezzoCorrente,
@@ -775,11 +780,79 @@
     return { price: close[close.length - 1], ivUnderlying: hv + 0.02, hv: hv, dividendYield: 0, close: close, sintetico: true, personalita: 'si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire' };
   })();
 
+  // ================= Motore 3: sessione di allenamento =================
+  // estendiSerie - SOLO AGGIUNTA, non tocca DEMO_DATA ne' generaSerieSintetica.
+  // Prolunga la serie storica di un ticker di allenamento (CALMO/MEDIO/
+  // VIOLENTO) di "giorniExtra" giorni futuri, usando GLI STESSI parametri
+  // di carattere (volAnnua/driftAnnuo/salti) con cui il ticker e' stato
+  // generato in DEMO_DATA - cosi' il "futuro" resta coerente col carattere
+  // di quel titolo. Seed = ticker + seedSessione: stessa sessione = stesso
+  // futuro; ticker diversi nella stessa sessione = percorsi diversi.
+  var CARATTERE_ALLENAMENTO = {
+    CALMO: { volAnnua: 0.15, driftAnnuo: 0.14, salti: null },
+    MEDIO: { volAnnua: 0.25, driftAnnuo: 0.18, salti: null },
+    VIOLENTO: { volAnnua: 0.50, driftAnnuo: -0.10, salti: { probabilitaGiornaliera: 0.03, deviazioneLog: 0.08 } }
+  };
+  function estendiSerie(input) {
+    input = input || {};
+    var ticker = (input.ticker || '').trim().toUpperCase();
+    var seedSessione = input.seedSessione;
+    var giorniExtra = input.giorniExtra || 120;
+    var carattere = CARATTERE_ALLENAMENTO[ticker];
+    if (!carattere) {
+      throw new Error('estendiSerie: ticker "' + ticker + '" non e\' un titolo di allenamento (CALMO/MEDIO/VIOLENTO).');
+    }
+    if (seedSessione === undefined || seedSessione === null || seedSessione === '') {
+      throw new Error('estendiSerie: "seedSessione" obbligatorio (stessa sessione = stesso futuro).');
+    }
+    if (!(Number.isInteger(giorniExtra) && giorniExtra > 0)) {
+      throw new Error('estendiSerie: "giorniExtra" deve essere un intero positivo.');
+    }
+    var d = DEMO_DATA[ticker];
+    var ultimoPrezzo = d.close[d.close.length - 1];
+    var serie = generaSerieSintetica({
+      seed: ticker + '|' + seedSessione,
+      giorni: giorniExtra + 1,
+      prezzoIniziale: ultimoPrezzo,
+      volAnnua: carattere.volAnnua,
+      driftAnnuo: carattere.driftAnnuo,
+      salti: carattere.salti
+    });
+    // Il primo elemento di "serie" e' ultimoPrezzo, gia' l'ultimo giorno di
+    // DEMO_DATA[ticker].close: si scarta per non duplicarlo quando la serie
+    // estesa viene concatenata a quella storica.
+    return serie.slice(1);
+  }
+
+  // ombraTrade - Motore 3 (verifica della decisione). NON e' una nuova
+  // simulazione: e' statoPosizione richiamato dall'apertura all'indice
+  // "oggi" IGNORANDO che l'utente abbia chiuso il trade nel frattempo -
+  // stessa logica trailing di Motore 2, nessun numero casuale, nessuna MC.
+  // Richiede indiceGiornoOggi calcolato sulla stessa serieClose (es. la
+  // serie estesa di sessione) passata qui, per poter guardare oltre la
+  // finestra storica congelata.
+  function ombraTrade(input) {
+    input = input || {};
+    var pos = statoPosizione(input);
+    var pnlOmbra = (pos.prezzoCorrente - input.prezzoIngresso) * input.azioni;
+    var indiceStop = pos.chiusaAnticipata
+      ? input.indiceGiornoApertura + pos.giorniTrascorsi
+      : null;
+    return {
+      pnlOmbra: pnlOmbra,
+      stoppata: pos.chiusaAnticipata,
+      indiceStop: indiceStop,
+      prezzoOmbra: pos.prezzoCorrente
+    };
+  }
+
   return {
     valutaTrade: valutaTrade,
     valutaTradeAperto: valutaTradeAperto,
     statoPosizione: statoPosizione,
     generaSerieSintetica: generaSerieSintetica,
+    estendiSerie: estendiSerie,
+    ombraTrade: ombraTrade,
     _internals: { DEMO_DATA: DEMO_DATA, HORIZONS: HORIZONS, GAIN_THRESHOLD_FRACTIONS: GAIN_THRESHOLD_FRACTIONS, simulateHorizon: simulateHorizon, computeJumpStats: computeJumpStats, stimaDrift: stimaDrift, bestRowIndex: bestRowIndex, computeHV: computeHV }
   };
 
