@@ -254,6 +254,45 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
 #consenso .rifiuta{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
 #consenso .rifiuta:hover{background:rgba(255,255,255,.22)}
 @media (max-width:640px){#consenso{padding:14px}}
+
+/* ---------- GERARCHIA VISIVA PERCORSO NEOFITA (scoped, non tocca gli altri profili) ---------- */
+/* A1: la CTA di calcolo/apertura demo diventa l'unica CTA piena della schermata */
+body[data-profilo="neofita"] #sez-builder .cta,
+body[data-profilo="neofita"] #sez-builder .cta-demo{
+  background:var(--amber); color:var(--ink);
+  padding:16px 30px; font-size:1.12rem; font-weight:800; border-radius:12px;
+}
+body[data-profilo="neofita"] #sez-builder .cta:hover,
+body[data-profilo="neofita"] #sez-builder .cta-demo:hover{filter:brightness(1.06)}
+@media (max-width:640px){
+  body[data-profilo="neofita"] #sez-builder .cta,
+  body[data-profilo="neofita"] #sez-builder .cta-demo{width:100%}
+}
+/* A2: tutti gli altri pulsanti della schermata neofita restano/diventano secondari (bordo, no riempimento) */
+.cta-secondaria{
+  background:none; color:var(--ink); border:1.5px solid var(--line);
+  border-radius:10px; padding:11px 22px; font-size:.9rem; font-weight:700; letter-spacing:.02em;
+}
+.cta-secondaria:hover{border-color:var(--ink)}
+
+/* B5: accordion leggero per "idea chiave" e "come funziona", solo neofita - parte collassato */
+body[data-profilo="neofita"] #sez-idea .acc-corpo,
+body[data-profilo="neofita"] #sez-come .acc-corpo{display:none}
+body[data-profilo="neofita"] #sez-idea.aperto .acc-corpo,
+body[data-profilo="neofita"] #sez-come.aperto .acc-corpo{display:block}
+body[data-profilo="neofita"] .acc-tap{cursor:pointer}
+body[data-profilo="neofita"] .acc-tap::after{content:" ▸";font-size:.75em;color:var(--ink2)}
+body[data-profilo="neofita"] #sez-idea.aperto .acc-tap::after,
+body[data-profilo="neofita"] #sez-come.aperto .acc-tap::after{content:" ▾"}
+
+/* B6: mini-percorso 3 tappe sempre visibile ma compatto su una riga (solo neofita, non tocca .stadi dell'analogia in sez-idea) */
+body[data-profilo="neofita"] #sez-builder .stadi{display:flex;flex-wrap:wrap;gap:6px}
+body[data-profilo="neofita"] #sez-builder .stadio{padding:6px 10px;flex:1 1 auto}
+body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight:600}
+
+/* B4: paragrafi lunghi in versione breve dopo la prima visita */
+.pd-breve a{color:var(--amber);font-weight:600;text-decoration:none;border-bottom:1px dotted var(--amber)}
+.pd-breve a:hover{text-decoration:none;border-bottom-style:solid}
 </style>
 </head>
 <body data-profilo="">
@@ -343,7 +382,8 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
       <div class="stadio"><b>2. Titoli veri in demo</b></div>
       <div class="stadio"><b>3. Mercato reale</b></div>
     </div>
-    <p class="lead" data-solo="neofita">Questi non sono titoli veri: sono titoli di allenamento, costruiti per muoversi come le vere famiglie di azioni del mercato — da quelle tranquille a quelle più nervose. Qui prendi confidenza con il metodo in pochi esercizi, senza rischiare nulla. Quando sarai pronto, passerai ai titoli veri in demo, e solo alla fine al mercato reale.</p>
+    <p class="lead" data-solo="neofita" id="pd-titoli-full">Questi non sono titoli veri: sono titoli di allenamento, costruiti per muoversi come le vere famiglie di azioni del mercato — da quelle tranquille a quelle più nervose. Qui prendi confidenza con il metodo in pochi esercizi, senza rischiare nulla. Quando sarai pronto, passerai ai titoli veri in demo, e solo alla fine al mercato reale.</p>
+    <p class="lead pd-breve" data-solo="neofita" id="pd-titoli-breve" style="display:none">Titoli di allenamento, non reali: imparerai coi titoli veri più avanti. <a href="#" onclick="riespandiIntro('pd-titoli-full','pd-titoli-breve');return false;">spiegami di nuovo</a></p>
     <p class="lead" data-solo="intermedio">Il motore simula ~10.000 trade con le stesse caratteristiche del tuo e ti restituisce una base statistica su cui decidere.</p>
     <p class="lead" data-solo="esperto">Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
     <div data-solo="intermedio esperto">
@@ -372,7 +412,8 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
       </div>
     </div>
     <p class="aiuto" data-solo="neofita" id="ticker-personalita"></p>
-    <p class="aiuto" data-solo="neofita">La "perdita massima" è la tua rete di sicurezza: la cifra oltre la quale l'operazione si chiude da sola. È il numero più importante di tutti, per questo si parte da qui.</p>
+    <p class="aiuto" data-solo="neofita" id="pd-perdita-full">La "perdita massima" è la tua rete di sicurezza: la cifra oltre la quale l'operazione si chiude da sola. È il numero più importante di tutti, per questo si parte da qui.</p>
+    <p class="aiuto pd-breve" data-solo="neofita" id="pd-perdita-breve" style="display:none">La perdita massima è il numero più importante: oltre quella cifra il trade si chiude da solo. <a href="#" onclick="riespandiIntro('pd-perdita-full','pd-perdita-breve');return false;">spiegami di nuovo</a></p>
     <p class="aiuto" data-solo="intermedio">Quanto sei disposto a perdere al massimo su questa operazione: da qui calcoliamo automaticamente quante azioni comprare.</p>
     <p class="aiuto" data-solo="esperto">Il sizing è derivato dal max loss: n = ⌊maxLoss / (entry − stop)⌋. Stop e target ottimali selezionati per EV.</p>
     <button class="cta" onclick="calcola()">Calcola</button>
@@ -495,10 +536,11 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
   </section>
 
   <section class="blocco" id="sez-idea">
-    <div class="eyebrow">L'idea chiave</div>
+    <div class="eyebrow acc-tap" onclick="toggleSezione('sez-idea')">L'idea chiave</div>
     <h2 data-solo="neofita">Le probabilità cambiano mentre la partita è in corso</h2>
     <h2 data-solo="intermedio">Il navigatore ricalcola. Sigma anche.</h2>
     <h2 data-solo="esperto">Equity dinamica, come al tavolo</h2>
+    <div class="acc-corpo">
     <p class="lead" data-solo="neofita">Pensa a una partita di calcio: al fischio d'inizio le due squadre partono quasi alla pari, ma ogni gol, ogni espulsione, ogni minuto che passa cambia le probabilità di vittoria. Il tuo trade funziona allo stesso modo — e Sigma ricalcola le probabilità a ogni "gol" del mercato.</p>
     <p class="lead" data-solo="intermedio">Come un navigatore che ricalcola il percorso quando trova traffico, Sigma rivaluta il tuo trade a ogni variazione del mercato: la probabilità di arrivare a target non è quella del giorno di apertura, è quella di adesso.</p>
     <p class="lead" data-solo="esperto">Al tavolo l'equity non è mai quella del preflop: cambia a ogni carta che scende, e va gestita street per street. Sul mercato è identico — P(target) ed EV residuo del tuo trade si muovono con ogni sessione, e Sigma li ricalcola per te.</p>
@@ -506,15 +548,18 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <p class="idea-nota" data-solo="neofita">Quello che conta non è indovinare il risultato: è prendere buone decisioni con le informazioni che hai in quel momento. Sigma esiste per questo.</p>
     <p class="idea-nota" data-solo="intermedio">Il piano fatto all'apertura invecchia in fretta: Sigma ti dice quando il percorso è ancora buono e quando conviene ricalcolare.</p>
     <p class="idea-nota" data-solo="esperto">Decisione ≠ esito: Sigma valuta la qualità della decisione date le informazioni disponibili al momento, non il risultato a posteriori.</p>
+    </div>
   </section>
 
   <section class="blocco" id="sez-come">
-    <div class="eyebrow">Il metodo</div>
+    <div class="eyebrow acc-tap" onclick="toggleSezione('sez-come')">Il metodo</div>
     <h2>Come funziona Sigma</h2>
+    <div class="acc-corpo">
     <div class="step"><span class="n">01</span><div><h3>Crea il trade</h3><p data-solo="neofita">Descrivi l'operazione che hai in mente e ricevi una fotografia chiara: quante probabilità ha di andare bene e quanto potresti guadagnare o perdere.</p><p data-solo="intermedio">Ricevi una fotografia statistica dell'operazione e scopri quale combinazione di rischio, stop e target è statisticamente più vantaggiosa.</p><p data-solo="esperto">Il motore esplora la griglia stop/target e restituisce la combinazione a EV massimo, con distribuzione completa dei percorsi.</p></div></div>
     <div class="step"><span class="n">02</span><div><h3>Monitora il mercato</h3><p data-solo="neofita">Il mercato cambia ogni giorno, e con lui le probabilità del tuo trade. Torna quando vuoi: ti diciamo se sta migliorando o peggiorando, in parole semplici.</p><p data-solo="intermedio">Le probabilità cambiano insieme al mercato. Se il profilo statistico si deteriora, decidi tu se mantenere o chiudere.</p><p data-solo="esperto">Rivalutazione continua su mark correnti: delta di probabilità, EV residuo e segnale di deterioramento del profilo.</p></div></div>
     <div class="step"><span class="n">03</span><div><h3>Chiudi il trade</h3><p>Anche dopo la chiusura, Sigma continua a seguire il trade e confronta la tua decisione con ciò che sarebbe successo restando nel mercato.</p></div></div>
     <div class="step"><span class="n">04</span><div><h3>Migliora il tuo metodo</h3><p>Ogni operazione diventa un caso di studio: più trade accumuli, più Sigma identifica punti di forza, errori ricorrenti e decisioni che hanno davvero migliorato i risultati.</p></div></div>
+    </div>
   </section>
 
   <section class="blocco" data-solo="esperto" id="sez-sistemi">
@@ -533,13 +578,14 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <h2>I tuoi trade demo</h2>
     <p class="lead">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
     <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi Aggiorna.</p>
-    <p data-solo="neofita">E c'è una cosa che nessun altro ti fa vedere: quando chiudi un trade, per noi non è finita. Sigma continua a seguirlo come se non lo avessi mai chiuso — è il suo trade ombra. Così scopri se chiudere è stata la decisione giusta o se ti sei fatto prendere dalla fretta. Nel trading non basta sapere come è andata: bisogna capire come sarebbe andata.</p>
+    <p data-solo="neofita" id="pd-ombra-full">E c'è una cosa che nessun altro ti fa vedere: quando chiudi un trade, per noi non è finita. Sigma continua a seguirlo come se non lo avessi mai chiuso — è il suo trade ombra. Così scopri se chiudere è stata la decisione giusta o se ti sei fatto prendere dalla fretta. Nel trading non basta sapere come è andata: bisogna capire come sarebbe andata.</p>
+    <p class="pd-breve" data-solo="neofita" id="pd-ombra-breve" style="display:none">Anche dopo la chiusura, Sigma continua a seguire il trade per giudicare la tua decisione (trade ombra). <a href="#" onclick="riespandiIntro('pd-ombra-full','pd-ombra-breve');return false;">spiegami di nuovo</a></p>
     <div data-solo="neofita" style="margin-bottom:14px">
-      <button class="cta" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+      <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
     </div>
     <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
       <p class="verdetto">sessione di allenamento completata — inizia una nuova sessione</p>
-      <button class="cta" onclick="nuovaSessioneAllenamento()">Nuova sessione</button>
+      <button class="cta-secondaria" onclick="nuovaSessioneAllenamento()">Nuova sessione</button>
     </div>
     <div id="demo-lista"></div>
     <p class="vuoto" id="demo-vuoto">Nessun trade demo ancora. Analizza un'operazione qui sopra e premi "Apri in DEMO": comparirà qui, viva.</p>
@@ -631,6 +677,36 @@ function progressoNeofita(){
   }
 }
 
+/* ================= GERARCHIA VISIVA NEOFITA: accordion + progressive disclosure ================= */
+function toggleSezione(id){
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('aperto');
+}
+const CHIAVE_INTRO = 'sigma_intro_vista';
+const COPPIE_INTRO = [
+  ['pd-titoli-full','pd-titoli-breve'],
+  ['pd-ombra-full','pd-ombra-breve'],
+  ['pd-perdita-full','pd-perdita-breve']
+];
+// Prima visita del neofita: paragrafi lunghi per intero. Dalle visite
+// successive (localStorage sigma_intro_vista): una riga breve con link
+// "spiegami di nuovo" che riapre il testo completo (riespandiIntro).
+// Nessun testo viene eliminato, solo mostrato progressivamente.
+function applicaProgressiveDisclosure(){
+  const giaVista = localStorage.getItem(CHIAVE_INTRO) === 'si';
+  COPPIE_INTRO.forEach(([full, breve])=>{
+    const elFull = document.getElementById(full), elBreve = document.getElementById(breve);
+    if(!elFull || !elBreve) return;
+    elFull.style.display = giaVista ? 'none' : '';
+    elBreve.style.display = giaVista ? '' : 'none';
+  });
+  try{ localStorage.setItem(CHIAVE_INTRO, 'si'); }catch(e){}
+}
+function riespandiIntro(idFull, idBreve){
+  document.getElementById(idFull).style.display = '';
+  document.getElementById(idBreve).style.display = 'none';
+}
+
 /* Analogia per profilo: le probabilità si aggiornano a ogni evento */
 const ANALOGIE = {
   neofita:[
@@ -673,7 +749,7 @@ function cambiaProfilo(p){
   });
   popolaSelectTicker();
   montaAnalogia();
-  if(p === 'neofita'){ assicuraSessioneAllenamento(); renderConto(); }
+  if(p === 'neofita'){ assicuraSessioneAllenamento(); renderConto(); applicaProgressiveDisclosure(); }
   if(p !== 'neofita') modo('nuovo');
   if(!primo && document.getElementById('agente').classList.contains('aperto')){
     bolla('ai', '→ Pagina adattata al percorso "'+NOMI[p]+'".');
@@ -1388,7 +1464,6 @@ REGOLE FERREE:
 2. Risposte brevi: 2-4 frasi. In italiano.
 3. Se l'utente sembra nel profilo sbagliato (es. un neofita che chiede di VRP e skew, o un esperto confuso dalle basi), puoi proporre di cambiare profilo con l'azione cambia_profilo — ma solo dopo averlo suggerito.
 4. Rispondi SOLO con JSON valido, senza backtick né altro testo, in questo formato:
-{"messaggio":"testo per l'utente","azione":null}
 oppure azione = {"tipo":"evidenzia","target":"sez-builder|sez-come|sez-storico|sez-guida"} per far lampeggiare una sezione, oppure {"tipo":"cambia_profilo","profilo":"neofita|intermedio|esperto"}.
 Usa "evidenzia" quando spieghi dove si trova qualcosa nella pagina.`;
 }
