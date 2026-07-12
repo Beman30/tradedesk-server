@@ -372,7 +372,7 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <button class="cta" onclick="calcola()">Calcola</button>
 
     <div id="risultato">
-      <div class="demo-banner" data-solo="neofita">🎓 <b>SIMULAZIONE DIDATTICA</b> — nessun soldo vero, nessun ordine inviato. Stai solo imparando a leggere i numeri.</div>
+      <div class="demo-banner" data-solo="neofita">🎓 <b>Titoli di allenamento:</b> non esistono sul mercato, sono generati apposta per imparare senza illusioni e senza rischi. <details style="display:inline"><summary style="display:inline;cursor:pointer;color:var(--amber)">perché</summary> <span>Replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie): servono ad allenarsi in modo corretto e in tempi brevi — in pochi esercizi incontri comportamenti che sul mercato vero vedresti solo in anni di esperienza.</span></details></div>
       <div class="replay" data-solo="neofita">
         <canvas id="replay-cv"></canvas>
         <div class="replay-cont">
@@ -560,6 +560,51 @@ const DEMO = {
 };
 const NOMI = {neofita:'Principiante', intermedio:'Investitore', esperto:'Trader'};
 
+/* ================= TICKER: percorso neofita (Livello 1/2) =================
+ * Task 2a/2c: SOLO il percorso neofita cambia. Per intermedio/esperto il
+ * select #ticker resta esattamente quello gia' presente nell'HTML statico
+ * (catturato qui in TICKER_HTML_ORIGINALE prima di ogni ripopolamento, cosi'
+ * il ripristino e' byte per byte identico a prima). */
+let TICKER_HTML_ORIGINALE = null;
+const TICKER_ALLENAMENTO = [
+  ['CALMO','titolo calmo'],
+  ['MEDIO','titolo medio'],
+  ['VIOLENTO','titolo violento']
+];
+const TICKER_REALI = [
+  ['AAPL','Apple'],
+  ['MSFT','Microsoft'],
+  ['TSLA','Tesla']
+];
+const CHIAVE_PROGRESSO = 'sigma_lvl_progress';
+function livelloSbloccato(){
+  return (parseInt(localStorage.getItem(CHIAVE_PROGRESSO) || '0', 10)) >= 3;
+}
+function popolaSelectTicker(){
+  const sel = document.getElementById('ticker');
+  if(!sel) return;
+  if(TICKER_HTML_ORIGINALE === null) TICKER_HTML_ORIGINALE = sel.innerHTML;
+  if(profilo !== 'neofita'){
+    sel.innerHTML = TICKER_HTML_ORIGINALE;
+    return;
+  }
+  let html = TICKER_ALLENAMENTO.map(([t,lab])=>'<option value="'+t+'">'+t+' — '+lab+' (allenamento)</option>').join('');
+  if(livelloSbloccato()){
+    html += TICKER_REALI.map(([t,nome])=>'<option value="'+t+'">'+t+' — '+nome+' (titolo reale)</option>').join('');
+  }
+  sel.innerHTML = html;
+}
+function progressoNeofita(){
+  const n = (parseInt(localStorage.getItem(CHIAVE_PROGRESSO) || '0', 10)) + 1;
+  localStorage.setItem(CHIAVE_PROGRESSO, String(n));
+  if(n === 3){
+    popolaSelectTicker();
+    setTimeout(()=>{
+      agenteDì('Hai completato 3 calcoli con i titoli di allenamento: hai preso confidenza con come si leggono i numeri. Se vuoi, ora puoi passare al Livello 2 — i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con lo stesso motore e la stessa cautela. Li trovi già nel menu ticker, con l\'etichetta "(titolo reale)".');
+    }, 600);
+  }
+}
+
 /* Analogia per profilo: le probabilità si aggiornano a ogni evento */
 const ANALOGIE = {
   neofita:[
@@ -600,6 +645,7 @@ function cambiaProfilo(p){
   ['neofita','intermedio','esperto'].forEach(x=>{
     document.getElementById('seg-'+x).classList.toggle('on', x===p);
   });
+  popolaSelectTicker();
   montaAnalogia();
   if(p !== 'neofita') modo('nuovo');
   if(!primo && document.getElementById('agente').classList.contains('aperto')){
@@ -649,9 +695,12 @@ function calcola(){
   // Stesso oggetto "d" di prima (prezzo/prob/ev/vrp/sharpe/p5/p95): verdetti{}
   // e spiegaDemo() ricevono le stesse variabili, cambiano solo i numeri.
   // "prezzo" resta dal vecchio DEMO{} (serve solo al conto demo/Motore 2,
-  // fuori scopo oggi); tutto il resto arriva dal Motore 1 reale.
+  // fuori scopo oggi); tutto il resto arriva dal Motore 1 reale. DEMO{} non
+  // conosce i ticker di allenamento (CALMO/MEDIO/VIOLENTO): per quelli si
+  // usa il prezzo vero del dataset del motore (SigmaEngines), unica aggiunta
+  // necessaria per non far fallire il calcolo sui nuovi ticker.
   const d = {
-    prezzo: DEMO[t].prezzo,
+    prezzo: DEMO[t] ? DEMO[t].prezzo : SigmaEngines._internals.DEMO_DATA[t].price,
     prob: motore.probabilita,
     ev: motore.evAtteso,
     vrp: fmtSignedPct(motore.vrp, 1),
@@ -689,6 +738,7 @@ function calcola(){
   if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'nuovo_trade', profilo: profilo, ticker: t });
   if(profilo === 'neofita'){
     document.getElementById('r-dettagli').style.display = 'none';
+    progressoNeofita();
     avviaReplay(motore.percorsiCampione, ()=>{
       document.getElementById('r-dettagli').style.display = 'block';
       spiegaDemo(t, azioni, d, buono);
@@ -1058,7 +1108,7 @@ function sistemPrompt(){
   return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
 
 L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
-- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario.
+- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva.
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 
