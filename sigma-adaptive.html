@@ -338,7 +338,12 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <h2 data-solo="neofita">Prova un'operazione, senza rischiare nulla</h2>
     <h2 data-solo="intermedio">Valuta il trade prima di aprirlo</h2>
     <h2 data-solo="esperto">Motore di valutazione</h2>
-    <p class="lead" data-solo="neofita">Scegli un'azienda tra le tre disponibili nella demo e indica la cifra che, male che vada, saresti pronto a perdere. Da lì calcoliamo tutto noi, comprese quante azioni avrebbe senso comprare.</p>
+    <div class="stadi" data-solo="neofita" style="margin-bottom:14px">
+      <div class="stadio on"><b>1. PALESTRA — sei qui</b></div>
+      <div class="stadio"><b>2. Titoli veri in demo</b></div>
+      <div class="stadio"><b>3. Mercato reale</b></div>
+    </div>
+    <p class="lead" data-solo="neofita">Questi non sono titoli veri: sono titoli di allenamento, costruiti per muoversi come le vere famiglie di azioni del mercato — da quelle tranquille a quelle più nervose. Qui prendi confidenza con il metodo in pochi esercizi, senza rischiare nulla. Quando sarai pronto, passerai ai titoli veri in demo, e solo alla fine al mercato reale.</p>
     <p class="lead" data-solo="intermedio">Il motore simula ~10.000 trade con le stesse caratteristiche del tuo e ti restituisce una base statistica su cui decidere.</p>
     <p class="lead" data-solo="esperto">Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
     <div data-solo="intermedio esperto">
@@ -351,7 +356,7 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <div class="riga">
       <div class="campo">
         <label for="ticker">Ticker</label>
-        <select id="ticker">
+        <select id="ticker" onchange="aggiornaPersonalitaTicker()">
           <option value="AAPL">AAPL — Apple</option>
           <option value="MSFT">MSFT — Microsoft</option>
           <option value="TSLA">TSLA — Tesla</option>
@@ -366,6 +371,7 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
         <select id="valuta"><option>$</option><option>€</option></select>
       </div>
     </div>
+    <p class="aiuto" data-solo="neofita" id="ticker-personalita"></p>
     <p class="aiuto" data-solo="neofita">La "perdita massima" è la tua rete di sicurezza: la cifra oltre la quale l'operazione si chiude da sola. È il numero più importante di tutti, per questo si parte da qui.</p>
     <p class="aiuto" data-solo="intermedio">Quanto sei disposto a perdere al massimo su questa operazione: da qui calcoliamo automaticamente quante azioni comprare.</p>
     <p class="aiuto" data-solo="esperto">Il sizing è derivato dal max loss: n = ⌊maxLoss / (entry − stop)⌋. Stop e target ottimali selezionati per EV.</p>
@@ -567,9 +573,9 @@ const NOMI = {neofita:'Principiante', intermedio:'Investitore', esperto:'Trader'
  * il ripristino e' byte per byte identico a prima). */
 let TICKER_HTML_ORIGINALE = null;
 const TICKER_ALLENAMENTO = [
-  ['CALMO','titolo calmo'],
-  ['MEDIO','titolo medio'],
-  ['VIOLENTO','titolo violento']
+  ['CALMO','tranquillo'],
+  ['MEDIO','con tendenza'],
+  ['VIOLENTO','nervoso']
 ];
 const TICKER_REALI = [
   ['AAPL','Apple'],
@@ -588,11 +594,22 @@ function popolaSelectTicker(){
     sel.innerHTML = TICKER_HTML_ORIGINALE;
     return;
   }
-  let html = TICKER_ALLENAMENTO.map(([t,lab])=>'<option value="'+t+'">'+t+' — '+lab+' (allenamento)</option>').join('');
+  let html = TICKER_ALLENAMENTO.map(([t,lab])=>'<option value="'+t+'">'+t+' — '+lab+'</option>').join('');
   if(livelloSbloccato()){
     html += TICKER_REALI.map(([t,nome])=>'<option value="'+t+'">'+t+' — '+nome+' (titolo reale)</option>').join('');
   }
   sel.innerHTML = html;
+  aggiornaPersonalitaTicker();
+}
+// Task cornice-livelli: riga dinamica sopra l'aiuto "perdita massima", solo
+// neofita - mostra la personalita' del ticker selezionato dal dataset del
+// motore (SigmaEngines._internals.DEMO_DATA), aggiornata al cambio select.
+function aggiornaPersonalitaTicker(){
+  const el = document.getElementById('ticker-personalita');
+  if(!el || profilo !== 'neofita') return;
+  const t = document.getElementById('ticker').value;
+  const d = typeof SigmaEngines !== 'undefined' ? SigmaEngines._internals.DEMO_DATA[t] : null;
+  el.textContent = (d && d.personalita) ? (t + ': ' + d.personalita + '.') : '';
 }
 function progressoNeofita(){
   const n = (parseInt(localStorage.getItem(CHIAVE_PROGRESSO) || '0', 10)) + 1;
@@ -1108,7 +1125,7 @@ function sistemPrompt(){
   return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
 
 L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
-- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva.
+- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva. Il percorso ha 3 tappe: 1) palestra sui titoli di allenamento (dove si trova ora), 2) titoli veri in demo, 3) mercato reale. Se chiede quando può passare ai titoli veri, rispondi che dopo qualche esercizio completato sarai tu stesso a proporglielo.
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 
