@@ -4,21 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Sigma Trade Coach — Prototipo adattivo</title>
-<!-- Google Analytics (GA4) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1YD246YPC8"></script>
+<!-- Google Analytics (GA4) — caricato solo dopo consenso, vedi #consenso -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-1YD246YPC8');
-</script>
-<!-- Microsoft Clarity -->
-<script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "xkqjrd5vw2");
+  gtag('consent', 'default', {
+    'analytics_storage': 'denied',
+    'ad_storage': 'denied'
+  });
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,6 +122,48 @@ button{font-family:inherit;cursor:pointer}
 .verdetto{font-size:.92rem;line-height:1.55}
 .esperto-extra{display:none;margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
 body[data-profilo="esperto"] .esperto-extra{display:block}
+
+/* banner demo per il principiante */
+.demo-banner{
+  display:flex;align-items:center;gap:10px;background:repeating-linear-gradient(135deg,#FDF6E7,#FDF6E7 10px,#FBEECB 10px,#FBEECB 20px);
+  border:1.5px dashed var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;font-weight:700;color:#7A5A0A;letter-spacing:.02em
+}
+.demo-banner b{color:var(--amber);font-family:'IBM Plex Mono',monospace}
+
+/* replay: la simulazione che accade davanti agli occhi */
+.replay{margin-bottom:18px}
+.replay canvas{width:100%;height:230px;display:block;background:var(--fog);border-radius:12px;border:1px solid var(--line)}
+.replay-cont{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:.82rem;color:var(--ink2);flex-wrap:wrap}
+.replay-cont b{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--ink)}
+.replay-cont .v{color:var(--green)} .replay-cont .p{color:var(--red)}
+
+/* CTA conto demo */
+.cta-demo{
+  display:block;width:100%;margin-top:18px;background:var(--amber);color:var(--ink);
+  border:none;border-radius:12px;padding:15px 20px;font-size:1rem;font-weight:800;letter-spacing:.01em
+}
+.cta-demo:hover{filter:brightness(1.06)}
+.cta-demo-sotto{margin-top:8px;font-size:.8rem;color:var(--ink2);text-align:center}
+
+/* conto demo */
+.pos-demo{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--fog)}
+.pos-demo .info b{font-family:'Archivo',sans-serif;font-size:1rem}
+.pos-demo .info span{display:block;font-size:.78rem;color:var(--ink2);margin-top:2px}
+.pos-demo .num{font-family:'IBM Plex Mono',monospace;font-size:.95rem;text-align:right}
+.pos-demo .num small{display:block;font-size:.72rem;color:var(--ink2);font-family:'IBM Plex Sans',sans-serif}
+.pos-demo .pnl-pos{color:var(--green)} .pos-demo .pnl-neg{color:var(--red)}
+.pos-demo .chiudi{background:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:.78rem;font-weight:600;color:var(--ink2)}
+.pos-demo .chiudi:hover{border-color:var(--ink);color:var(--ink)}
+.pos-demo.finita{opacity:.75}
+.stato-demo{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+.stato-corso{background:#FDF6E7;color:#7A5A0A}
+.stato-target{background:#E4F1EC;color:var(--green)}
+.stato-stop{background:#F7E4E0;color:var(--red)}
+.orizzonte{display:flex;gap:8px;flex-basis:100%;margin-top:2px;flex-wrap:wrap;align-items:center}
+.orizzonte .tit{font-size:.75rem;color:var(--ink2);font-weight:600}
+.orizzonte span.chip{font-size:.75rem;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 11px;color:var(--ink2)}
+.orizzonte .chip b{font-family:'IBM Plex Mono',monospace;font-weight:500}
+.orizzonte .chip b.su{color:var(--green)} .orizzonte .chip b.giu{color:var(--red)}
 .metriche{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media (max-width:640px){.metriche{grid-template-columns:1fr 1fr}}
 .metriche .m{font-size:.78rem;color:var(--ink2)}
@@ -201,6 +236,24 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
 #agente .invio button{background:var(--amber);border:none;border-radius:10px;padding:0 16px;font-weight:700;color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- CONSENSO COOKIE ---------- */
+#consenso{
+  position:fixed;left:0;right:0;bottom:0;z-index:100;
+  background:var(--ink);color:#fff;padding:16px 18px;
+  display:none;align-items:center;gap:18px;flex-wrap:wrap;
+  box-shadow:0 -8px 30px rgba(16,35,58,.25);
+}
+#consenso.mostra{display:flex}
+#consenso p{flex:1 1 320px;font-size:.85rem;line-height:1.55;color:rgba(255,255,255,.88);margin:0}
+#consenso a{color:#fff;text-decoration:underline}
+#consenso .azioni{display:flex;gap:8px;flex-wrap:wrap}
+#consenso button{border-radius:10px;padding:10px 18px;font-size:.85rem;font-weight:700;border:none}
+#consenso .accetta{background:var(--amber);color:var(--ink)}
+#consenso .accetta:hover{filter:brightness(1.08)}
+#consenso .rifiuta{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+#consenso .rifiuta:hover{background:rgba(255,255,255,.22)}
+@media (max-width:640px){#consenso{padding:14px}}
 </style>
 </head>
 <body data-profilo="">
@@ -319,6 +372,17 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
     <button class="cta" onclick="calcola()">Calcola</button>
 
     <div id="risultato">
+      <div class="demo-banner" data-solo="neofita">🎓 <b>SIMULAZIONE DIDATTICA</b> — nessun soldo vero, nessun ordine inviato. Stai solo imparando a leggere i numeri.</div>
+      <div class="replay" data-solo="neofita">
+        <canvas id="replay-cv"></canvas>
+        <div class="replay-cont">
+          <span>Vite simulate del tuo trade: <b id="rp-n">0</b></span>
+          <span class="v">Finite in profitto: <b id="rp-win">0</b></span>
+          <span class="p">Finite in perdita: <b id="rp-loss">0</b></span>
+          <span>Probabilità che emerge: <b id="rp-prob">—</b></span>
+        </div>
+      </div>
+      <div id="r-dettagli">
       <div class="kpi">
         <div class="k buono"><b id="r-prob">—</b><span>Probabilità di profitto</span></div>
         <div class="k"><b id="r-azioni" >—</b><span>Azioni da comprare</span></div>
@@ -334,6 +398,9 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
           <div class="m"><b id="m-p95">—</b>P95 (upside)</div>
         </div>
       </div>
+      <button class="cta-demo" onclick="apriInDemo('nuovo')">Apri questo trade in DEMO →</button>
+      <p class="cta-demo-sotto">Nessun soldo vero. Il trade che hai appena analizzato entra nel tuo conto demo: lo seguiamo insieme e vedi come si evolve nel tempo.</p>
+      </div><!-- /r-dettagli -->
     </div>
     </div>
 
@@ -357,6 +424,27 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
         </div>
       </div>
       <p class="aiuto">Qualunque sia il tuo metodo, bastano questi due prezzi: Sigma calcola la probabilità che il mercato, da dove si trova <b>adesso</b>, arrivi al tuo obiettivo prima di toccare lo stop. Vale anche per una zona: indica il prezzo d'ingresso della zona.</p>
+
+      <p class="aiuto" style="margin-top:18px;"><b>Hai già aperto questa posizione?</b> Compila anche questi due campi: Sigma calcola in euro se conviene tenerla o chiuderla adesso, invece della sola probabilità di arrivo all'obiettivo.</p>
+      <div class="riga">
+        <div class="campo">
+          <label for="pos-ingresso">Prezzo di ingresso (facoltativo)</label>
+          <input id="pos-ingresso" type="number" inputmode="decimal" placeholder="es. 260">
+        </div>
+        <div class="campo">
+          <label for="pos-azioni">Azioni possedute (facoltativo)</label>
+          <input id="pos-azioni" type="number" inputmode="decimal" placeholder="es. 10">
+        </div>
+        <div class="campo">
+          <label for="pos-giorni">Giorni dall'apertura (demo)</label>
+          <select id="pos-giorni" onchange="aggiornaPosizioneApertaSeCompilata()">
+            <option value="10">10 giorni fa</option>
+            <option value="30" selected>30 giorni fa</option>
+            <option value="60">60 giorni fa</option>
+          </select>
+        </div>
+      </div>
+
       <button class="cta" onclick="valutaPosizione()">Calcola probabilità</button>
       <div id="pos-risultato" style="display:none;margin-top:22px;border-top:1px dashed var(--line);padding-top:20px">
         <div class="kpi">
@@ -366,6 +454,28 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
         </div>
         <div class="barra"><i id="p-barra" style="width:0%"></i></div>
         <p class="verdetto" id="p-verdetto"></p>
+        <button class="cta-demo" onclick="apriInDemo('pos')">Segui questa posizione in DEMO →</button>
+        <p class="cta-demo-sotto">La posizione con i tuoi livelli entra nel conto demo: Sigma la monitora e tu torni quando vuoi a vedere come si muove.</p>
+      </div>
+
+      <div id="pos-risultato-aperto" style="display:none;margin-top:22px;border-top:1px dashed var(--line);padding-top:20px">
+        <div class="kpi">
+          <div class="k" id="pa-chiudi-box"><b id="pa-chiudi">—</b><span>Chiudendo ora</span></div>
+          <div class="k" id="pa-restando-box"><b id="pa-restando">—</b><span>Restando, in media</span></div>
+          <div class="k" id="pa-vantaggio-box"><b id="pa-vantaggio">—</b><span>Vantaggio a restare</span></div>
+        </div>
+        <p class="verdetto" id="pa-verdetto"></p>
+        <div class="esperto-extra">
+          <div class="metriche">
+            <div class="m"><b id="pa-orizzonte">—</b>Orizzonte</div>
+            <div class="m"><b id="pa-p5">—</b>P5 (peggiore)</div>
+            <div class="m"><b id="pa-p95">—</b>P95 (migliore)</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pos-chiusa-msg" style="display:none;margin-top:22px;border-top:1px dashed var(--line);padding-top:20px">
+        <p class="verdetto" id="pa-chiusa-testo"></p>
       </div>
     </div>
   </section>
@@ -413,9 +523,11 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
   </section>
 
   <section class="blocco" id="sez-storico">
-    <div class="eyebrow">Storico</div>
-    <h2>Operazioni chiuse</h2>
-    <p class="vuoto">Nessuna operazione ancora. Il primo trade che simuli comparirà qui — e Sigma continuerà a studiarlo anche dopo la chiusura.</p>
+    <div class="eyebrow">Conto demo</div>
+    <h2>I tuoi trade demo</h2>
+    <p class="lead">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
+    <div id="demo-lista"></div>
+    <p class="vuoto" id="demo-vuoto">Nessun trade demo ancora. Analizza un'operazione qui sopra e premi "Apri in DEMO": comparirà qui, viva.</p>
   </section>
 </main>
 
@@ -430,6 +542,15 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
   </div>
 </div>
 
+<div id="consenso" role="dialog" aria-label="Consenso cookie">
+  <p>Usiamo cookie di analisi (Google Analytics, Microsoft Clarity) per capire come viene usato il sito e migliorarlo. Nessun dato viene venduto a terzi. Puoi cambiare idea in qualsiasi momento.</p>
+  <div class="azioni">
+    <button class="rifiuta" onclick="consenso(false)">Solo essenziali</button>
+    <button class="accetta" onclick="consenso(true)">Accetta analisi</button>
+  </div>
+</div>
+
+<script src="sigma-engines.js"></script>
 <script>
 /* ================= DATI DEMO ================= */
 const DEMO = {
@@ -491,6 +612,7 @@ function entra(p){
   document.getElementById('app').classList.add('attivo');
   document.getElementById('agente-btn').classList.add('mostra');
   cambiaProfilo(p);
+  renderConto();
   window.scrollTo(0,0);
   benvenutoAgente();
 }
@@ -513,14 +635,37 @@ function calcola(){
     agenteDì("Per calcolare mi serve la perdita massima: scrivi nel campo la cifra che, male che vada, sei pronto a perdere (minimo 10). Da lì derivo io il numero di azioni.");
     return;
   }
-  const d = DEMO[t];
-  const stopDist = d.prezzo * 0.06;
-  const azioni = Math.max(1, Math.floor(perdita / stopDist));
+  // Motore 1 (valutazione pre-apertura): il percorso neofita, come tutti gli
+  // altri, chiama SEMPRE il motore in modalita 'demo' - nessun accesso a dati
+  // reali da qui.
+  let motore;
+  try {
+    motore = SigmaEngines.valutaTrade({ ticker: t, perditaMax: perdita, modalita: 'demo' });
+  } catch(err){
+    agenteDì("Non riesco a calcolare questo trade: " + err.message);
+    return;
+  }
+  const fmtSignedPct = (frac, dec) => { const v = (frac*100).toFixed(dec); return (frac >= 0 ? '+' : '') + v + '%'; };
+  // Stesso oggetto "d" di prima (prezzo/prob/ev/vrp/sharpe/p5/p95): verdetti{}
+  // e spiegaDemo() ricevono le stesse variabili, cambiano solo i numeri.
+  // "prezzo" resta dal vecchio DEMO{} (serve solo al conto demo/Motore 2,
+  // fuori scopo oggi); tutto il resto arriva dal Motore 1 reale.
+  const d = {
+    prezzo: DEMO[t].prezzo,
+    prob: motore.probabilita,
+    ev: motore.evAtteso,
+    vrp: fmtSignedPct(motore.vrp, 1),
+    sharpe: motore.sharpe.toFixed(2),
+    p5: fmtSignedPct(motore.p5, 0),
+    p95: fmtSignedPct(motore.p95, 0)
+  };
+  const azioni = motore.azioni;
+  ultimaAnalisi = { ticker: t, dir: 'long', apertura: d.prezzo, azioni: azioni, stop: +(d.prezzo*0.94).toFixed(2), target: +(d.prezzo*1.10).toFixed(2), prob: d.prob };
   const ev = (perdita * d.ev).toFixed(0);
   document.getElementById('r-prob').textContent = Math.round(d.prob*100)+'%';
   document.getElementById('r-azioni').textContent = azioni;
   const evBox = document.getElementById('r-ev-box');
-  evBox.className = 'k ' + (d.ev > .2 ? 'buono' : 'cattivo');
+  evBox.className = 'k ' + (d.ev > 0 ? 'buono' : 'cattivo');
   document.getElementById('r-ev').textContent = (d.ev>0?'+':'')+ev+' '+val;
   document.getElementById('r-barra').style.width = Math.round(d.prob*100)+'%';
   const buono = d.ev > .2;
@@ -542,6 +687,104 @@ function calcola(){
   document.getElementById('m-p95').textContent = d.p95;
   document.getElementById('risultato').classList.add('mostra');
   if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'nuovo_trade', profilo: profilo, ticker: t });
+  if(profilo === 'neofita'){
+    document.getElementById('r-dettagli').style.display = 'none';
+    avviaReplay(motore.percorsiCampione, ()=>{
+      document.getElementById('r-dettagli').style.display = 'block';
+      spiegaDemo(t, azioni, d, buono);
+    });
+  } else {
+    document.getElementById('r-dettagli').style.display = 'block';
+  }
+}
+
+/* Il teatro della demo: le vite REALI del trade (percorsiCampione dal Motore 1) disegnate in diretta */
+function avviaReplay(percorsiCampione, fine){
+  const cv = document.getElementById('replay-cv');
+  const ctx = cv.getContext('2d');
+  const W = cv.width = cv.offsetWidth * devicePixelRatio;
+  const H = cv.height = cv.offsetHeight * devicePixelRatio;
+  ctx.clearRect(0,0,W,H);
+  const N = percorsiCampione.length;
+  const yStart = H*0.55, scala = H*0.30;               // 0 = prezzo di partenza
+  const yTarget = yStart - scala*0.62, yStop = yStart + scala*0.42;
+  // linee di riferimento
+  function linee(){
+    ctx.setLineDash([6,6]);
+    ctx.strokeStyle = 'rgba(15,110,93,.8)'; ctx.lineWidth = 1.4*devicePixelRatio;
+    ctx.beginPath(); ctx.moveTo(0,yTarget); ctx.lineTo(W,yTarget); ctx.stroke();
+    ctx.strokeStyle = 'rgba(198,64,46,.8)';
+    ctx.beginPath(); ctx.moveTo(0,yStop); ctx.lineTo(W,yStop); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = (11*devicePixelRatio)+'px IBM Plex Mono, monospace';
+    ctx.fillStyle = 'rgba(15,110,93,1)'; ctx.fillText('OBIETTIVO', 8*devicePixelRatio, yTarget - 6*devicePixelRatio);
+    ctx.fillStyle = 'rgba(198,64,46,1)'; ctx.fillText('STOP (la tua perdita massima)', 8*devicePixelRatio, yStop + 14*devicePixelRatio);
+  }
+  linee();
+  // Asse temporale condiviso: la durata più lunga tra i percorsi campionati
+  // (chi non tocca mai lo stop corre fino in fondo all'orizzonte scelto dal motore).
+  let totalSteps = 1;
+  for(let i=0;i<N;i++) totalSteps = Math.max(totalSteps, percorsiCampione[i].prezzi.length - 1);
+  // Riferimento di scala verticale: la variazione percentuale di prezzo che, nei
+  // percorsi reali, ha toccato lo stop - non un numero inventato, ma la media
+  // empirica delle uscite a stop già presenti nel campione.
+  let sommaStop = 0, nStop = 0;
+  for(let i=0;i<N;i++){
+    if(percorsiCampione[i].esito === 'stop'){
+      const p = percorsiCampione[i].prezzi;
+      sommaStop += p[p.length-1]/p[0] - 1;
+      nStop++;
+    }
+  }
+  const refDown = nStop > 0 ? Math.abs(sommaStop / nStop) : 0.15;
+  let disegnate = 0, vinte = 0, perse = 0;
+  const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function unaVita(i){
+    const perc = percorsiCampione[i];
+    const win = perc.esito === 'target';
+    const S0path = perc.prezzi[0];
+    ctx.beginPath();
+    ctx.strokeStyle = win ? 'rgba(15,110,93,.20)' : 'rgba(198,64,46,.20)';
+    ctx.lineWidth = 1*devicePixelRatio;
+    for(let t=0;t<perc.prezzi.length;t++){
+      const px = (t/totalSteps)*W;
+      const r = perc.prezzi[t]/S0path - 1;
+      let y = r >= 0
+        ? yStart - (r/refDown)*(yStart-yTarget)
+        : yStart + (r/-refDown)*(yStop-yStart);
+      if(!win) y = Math.min(y, yStop);
+      t===0 ? ctx.moveTo(px,y) : ctx.lineTo(px,y);
+    }
+    ctx.stroke();
+    win ? vinte++ : perse++;
+    disegnate++;
+    document.getElementById('rp-n').textContent = disegnate;
+    document.getElementById('rp-win').textContent = vinte;
+    document.getElementById('rp-loss').textContent = perse;
+    document.getElementById('rp-prob').textContent = Math.round(vinte/disegnate*100)+'%';
+  }
+  if(ridotto){
+    for(let i=0;i<N;i++) unaVita(i);
+    linee(); fine();
+    return;
+  }
+  let i = 0;
+  (function passo(){
+    for(let k=0;k<2 && i<N;k++) unaVita(i++);
+    linee(); // tiene le linee sopra i percorsi
+    if(i<N) requestAnimationFrame(passo);
+    else setTimeout(fine, 500);
+  })();
+}
+function spiegaDemo(t, azioni, d, buono){
+  apriAgente();
+  bolla('ai', "Hai appena visto il tuo trade su "+t+" vivere 100 vite diverse — le linee verdi hanno raggiunto l'obiettivo, le rosse hanno toccato lo stop.");
+  setTimeout(()=>bolla('ai', "① Sullo schermo te ne ho mostrate 100, ma il motore ne calcola 10.000: più vite simuli, più la percentuale che emerge diventa affidabile."), 800);
+  setTimeout(()=>bolla('ai', "② Circa "+Math.round(d.prob*100)+" su 100 finiscono in profitto. Questa È la probabilità: non una previsione del futuro, ma quanto la scommessa parte a tuo favore."), 1700);
+  setTimeout(()=>bolla('ai', buono
+    ? "③ E le "+azioni+" azioni non le ho inventate: derivano dalla linea rossa, la tua perdita massima. Il rischio si decide PRIMA — mai dopo."
+    : "③ E hai visto tante linee rosse: qui i numeri non erano a tuo favore. Ottima lezione — non tutti i trade vanno aperti, anche se il titolo ti piace."), 2600);
+  setTimeout(()=>bolla('ai', "Ricorda: è tutto simulato, apposta per farti sbagliare gratis. Quando leggere queste 100 vite ti sembrerà naturale, sarai pronto a parlare di trading reale — non prima."), 3500);
 }
 
 /* ================= MODALITÀ E VALUTAZIONE POSIZIONE ================= */
@@ -551,13 +794,28 @@ function modo(m){
   document.getElementById('pannello-nuovo').style.display = m==='nuovo' ? 'block' : 'none';
   document.getElementById('pannello-pos').style.display = m==='pos' ? 'block' : 'none';
 }
+// Motore 2 (monitoraggio trade aperto): valuta se compilare il ramo "posizione
+// gia' aperta" (in euro, via SigmaEngines.valutaTradeAperto) o il ramo esistente
+// stop/target (first-passage). Nessuna delle due logiche tocca l'altra.
 function valutaPosizione(){
   const t = document.getElementById('pos-ticker').value;
+  const ingresso = parseFloat(document.getElementById('pos-ingresso').value);
+  const azioniAperte = parseFloat(document.getElementById('pos-azioni').value);
+
+  document.getElementById('pos-risultato').style.display = 'none';
+  document.getElementById('pos-risultato-aperto').style.display = 'none';
+  document.getElementById('pos-chiusa-msg').style.display = 'none';
+
+  if(ingresso > 0 && azioniAperte > 0){
+    valutaPosizioneAperta(t, ingresso, azioniAperte);
+    return;
+  }
+
   const stop = parseFloat(document.getElementById('pos-stop').value);
   const target = parseFloat(document.getElementById('pos-target').value);
   const d = DEMO[t];
   if(!stop || !target){
-    agenteDì("Mi servono entrambi i prezzi: dove hai messo lo stop loss e dove vuoi arrivare (o l'inizio della tua zona obiettivo). Con quei due numeri calcolo le probabilità da qui.");
+    agenteDì("Mi servono entrambi i prezzi: dove hai messo lo stop loss e dove vuoi arrivare (o l'inizio della tua zona obiettivo). Con quei due numeri calcolo le probabilità da qui. In alternativa, compila prezzo di ingresso e azioni per un verdetto in euro sulla tua posizione aperta.");
     return;
   }
   const sopra = target > d.prezzo, sotto = stop < d.prezzo;
@@ -566,9 +824,11 @@ function valutaPosizione(){
     return;
   }
   const dStop = Math.abs(d.prezzo - stop), dTarget = Math.abs(target - d.prezzo);
+  ultimaPosizione = { ticker: t, dir: sopra ? 'long' : 'short', apertura: d.prezzo, azioni: Math.max(1, Math.floor(500 / dStop)), stop: stop, target: target };
   let pT = dStop / (dStop + dTarget);            // prima approssimazione: passeggiata senza deriva
   pT = Math.min(.97, Math.max(.03, pT + (d.ev - .3) * 0.06)); // correzione demo per regime del titolo
   const pS = 1 - pT, rr = (dTarget / dStop);
+  ultimaPosizione.prob = pT;
   document.getElementById('p-target').textContent = Math.round(pT*100)+'%';
   document.getElementById('p-stop').textContent = Math.round(pS*100)+'%';
   document.getElementById('p-rr').textContent = rr.toFixed(1)+' : 1';
@@ -589,6 +849,167 @@ function valutaPosizione(){
   document.getElementById('p-verdetto').textContent = verdetti[profilo] || verdetti.intermedio;
   document.getElementById('pos-risultato').style.display = 'block';
   if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'posizione_esistente', profilo: profilo, ticker: t });
+}
+
+// Se l'utente sposta "giorni dall'apertura" dopo aver già visto un verdetto
+// di posizione aperta, ricalcola subito: e' la dimostrazione fisica che le
+// probabilità si riaggiornano col passare del tempo. Non fa nulla se i campi
+// ingresso/azioni non sono compilati o non e' ancora stato calcolato nulla.
+function aggiornaPosizioneApertaSeCompilata(){
+  const ingresso = parseFloat(document.getElementById('pos-ingresso').value);
+  const azioniAperte = parseFloat(document.getElementById('pos-azioni').value);
+  const giaMostrato = document.getElementById('pos-risultato-aperto').style.display === 'block'
+    || document.getElementById('pos-chiusa-msg').style.display === 'block';
+  if(ingresso > 0 && azioniAperte > 0 && giaMostrato){
+    valutaPosizione();
+  }
+}
+
+function fmtEuroSegno(v, val){
+  const cur = val || (document.getElementById('valuta') ? document.getElementById('valuta').value : '$');
+  const segno = v >= 0 ? '+' : '';
+  return segno + Math.round(v).toLocaleString('it-IT') + ' ' + cur;
+}
+
+// Motore 2: "tengo o chiudo?" in euro, per una posizione gia' aperta. Ricostruisce
+// prima lo stato reale (statoPosizione, dentro valutaTradeAperto) camminando sui
+// close storici da "giorni dall'apertura" fa a oggi; se lo stop e' gia' stato
+// toccato nella realta', mostra solo il risultato realizzato, nessuna simulazione.
+function valutaPosizioneAperta(t, ingresso, azioni){
+  const giorniFa = parseInt(document.getElementById('pos-giorni').value, 10);
+  const val = document.getElementById('valuta') ? document.getElementById('valuta').value : '$';
+
+  let esito;
+  try {
+    const serie = SigmaEngines._internals.DEMO_DATA[t];
+    if(!serie){ agenteDì("Ticker non disponibile in demo."); return; }
+    const iOggi = serie.close.length - 1;
+    const iApertura = Math.max(0, iOggi - giorniFa);
+    esito = SigmaEngines.valutaTradeAperto({
+      ticker: t, prezzoIngresso: ingresso, azioni: azioni,
+      indiceGiornoApertura: iApertura, indiceGiornoOggi: iOggi, modalita: 'demo'
+    });
+  } catch(err){
+    agenteDì("Non riesco a calcolare questa posizione: " + err.message);
+    return;
+  }
+
+  if(esito.chiusaAnticipata){
+    document.getElementById('pa-chiusa-testo').textContent =
+      "Questa posizione risulta già chiusa: nella realtà il prezzo ha toccato il tuo stop a " +
+      esito.prezzoUscita.toFixed(2) + ", con un risultato di " + fmtEuroSegno(esito.pnlRealizzato, val) +
+      ". Non c'è altro da simulare — se vuoi valutarne una nuova, aggiorna ticker o ingresso.";
+    document.getElementById('pos-chiusa-msg').style.display = 'block';
+    if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'posizione_aperta_chiusa', profilo: profilo, ticker: t });
+    return;
+  }
+
+  document.getElementById('pa-chiudi').textContent = fmtEuroSegno(esito.chiudiOra, val);
+  document.getElementById('pa-restando').textContent = fmtEuroSegno(esito.evTotaleTenendo, val);
+  document.getElementById('pa-vantaggio').textContent = fmtEuroSegno(esito.evResidua, val);
+  document.getElementById('pa-vantaggio-box').className = 'k ' + (esito.evResidua >= 0 ? 'buono' : 'cattivo');
+
+  const su10 = Math.max(0, Math.min(10, Math.round(esito.probMeglioDiOra*10)));
+  const verdetti = {
+    neofita: `In media, restare vale ${fmtEuroSegno(esito.evResidua, val)} rispetto a chiudere adesso. In ${su10} casi su 10, tenerla si rivela la scelta migliore.`,
+    intermedio: `Chiudendo ora incassi ${fmtEuroSegno(esito.chiudiOra, val)}. Restando, il risultato atteso in media è ${fmtEuroSegno(esito.evTotaleTenendo, val)} — un vantaggio di ${fmtEuroSegno(esito.evResidua, val)} rispetto a chiudere. In ${su10} casi su 10 restare va meglio.`,
+    esperto: `EV residua ${fmtEuroSegno(esito.evResidua, val)} su orizzonte ${esito.orizzonteGiorni}gg, P(meglio di ora) ${Math.round(esito.probMeglioDiOra*100)}%. Range: P5 ${fmtEuroSegno(esito.p5Eur, val)}, P95 ${fmtEuroSegno(esito.p95Eur, val)}.`
+  };
+  document.getElementById('pa-verdetto').textContent = verdetti[profilo] || verdetti.intermedio;
+  document.getElementById('pa-orizzonte').textContent = esito.orizzonteGiorni + ' gg';
+  document.getElementById('pa-p5').textContent = fmtEuroSegno(esito.p5Eur, val);
+  document.getElementById('pa-p95').textContent = fmtEuroSegno(esito.p95Eur, val);
+
+  document.getElementById('pos-risultato-aperto').style.display = 'block';
+  if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'posizione_aperta_monitoraggio', profilo: profilo, ticker: t });
+}
+
+/* ================= CONTO DEMO ================= */
+let ultimaAnalisi = null, ultimaPosizione = null;
+let contoMem = null; // fallback se localStorage non disponibile
+const CHIAVE_CONTO = 'sigma_conto_demo';
+function leggiConto(){
+  try{ const r = localStorage.getItem(CHIAVE_CONTO); if(r) return JSON.parse(r); }catch(e){}
+  return contoMem || [];
+}
+function salvaConto(c){
+  contoMem = c;
+  try{ localStorage.setItem(CHIAVE_CONTO, JSON.stringify(c)); }catch(e){}
+}
+function apriInDemo(tipo){
+  const rec = tipo === 'nuovo' ? ultimaAnalisi : ultimaPosizione;
+  if(!rec) return;
+  const c = leggiConto();
+  c.unshift(Object.assign({ id: Date.now(), ts: Date.now(), chiuso: false }, rec));
+  salvaConto(c);
+  renderConto();
+  if(typeof gtag === 'function') gtag('event', 'demo_trade_aperto', { profilo: profilo, ticker: rec.ticker, origine: tipo });
+  document.getElementById('sez-storico').scrollIntoView({behavior:'smooth', block:'center'});
+  const el = document.getElementById('sez-storico');
+  el.classList.add('hi'); setTimeout(()=>el.classList.remove('hi'), 2600);
+  agenteDì("Fatto: il trade su "+rec.ticker+" è nel tuo conto demo — vivo, ma senza un euro vero in ballo. I prezzi demo si muovono col tempo: torna tra qualche ora e ti dico come sta andando e cosa faresti al posto suo un trader esperto.");
+}
+function prezzoDemo(rec){
+  // il prezzo demo evolve in modo deterministico col passare delle ore
+  const ore = Math.floor((Date.now() - rec.ts) / 3600000);
+  const seedRand = s => () => { s|=0; s=s+0x6D2B79F5|0; let r=Math.imul(s^s>>>15,1|s); r=r+Math.imul(r^r>>>7,61|r)^r; return ((r^r>>>14)>>>0)/4294967296; };
+  const rnd = seedRand(rec.id % 2147483647);
+  let p = rec.apertura;
+  for(let h=0; h<Math.min(ore, 2000); h++){
+    p *= 1 + (rnd() - 0.49) * 0.006;
+    if(rec.dir === 'short'){
+      if(p >= rec.stop) return { prezzo: rec.stop, stato: 'stop' };
+      if(p <= rec.target) return { prezzo: rec.target, stato: 'target' };
+    } else {
+      if(p <= rec.stop) return { prezzo: rec.stop, stato: 'stop' };
+      if(p >= rec.target) return { prezzo: rec.target, stato: 'target' };
+    }
+  }
+  return { prezzo: p, stato: 'corso' };
+}
+function renderConto(){
+  const c = leggiConto();
+  const lista = document.getElementById('demo-lista');
+  const vuoto = document.getElementById('demo-vuoto');
+  if(!lista) return;
+  vuoto.style.display = c.length ? 'none' : 'block';
+  const etichette = { corso: ['stato-corso','In corso'], target: ['stato-target','Obiettivo raggiunto'], stop: ['stato-stop','Stop raggiunto'] };
+  lista.innerHTML = c.map(rec=>{
+    const cur = rec.chiuso ? { prezzo: rec.prezzoChiusura, stato: rec.statoFinale } : prezzoDemo(rec);
+    const pnl = (cur.prezzo - rec.apertura) * rec.azioni * (rec.dir==='short' ? -1 : 1);
+    const [cls, lab] = etichette[cur.stato];
+    const finita = rec.chiuso || cur.stato !== 'corso';
+    let oriz = '';
+    if(!finita){
+      const gain = Math.abs(rec.target - rec.apertura) * rec.azioni;
+      const perd = Math.abs(rec.apertura - rec.stop) * rec.azioni;
+      const P = rec.prob || 0.6;
+      oriz = '<div class="orizzonte"><span class="tit">⏱ Guadagno atteso se aspetti:</span>'
+        + [7,30,90].map(g=>{
+            const f = 1 - Math.exp(-g/35);          // quota di esiti che si realizza entro g giorni
+            const ev = P*f*gain - (1-P)*f*perd;
+            return '<span class="chip">'+g+' giorni <b class="'+(ev>=0?'su':'giu')+'">'+(ev>=0?'+':'')+ev.toFixed(0)+'$</b></span>';
+          }).join('')
+        + '</div>';
+    }
+    return '<div class="pos-demo'+(finita?' finita':'')+'">'
+      + '<div class="info"><b>'+rec.ticker+'</b> <span class="stato-demo '+cls+'">'+(rec.chiuso?'Chiuso da te':lab)+'</span>'
+      + '<span>'+rec.azioni+' azioni demo · aperto a '+rec.apertura.toFixed(2)+' · stop '+rec.stop.toFixed(2)+' · obiettivo '+rec.target.toFixed(2)+'</span></div>'
+      + '<div class="num"><span class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+(pnl>=0?'+':'')+pnl.toFixed(0)+' $</span><small>prezzo demo '+cur.prezzo.toFixed(2)+'</small></div>'
+      + (finita ? '' : '<button class="chiudi" onclick="chiudiDemo('+rec.id+')">Chiudi</button>')
+      + oriz
+      + '</div>';
+  }).join('');
+}
+function chiudiDemo(id){
+  const c = leggiConto();
+  const rec = c.find(r=>r.id===id);
+  if(!rec) return;
+  const cur = prezzoDemo(rec);
+  rec.chiuso = true; rec.prezzoChiusura = cur.prezzo; rec.statoFinale = cur.stato;
+  salvaConto(c); renderConto();
+  const pnl = (cur.prezzo - rec.apertura) * rec.azioni;
+  agenteDì("Trade demo su "+rec.ticker+" chiuso a "+cur.prezzo.toFixed(2)+" ("+(pnl>=0?'+':'')+pnl.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
 }
 
 /* ================= AGENTE ================= */
@@ -637,11 +1058,11 @@ function sistemPrompt(){
   return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
 
 L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
-- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita.
+- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario.
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 
-La pagina ha queste sezioni (id): "sez-builder" (simulatore con due modalità per intermedio/esperto: "Nuovo trade" — ticker, perdita massima, valuta — e "Ho già una posizione" — l'utente inserisce prezzo di stop loss e prezzo obiettivo, qualunque sia il suo metodo, e Sigma calcola la probabilità che il mercato da dove si trova ora raggiunga l'obiettivo prima dello stop), "sez-idea" (l'idea chiave: le probabilità si riaggiornano a ogni evento), "sez-come" (il metodo in 4 passi), "sez-storico" (operazioni chiuse, vuoto), per i neofiti "sez-guida" (percorso guidato), per gli intermedi "sez-ponte" (dal portafoglio al trade a rischio definito), per gli esperti "sez-tavolo" (cornice poker: le percentuali cambiano e vanno gestite), "sez-motore" (screenshot del vero ΣXIII Portfolio Monitor in produzione: 20.000 sim per struttura, P(free-trade), probabilità condizionate, expectancy per contratto — la demo è una versione semplificata di quello) e "sez-sistemi" (sistemi in arrivo). L'utente può cambiare percorso in qualsiasi momento con il selettore in alto (Principiante / Investitore / Trader).
+La pagina ha queste sezioni (id): "sez-builder" (simulatore con due modalità per intermedio/esperto: "Nuovo trade" — ticker, perdita massima, valuta — e "Ho già una posizione" — l'utente inserisce prezzo di stop loss e prezzo obiettivo, qualunque sia il suo metodo, e Sigma calcola la probabilità che il mercato da dove si trova ora raggiunga l'obiettivo prima dello stop), "sez-idea" (l'idea chiave: le probabilità si riaggiornano a ogni evento), "sez-come" (il metodo in 4 passi), "sez-storico" (CONTO DEMO: dopo ogni analisi c'è il pulsante "Apri in DEMO" che porta il trade appena analizzato dentro un conto demo — nessun soldo vero, i prezzi demo evolvono col passare delle ore, l'utente può tornare a controllare i suoi trade e chiuderli; incoraggia SEMPRE questo percorso quando qualcuno esita o dice che non si fida: prima demo, poi eventualmente reale. Ogni trade demo aperto mostra anche il GUADAGNO ATTESO PER ORIZZONTE TEMPORALE — 7, 30 e 90 giorni — perché il tempo è una variabile del trade quanto il prezzo: lo stesso trade può valere poco in una settimana e molto in tre mesi. Se l'utente chiede dei tempi, spiega che il guadagno atteso cresce con l'attesa perché più simulazioni hanno il tempo di raggiungere l'obiettivo, ma non cresce all'infinito), per i neofiti "sez-guida" (percorso guidato), per gli intermedi "sez-ponte" (dal portafoglio al trade a rischio definito), per gli esperti "sez-tavolo" (cornice poker: le percentuali cambiano e vanno gestite), "sez-motore" (screenshot del vero ΣXIII Portfolio Monitor in produzione: 20.000 sim per struttura, P(free-trade), probabilità condizionate, expectancy per contratto — la demo è una versione semplificata di quello) e "sez-sistemi" (sistemi in arrivo). L'utente può cambiare percorso in qualsiasi momento con il selettore in alto (Principiante / Investitore / Trader).
 
 ANALOGIA per spiegare la rivalutazione continua delle probabilità (concetto centrale di Sigma):
 - neofita → la partita di calcio: le probabilità di vittoria cambiano a ogni gol, espulsione, minuto che passa.
@@ -712,6 +1133,37 @@ function eseguiAzione(a){
     cambiaProfilo(a.profilo);
   }
 }
+
+/* ================= CONSENSO COOKIE ================= */
+const CHIAVE_CONSENSO = 'sigma_consenso';
+function consenso(accettato){
+  try{ localStorage.setItem(CHIAVE_CONSENSO, accettato ? 'si' : 'no'); }catch(e){}
+  document.getElementById('consenso').classList.remove('mostra');
+  if(accettato) caricaTracker();
+}
+function caricaTracker(){
+  if(window.__sigmaTrackerCaricato) return;
+  window.__sigmaTrackerCaricato = true;
+  // GA4
+  gtag('consent', 'update', { 'analytics_storage': 'granted' });
+  const s1 = document.createElement('script');
+  s1.async = true; s1.src = 'https://www.googletagmanager.com/gtag/js?id=G-1YD246YPC8';
+  document.head.appendChild(s1);
+  gtag('js', new Date());
+  gtag('config', 'G-1YD246YPC8');
+  // Microsoft Clarity
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "xkqjrd5vw2");
+}
+(function(){
+  let scelta = null;
+  try{ scelta = localStorage.getItem(CHIAVE_CONSENSO); }catch(e){}
+  if(scelta === 'si'){ caricaTracker(); }
+  else if(scelta === null){ document.addEventListener('DOMContentLoaded', ()=>document.getElementById('consenso').classList.add('mostra')); }
+})();
 
 /* ================= FAN MONTE CARLO (anticamera) ================= */
 (function(){
