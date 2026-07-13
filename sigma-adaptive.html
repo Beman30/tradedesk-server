@@ -188,6 +188,7 @@ body[data-profilo="esperto"] .esperto-extra{display:block}
 body[data-profilo="neofita"] .conto-box{border:1px solid var(--line);border-radius:12px;background:var(--fog);padding:14px;margin-bottom:14px}
 .conto-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .conto-toolbar .countdown{font-size:.82rem;color:var(--ink2)}
+.conto-toolbar .conto-azioni{display:flex;gap:8px;flex-wrap:wrap}
 
 /* idea chiave: probabilità che si aggiornano */
 .stadi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
@@ -588,7 +589,10 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
     <div class="conto-box">
       <div class="conto-toolbar" data-solo="neofita">
         <span class="countdown" id="countdown-sessione"></span>
-        <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+        <div class="conto-azioni">
+          <button class="cta-secondaria" id="btn-cancella-conclusi" onclick="cancellaTradeConclusi()">Cancella trade conclusi</button>
+          <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+        </div>
       </div>
       <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
         <p class="verdetto">sessione di allenamento completata — inizia una nuova sessione</p>
@@ -1166,6 +1170,33 @@ function prezzoDemo(rec){
     }
   }
   return { prezzo: p, stato: 'corso' };
+}
+// puoEssereCancellato - un trade e' cancellabile dal conto SOLO quando non
+// cambiera' piu': per i titoli di allenamento, o e' gia' stato giudicato
+// dall'ombra (voce gia' salvata in sigma_journal, la cancellazione dalla
+// lista non tocca il registro) oppure ha raggiunto stop/target da solo
+// senza essere mai stato chiuso (quindi nessuna ombra/giudizio in corso da
+// perdere). Un trade "in corso" o "sotto osservazione" in attesa di
+// giudizio NON e' mai cancellabile.
+function puoEssereCancellato(rec){
+  if(isTickerAllenamento(rec.ticker)){
+    if(rec.sottoOsservazione) return !!rec.giudizioFinale;
+    const serie = serieSessione[rec.ticker];
+    if(!serie) return false;
+    return statoDemoAllenamento(rec, serie, clockCorrente()).stato !== 'corso';
+  }
+  return rec.chiuso || prezzoDemo(rec).stato !== 'corso';
+}
+function cancellaTradeConclusi(){
+  const c = leggiConto();
+  const daTenere = c.filter(rec => !puoEssereCancellato(rec));
+  const rimossi = c.length - daTenere.length;
+  salvaConto(daTenere);
+  renderConto();
+  if(rimossi > 0){
+    const label = rimossi === 1 ? '1 trade cancellato' : rimossi+' trade cancellati';
+    agenteDì('Ripulito: '+label+' dal conto demo.');
+  }
 }
 function renderConto(){
   const c = leggiConto();
