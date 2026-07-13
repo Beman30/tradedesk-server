@@ -14,8 +14,10 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
 - Percorso neofita: Livello 1 = titoli sintetici CALMO/MEDIO/VIOLENTO
   (palestra dichiarata: repliche statistiche di famiglie reali di
   sottostanti, per allenarsi in tempi brevi); Livello 2 = i 3 ticker
-  reali in replay storico, sbloccato dall'assistente dopo 3 calcoli
-  (localStorage sigma_lvl_progress). Il mercato live NON esiste nel sito.
+  reali in replay storico. Livello 2 sbloccato dopo 3 decisioni giudicate
+  (trade aperti, chiusi e valutati dall'ombra), non 3 semplici calcoli
+  (localStorage sigma_lvl_progress, conteggio reale in sigma_journal). Il
+  mercato live NON esiste nel sito.
 - Criterio didattico del trio sintetico: CALMO = "sì" lieve (EV
   leggermente positiva), MEDIO = "sì" netto, VIOLENTO = "no" (EV
   negativa/~zero). Curatela seed dichiarata nei commenti.
@@ -76,3 +78,12 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
   ogni Aggiorna nel conto demo neofita (misurato: 3 trade aperti passano da
   ~350ms a ~70ms). L'apertura del trade e la cattura a fine chiusura (per
   sigma_journal) restano a 10.000 percorsi. Determinismo invariato.
+- Sbarramento Livello 2 (task 14/7): nel select del neofita i 3 titoli
+  reali restano visibili ma con option disabled e etichetta "🔒 AAPL —
+  Apple (titolo reale)" finché sigma_journal non contiene almeno 3
+  decisioni giudicate. Tentativo di selezione (anche forzato) → torna al
+  ticker precedente e l'assistente mostra lo sbarramento con il numero di
+  decisioni mancanti, mai un giudizio negativo. Allo sblocco: lucchetti
+  rimossi, tappa 2 del mini-percorso evidenziata, messaggio di completamento
+  dell'assistente, evento GA4 livello_sbloccato (parte solo se consenso
+  analytics già dato, stesso meccanismo di consenso degli altri eventi).

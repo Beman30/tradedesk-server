@@ -375,7 +375,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
     <h2 data-solo="neofita">Prova un'operazione, senza rischiare nulla</h2>
     <h2 data-solo="intermedio">Valuta il trade prima di aprirlo</h2>
     <h2 data-solo="esperto">Motore di valutazione</h2>
-    <div class="stadi" data-solo="neofita" style="margin-bottom:14px">
+    <div class="stadi" id="mini-percorso" data-solo="neofita" style="margin-bottom:14px">
       <div class="stadio on"><b>1. PALESTRA — sei qui</b></div>
       <div class="stadio"><b>2. Titoli veri in demo</b></div>
       <div class="stadio"><b>3. Mercato reale</b></div>
@@ -394,7 +394,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
     <div class="riga">
       <div class="campo">
         <label for="ticker">Ticker</label>
-        <select id="ticker" onchange="aggiornaPersonalitaTicker()">
+        <select id="ticker" onchange="onCambioTicker()">
           <option value="AAPL">AAPL — Apple</option>
           <option value="MSFT">MSFT — Microsoft</option>
           <option value="TSLA">TSLA — Tesla</option>
@@ -636,9 +636,13 @@ const TICKER_REALI = [
   ['TSLA','Tesla']
 ];
 const CHIAVE_PROGRESSO = 'sigma_lvl_progress';
+// Criterio di sblocco Livello 2 (task 14/7): 3 DECISIONI GIUDICATE in
+// sigma_journal (trade aperti, chiusi e valutati dall'ombra) - sostituisce
+// il vecchio criterio "3 calcoli" (vedi DECISIONI.md).
 function livelloSbloccato(){
-  return (parseInt(localStorage.getItem(CHIAVE_PROGRESSO) || '0', 10)) >= 3;
+  return leggiGiornale().length >= 3;
 }
+let tickerPrecedente = null;
 function popolaSelectTicker(){
   const sel = document.getElementById('ticker');
   if(!sel) return;
@@ -647,12 +651,44 @@ function popolaSelectTicker(){
     sel.innerHTML = TICKER_HTML_ORIGINALE;
     return;
   }
+  const sbloccato = livelloSbloccato();
   let html = TICKER_ALLENAMENTO.map(([t,lab])=>'<option value="'+t+'">'+t+' — '+lab+'</option>').join('');
-  if(livelloSbloccato()){
-    html += TICKER_REALI.map(([t,nome])=>'<option value="'+t+'">'+t+' — '+nome+' (titolo reale)</option>').join('');
-  }
+  html += TICKER_REALI.map(([t,nome])=> sbloccato
+    ? '<option value="'+t+'">'+t+' — '+nome+' (titolo reale)</option>'
+    : '<option value="'+t+'" disabled>🔒 '+t+' — '+nome+' (titolo reale)</option>'
+  ).join('');
   sel.innerHTML = html;
+  tickerPrecedente = sel.value;
   aggiornaPersonalitaTicker();
+}
+// onCambioTicker - il select disabilita gia' le option dei titoli reali
+// bloccati; questa e' una difesa in piu' nel caso il valore selezionato
+// risulti comunque un ticker reale non sbloccato (es. assegnazione diretta
+// di sel.value, che nei browser bypassa "disabled"): riporta la selezione
+// al ticker precedente e mostra lo sbarramento invece di procedere.
+function onCambioTicker(){
+  const sel = document.getElementById('ticker');
+  const isReale = TICKER_REALI.some(([t])=>t===sel.value);
+  if(profilo === 'neofita' && isReale && !livelloSbloccato()){
+    sel.value = tickerPrecedente || TICKER_ALLENAMENTO[0][0];
+    mostraSbarramentoLivello2();
+    aggiornaPersonalitaTicker();
+    return;
+  }
+  tickerPrecedente = sel.value;
+  aggiornaPersonalitaTicker();
+}
+function mostraSbarramentoLivello2(){
+  const n = Math.max(0, 3 - leggiGiornale().length);
+  agenteDì("I titoli veri si sbloccano completando l'allenamento di base: apri 3 trade in palestra e portali fino al giudizio finale (chiusura + verdetto dell'ombra). Te ne mancano "+n+". Non è un pedaggio: è per farti arrivare sui titoli reali già capace di leggere i numeri.");
+}
+// mini-percorso 3 tappe (sez-builder): tappa 1 evidenziata finche' il
+// Livello 2 non e' sbloccato, poi passa alla tappa 2 (task 14/7).
+function aggiornaMiniPercorso(){
+  const box = document.getElementById('mini-percorso');
+  if(!box) return;
+  const idx = livelloSbloccato() ? 1 : 0;
+  [...box.children].forEach((el,i)=> el.classList.toggle('on', i===idx));
 }
 // Task cornice-livelli: riga dinamica sopra l'aiuto "perdita massima", solo
 // neofita - mostra la personalita' del ticker selezionato dal dataset del
@@ -663,16 +699,6 @@ function aggiornaPersonalitaTicker(){
   const t = document.getElementById('ticker').value;
   const d = typeof SigmaEngines !== 'undefined' ? SigmaEngines._internals.DEMO_DATA[t] : null;
   el.textContent = (d && d.personalita) ? (t + ': ' + d.personalita + '.') : '';
-}
-function progressoNeofita(){
-  const n = (parseInt(localStorage.getItem(CHIAVE_PROGRESSO) || '0', 10)) + 1;
-  localStorage.setItem(CHIAVE_PROGRESSO, String(n));
-  if(n === 3){
-    popolaSelectTicker();
-    setTimeout(()=>{
-      agenteDì('Hai completato 3 calcoli con i titoli di allenamento: hai preso confidenza con come si leggono i numeri. Se vuoi, ora puoi passare al Livello 2 — i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con lo stesso motore e la stessa cautela. Li trovi già nel menu ticker, con l\'etichetta "(titolo reale)".');
-    }, 600);
-  }
 }
 
 /* ================= GERARCHIA VISIVA NEOFITA: progressive disclosure ================= */
@@ -742,6 +768,7 @@ function cambiaProfilo(p){
     document.getElementById('seg-'+x).classList.toggle('on', x===p);
   });
   popolaSelectTicker();
+  aggiornaMiniPercorso();
   montaAnalogia();
   if(p === 'neofita'){ assicuraSessioneAllenamento(); renderConto(); applicaProgressiveDisclosure(); }
   if(p !== 'neofita') modo('nuovo');
@@ -835,7 +862,6 @@ function calcola(){
   if(typeof gtag === 'function') gtag('event', 'calcolo_eseguito', { tipo: 'nuovo_trade', profilo: profilo, ticker: t });
   if(profilo === 'neofita'){
     document.getElementById('r-dettagli').style.display = 'none';
-    progressoNeofita();
     avviaReplay(motore.percorsiCampione, ()=>{
       document.getElementById('r-dettagli').style.display = 'block';
       spiegaDemo(t, azioni, d, buono);
@@ -1444,6 +1470,23 @@ function costruisciVoceGiornale(rec, giudizio){
     ts: Date.now()
   };
 }
+// registraDecisioneGiudicata - punto unico dove un giudizio finale diventa
+// una voce di sigma_journal (task 14/7): aggiorna anche sigma_lvl_progress
+// e, alla terza decisione giudicata, sblocca il Livello 2.
+function registraDecisioneGiudicata(rec, giudizio){
+  const eraSbloccato = livelloSbloccato();
+  salvaGiornale(costruisciVoceGiornale(rec, giudizio));
+  localStorage.setItem(CHIAVE_PROGRESSO, String(leggiGiornale().length));
+  if(!eraSbloccato && livelloSbloccato()) sbloccaLivello2();
+}
+function sbloccaLivello2(){
+  popolaSelectTicker();
+  aggiornaMiniPercorso();
+  if(typeof gtag === 'function') gtag('event', 'livello_sbloccato', { livello: 2 });
+  setTimeout(()=>{
+    agenteDì('Allenamento di base completato: hai aperto, gestito e chiuso 3 trade, e l\'ombra ha giudicato le tue decisioni. Da adesso puoi allenarti anche sui titoli veri — AAPL, MSFT e TSLA in demo. Il metodo è identico: cambia solo che questi esistono davvero.');
+  }, 600);
+}
 function aggiornaOmbreEGiudizi(){
   const c = leggiConto();
   const clock = clockCorrente();
@@ -1460,7 +1503,7 @@ function aggiornaOmbreEGiudizi(){
     if(ombra.stoppata || giorniSottoOsservazione >= 10){
       const giudizio = costruisciGiudizio(rec, ombra.pnlOmbra);
       rec.giudizioFinale = giudizio;
-      salvaGiornale(costruisciVoceGiornale(rec, giudizio));
+      registraDecisioneGiudicata(rec, giudizio);
       cambiato = true;
     }
   });
@@ -1503,7 +1546,7 @@ function nuovaSessioneAllenamento(){
       });
       const giudizio = costruisciGiudizio(rec, ombra.pnlOmbra);
       rec.giudizioFinale = giudizio;
-      salvaGiornale(costruisciVoceGiornale(rec, giudizio));
+      registraDecisioneGiudicata(rec, giudizio);
     } else if(!rec.chiuso){
       const cur = statoDemoAllenamento(rec, serie, clock);
       rec.chiuso = true;
