@@ -786,7 +786,7 @@ function cambiaProfilo(p){
   montaAnalogia();
   if(p === 'neofita'){ assicuraSessioneAllenamento(); renderConto(); applicaProgressiveDisclosure(); }
   if(p !== 'neofita') modo('nuovo');
-  if(!primo && document.getElementById('agente').classList.contains('aperto')){
+  if(!primo && p !== 'neofita' && document.getElementById('agente').classList.contains('aperto')){
     bolla('ai', '→ Pagina adattata al percorso "'+NOMI[p]+'".');
   }
 }
@@ -878,7 +878,7 @@ function calcola(){
     document.getElementById('r-dettagli').style.display = 'none';
     avviaReplay(motore.percorsiCampione, ()=>{
       document.getElementById('r-dettagli').style.display = 'block';
-      spiegaDemo(t, azioni, d, buono);
+      commentoEsitoCalcolo(d, ev, buono);
     });
   } else {
     document.getElementById('r-dettagli').style.display = 'block';
@@ -963,15 +963,17 @@ function avviaReplay(percorsiCampione, fine){
     else setTimeout(fine, 500);
   })();
 }
-function spiegaDemo(t, azioni, d, buono){
+// commentoEsitoCalcolo (task 15/7): il coach parla POCO, una bolla sola a
+// fine replay, condizionata all'esito - sostituisce le 5 bolle di
+// spiegaDemo (troppo didattiche, ripetevano quello che il replay/r-verdetto
+// già mostrano a schermo).
+function commentoEsitoCalcolo(d, ev, buono){
   apriAgente();
-  bolla('ai', "Hai appena visto il tuo trade su "+t+" vivere 100 vite diverse — le linee verdi hanno raggiunto l'obiettivo, le rosse hanno toccato lo stop.");
-  setTimeout(()=>bolla('ai', "① Sullo schermo te ne ho mostrate 100, ma il motore ne calcola 10.000: più vite simuli, più la percentuale che emerge diventa affidabile."), 800);
-  setTimeout(()=>bolla('ai', "② Circa "+Math.round(d.prob*100)+" su 100 finiscono in profitto. Questa È la probabilità: non una previsione del futuro, ma quanto la scommessa parte a tuo favore."), 1700);
-  setTimeout(()=>bolla('ai', buono
-    ? "③ E le "+azioni+" azioni non le ho inventate: derivano dalla linea rossa, la tua perdita massima. Il rischio si decide PRIMA — mai dopo."
-    : "③ E hai visto tante linee rosse: qui i numeri non erano a tuo favore. Ottima lezione — non tutti i trade vanno aperti, anche se il titolo ti piace."), 2600);
-  setTimeout(()=>bolla('ai', "Ricorda: è tutto simulato, apposta per farti sbagliare gratis. Quando leggere queste 100 vite ti sembrerà naturale, sarai pronto a parlare di trading reale — non prima."), 3500);
+  const probabilita = Math.round(d.prob*100);
+  const testo = buono
+    ? "I numeri sono dalla tua parte: "+probabilita+" su 100 e guadagno atteso "+ev+"$. Ora la parte vera: premi \"Apri questo trade in demo\" e guarda come si comporta giorno per giorno."
+    : "Hai appena imparato la cosa più preziosa: non tutti i trade vanno aperti. Qui i numeri sono contro ("+probabilita+" su 100). Prova un altro titolo o una perdita massima diversa — dire di no è già fare trading.";
+  bolla('ai', testo);
 }
 
 /* ================= MODALITÀ E VALUTAZIONE POSIZIONE ================= */
@@ -1147,7 +1149,11 @@ function apriInDemo(tipo){
   document.getElementById('sez-storico').scrollIntoView({behavior:'smooth', block:'center'});
   const el = document.getElementById('sez-storico');
   el.classList.add('hi'); setTimeout(()=>el.classList.remove('hi'), 2600);
-  agenteDì("Fatto: il trade su "+rec.ticker+" è nel tuo conto demo — vivo, ma senza un euro vero in ballo. I prezzi demo si muovono col tempo: torna tra qualche ora e ti dico come sta andando e cosa faresti al posto suo un trader esperto.");
+  if(profilo === 'neofita'){
+    agenteDì("Aperto. Da adesso comanda il tempo: premi Aggiorna e guarda i numeri cambiare. Io sono qui.");
+  } else {
+    agenteDì("Fatto: il trade su "+rec.ticker+" è nel tuo conto demo — vivo, ma senza un euro vero in ballo. I prezzi demo si muovono col tempo: torna tra qualche ora e ti dico come sta andando e cosa faresti al posto suo un trader esperto.");
+  }
 }
 function prezzoDemo(rec){
   // il prezzo demo evolve in modo deterministico col passare delle ore.
@@ -1271,14 +1277,18 @@ function chiudiDemo(id){
     rec.statoFinale = 'osservazione';
     rec.pnlRealizzato = (curPrezzo - rec.apertura) * rec.azioni * (rec.dir==='short' ? -1 : 1);
     salvaConto(c); renderConto();
-    agenteDì("Trade demo su "+rec.ticker+" chiuso a "+curPrezzo.toFixed(2)+" ("+(rec.pnlRealizzato>=0?'+':'')+rec.pnlRealizzato.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
+    // Chiusure: il coach neofita tace di default (task 15/7) - il verdetto
+    // dell'ombra arriva comunque, sulla riga del trade e come bolla propria
+    // quando il giudizio finale viene emesso.
     return;
   }
   const cur = prezzoDemo(rec);
   rec.chiuso = true; rec.prezzoChiusura = cur.prezzo; rec.statoFinale = cur.stato;
   salvaConto(c); renderConto();
-  const pnl = (cur.prezzo - rec.apertura) * rec.azioni;
-  agenteDì("Trade demo su "+rec.ticker+" chiuso a "+cur.prezzo.toFixed(2)+" ("+(pnl>=0?'+':'')+pnl.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
+  if(profilo !== 'neofita'){
+    const pnl = (cur.prezzo - rec.apertura) * rec.azioni;
+    agenteDì("Trade demo su "+rec.ticker+" chiuso a "+cur.prezzo.toFixed(2)+" ("+(pnl>=0?'+':'')+pnl.toFixed(0)+"$ simulati). Nota per il futuro: conta più il PERCHÉ hai chiuso che il risultato. L'hai chiuso per un motivo o per emozione?");
+  }
 }
 
 /* ========== SESSIONE DI ALLENAMENTO (Motore 3: trade ombra) ==========
@@ -1637,7 +1647,7 @@ function bolla(chi, testo){
 }
 function benvenutoAgente(){
   const benvenuti = {
-    neofita: "Ciao! Sono l'assistente di Sigma. Prima di tutto una cosa: il trading non è magia né fortuna — è calcolo delle probabilità. Non predice il futuro, ma ti dice se un'operazione ha senso e come cambiano le cose strada facendo. Qui è tutto simulato, non si rischia nulla: quando vuoi ti guido nel primo trade.",
+    neofita: "Ciao! Sono il tuo coach. Ti guiderò passo a passo finché ragionare in probabilità ti verrà naturale. Scegli un titolo qui sopra, scrivi quanto sei disposto a rischiare e premi Calcola: al resto pensiamo insieme.",
     intermedio: "Ciao! Visto che investi già, hai due strade nel simulatore: \"Nuovo trade\" per valutare un'operazione prima di aprirla, oppure \"Ho già una posizione\" — mi dai il tuo stop loss e il tuo prezzo obiettivo, qualunque sia il tuo metodo, e ti dico che probabilità ha il mercato, da qui, di arrivarci. Quale delle due?",
     esperto: "Motore aperto in modalità completa: EV, EV/σ, percentili e VRP in chiaro. Dati demo congelati al 9/7. Se ti serve il dettaglio metodologico (GBM, griglia stop/target, repricing) chiedi qui."
   };
@@ -1655,7 +1665,7 @@ function sistemPrompt(){
   return `Sei l'Assistente Sigma, la guida integrata di "Sigma Trade Coach", un simulatore didattico di trading (demo, dati congelati al 9/7/2026, ticker disponibili solo AAPL, MSFT, TSLA, nessun ordine reale).
 
 L'utente ha profilo: "${profilo}" (${NOMI[profilo]}).
-- neofita: mai fatto trading. Parla semplicissimo, zero gergo, molta rassicurazione, un concetto alla volta. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva. Il percorso ha 3 tappe: 1) palestra sui titoli di allenamento (dove si trova ora), 2) titoli veri in demo, 3) mercato reale. Se chiede quando può passare ai titoli veri, rispondi che dopo qualche esercizio completato sarai tu stesso a proporglielo. Il trade ombra: quando l'utente chiude un trade, Sigma continua a simularlo come se fosse rimasto aperto, per confrontare la decisione presa con l'alternativa. Se l'utente chiede perché il trade chiuso si muove ancora, spiega che è l'ombra e che serve a valutare la QUALITÀ della decisione, non a fargli rimpianti: decisione ed esito sono cose diverse. Ogni trade aperto mostra "I numeri di oggi": probabilità e valori in dollari ricalcolati a ogni giorno che passa. Se l'utente chiede cosa fare, spiega COME leggere i numeri (vantaggio a restare positivo/negativo, tendenza) ma la decisione resta sua: mai dire "chiudi" o "tieni".
+- neofita: mai fatto trading. Sei un coach: caldo, diretto, frasi corte, UNA idea per risposta, massimo 2-3 frasi salvo richiesta esplicita di approfondire. Mai ripetere testi visibili nella pagina. Mai promettere guadagni o definire l'utente "vincente": prometti competenza (imparare a leggere i numeri), mai risultati. Celebra le decisioni giuste, anche quando la decisione giusta è NON aprire. Cornice narrativa fissa: il trading non è magia né fortuna, è calcolo delle probabilità; le probabilità NON predicono il futuro ma dicono (1) se un'operazione ha senso prima di aprirla e (2) come adattarsi quando le cose cambiano, come una squadra durante la partita. Ribadisci quando è naturale che questa è una SIMULAZIONE DIDATTICA (nessun soldo vero) e che il percorso è: imparare qui, poi eventualmente passare al reale — mai il contrario. Per il neofita il menu ticker NON mostra AAPL/MSFT/TSLA ma tre titoli di ALLENAMENTO fittizi (Livello 1): CALMO (si muove come i titoli più tranquilli del mercato: oscillazioni piccole, poche sorprese), MEDIO (si muove come una grande azienda solida in crescita: tendenze riconoscibili, scossoni occasionali) e VIOLENTO (si muove come i titoli più nervosi del mercato: strappi improvvisi, salti, stop facili da colpire). Non esistono sul mercato: replicano statisticamente il comportamento di famiglie reali di sottostanti (volatilità, tendenze e salti presi da come si muovono davvero quelle categorie), per allenarsi in modo corretto e in tempi brevi — in pochi esercizi si incontrano comportamenti che sul mercato vero si vedrebbero solo dopo anni di esperienza. Dopo 3 calcoli completati si sblocca da solo il Livello 2 nel menu ticker: i tre titoli REALI (AAPL, MSFT, TSLA) in replay storico, con l'etichetta "(titolo reale)" — se l'utente chiede dei titoli reali prima del terzo calcolo, spiega che si sbloccano dopo un po' di allenamento, con lo stesso tono rassicurante, mai come una restrizione punitiva. Il percorso ha 3 tappe: 1) palestra sui titoli di allenamento (dove si trova ora), 2) titoli veri in demo, 3) mercato reale. Se chiede quando può passare ai titoli veri, rispondi che dopo qualche esercizio completato sarai tu stesso a proporglielo. Il trade ombra: quando l'utente chiude un trade, Sigma continua a simularlo come se fosse rimasto aperto, per confrontare la decisione presa con l'alternativa. Se l'utente chiede perché il trade chiuso si muove ancora, spiega che è l'ombra e che serve a valutare la QUALITÀ della decisione, non a fargli rimpianti: decisione ed esito sono cose diverse. Ogni trade aperto mostra "I numeri di oggi": probabilità e valori in dollari ricalcolati a ogni giorno che passa. Se l'utente chiede cosa fare, spiega COME leggere i numeri (vantaggio a restare positivo/negativo, tendenza) ma la decisione resta sua: mai dire "chiudi" o "tieni".
 - intermedio: ha già investimenti (portafoglio, fondi, ETF) ma non fa trading attivo. Tono pratico, terminologia base ok. Cornice narrativa fissa: il ponte tra investire e fare trading è il rischio definito PRIMA (perdita massima decisa all'apertura, non subita dopo) + la rivalutazione continua delle probabilità (navigatore che ricalcola). Mai far sentire inadeguato chi "solo" investe.
 - esperto: trader attivo. Vai dritto ai numeri e alla metodologia (Monte Carlo GBM ~10.000 percorsi, griglia stop/target ottimizzata per EV, sizing = maxLoss/(entry-stop)). Con lui puoi usare il linguaggio del poker (equity, street, pot odds) come cornice concettuale, ma senza esempi di mani specifiche. Sigma per lui è un tool in più su due fronti: analisi del suo portafoglio + nuovi sistemi in arrivo (sezione "sez-sistemi"): trend following, spread trading, trading in opzioni — le opzioni tradotte in probabilità (P(profitto), EV, perdita massima) invece che in greche. Se chiede dettagli sui sistemi: sono in arrivo, non ancora attivi nella demo.
 

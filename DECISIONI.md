@@ -56,8 +56,16 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
 ## Guscio / UI
 - Verdetti in 3 registri linguistici per profilo; per il neofita output
   in euro e frasi semplici ("in X casi su 10"), mai percentuali nude.
-- Neofita: banner SIMULAZIONE DIDATTICA + replay animato delle 100 vite
-  + spiegazione scandita dell'assistente dopo ogni calcolo.
+- Neofita: banner SIMULAZIONE DIDATTICA + replay animato delle 100 vite.
+- Coach neofita (task 15/7): parla poco, solo nei momenti giusti - mai
+  ripete quello che la pagina già mostra. Bolle automatiche consentite:
+  benvenuto (1 bolla), commento a fine replay dopo Calcola (1 bolla,
+  condizionata all'esito: approva o boccia), conferma dopo l'apertura in
+  demo (1 bolla "Aperto..."), più cambio di segno del vantaggio a
+  restare, sbarramento/sblocco Livello 2 (già esistenti). Silenziati per
+  il neofita: annuncio di cambio profilo, messaggi di chiusura trade
+  (il verdetto dell'ombra resta comunque visibile sulla riga del trade).
+  Intermedio/esperto invariati su tutti questi punti.
 - Assistente: azioni JSON (evidenzia sezione, cambia_profilo); analogie:
   calcio per neofita, navigatore per intermedio, poker SOLO per esperto
   e senza mani specifiche.
