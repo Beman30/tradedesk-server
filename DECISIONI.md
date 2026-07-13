@@ -95,3 +95,15 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
   rimossi, tappa 2 del mini-percorso evidenziata, messaggio di completamento
   dell'assistente, evento GA4 livello_sbloccato (parte solo se consenso
   analytics già dato, stesso meccanismo di consenso degli altri eventi).
+- Bug fix (16/7): il criterio "buono/cattivo" (colore KPI, verdetto,
+  bolla del coach) era `evAtteso > .2` invece di `evAtteso > 0` — un
+  trade a EV positiva ma con evAtteso frazionario ≤20% del rischio
+  veniva bocciato solo perché la probabilità era mediocre, l'esatto
+  contrario della filosofia del sito (conta l'EV, non il win rate).
+  Criterio unico ora ovunque: approvato ⇔ evAtteso > 0, mai soglie
+  sulla probabilità. Per il neofita il verdetto e la bolla, quando
+  EV>0 ma probabilità <60%, spiegano esplicitamente l'asimmetria
+  (vince meno spesso ma guadagna di più quando vince) invece di
+  lamentare il win rate. Essendo `buono` condiviso da tutti i profili,
+  la correzione vale anche per intermedio/esperto (stessi identici
+  testi di prima, solo la classificazione ora corretta).
