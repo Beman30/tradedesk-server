@@ -61,11 +61,23 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
   ripete quello che la pagina già mostra. Bolle automatiche consentite:
   benvenuto (1 bolla), commento a fine replay dopo Calcola (1 bolla,
   condizionata all'esito: approva o boccia), conferma dopo l'apertura in
-  demo (1 bolla "Aperto..."), più cambio di segno del vantaggio a
-  restare, sbarramento/sblocco Livello 2 (già esistenti). Silenziati per
-  il neofita: annuncio di cambio profilo, messaggi di chiusura trade
-  (il verdetto dell'ombra resta comunque visibile sulla riga del trade).
-  Intermedio/esperto invariati su tutti questi punti.
+  demo (1 bolla "Aperto..."), bolla del terzo giorno (task 17/7, sotto),
+  più cambio di segno del vantaggio a restare, sbarramento/sblocco
+  Livello 2 (già esistenti) — massimo 5 bolle automatiche per sessione.
+  Silenziati per il neofita: annuncio di cambio profilo, messaggi di
+  chiusura trade (il verdetto dell'ombra resta comunque visibile sulla
+  riga del trade). Intermedio/esperto invariati su tutti questi punti.
+- Bolla del terzo giorno (task 17/7): al terzo click su Aggiorna con
+  almeno un trade di allenamento aperto, UNA SOLA VOLTA per sessione, il
+  coach mostra il confronto ieri/oggi della probabilità (probMeglioDiOra)
+  sul trade aperto più vecchio - la lezione che le probabilità cambiano
+  ogni giorno e che nessuno, nemmeno il coach, sa come andrà a finire.
+  sigma_sessione (prima solo il seed come stringa, ora un oggetto
+  {seed, aggiornamentiVisti, bollaTerzoGiornoVista} - retrocompatibile
+  con le sessioni vecchie) traccia il conteggio e se la bolla è già
+  stata vista in questa sessione. Torna in una sessione nuova SOLO se
+  sigma_journal non ha ancora nessuna decisione giudicata: chi ha già
+  visto l'ombra all'opera non ne ha bisogno.
 - Assistente: azioni JSON (evidenzia sezione, cambia_profilo); analogie:
   calcio per neofita, navigatore per intermedio, poker SOLO per esperto
   e senza mani specifiche.

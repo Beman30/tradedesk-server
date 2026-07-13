@@ -1309,6 +1309,24 @@ const CHIAVE_SESSIONE = 'sigma_sessione';
 const CHIAVE_CLOCK = 'sigma_demo_clock';
 const CHIAVE_JOURNAL = 'sigma_journal';
 const GIORNI_EXTRA_SESSIONE = 120;
+// leggiSessione/salvaSessione (task 17/7): sigma_sessione conteneva SOLO il
+// seed come stringa; ora e' un oggetto {seed, aggiornamentiVisti,
+// bollaTerzoGiornoVista} per poter contare i click su Aggiorna e ricordare
+// se la bolla del terzo giorno e' gia' stata mostrata in questa sessione.
+// Retrocompatibile: se in localStorage c'e' ancora la vecchia stringa nuda,
+// diventa il seed del nuovo oggetto (nessuna sessione persa).
+function leggiSessione(){
+  const raw = localStorage.getItem(CHIAVE_SESSIONE);
+  if(!raw) return null;
+  try{
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object' && parsed.seed) return parsed;
+  }catch(e){}
+  return { seed: raw, aggiornamentiVisti: 0, bollaTerzoGiornoVista: false };
+}
+function salvaSessione(s){
+  try{ localStorage.setItem(CHIAVE_SESSIONE, JSON.stringify(s)); }catch(e){}
+}
 const PERCORSI_LIVE_DEMO = 2000; // Motore 2: percorsi Monte Carlo ridotti SOLO
 // per il ricalcolo live di valutaTradeAperto ad ogni Aggiorna nel conto demo
 // del neofita (misurato: 3 trade aperti a 10k percorsi ~350ms, a 2k ~70ms).
@@ -1416,16 +1434,16 @@ function giornoStoricoIniziale(){
   return SigmaEngines._internals.DEMO_DATA.CALMO.close.length - 1;
 }
 function assicuraSessioneAllenamento(){
-  let seed = localStorage.getItem(CHIAVE_SESSIONE);
-  if(!seed){
-    seed = 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9);
-    localStorage.setItem(CHIAVE_SESSIONE, seed);
+  let sessione = leggiSessione();
+  if(!sessione){
+    sessione = { seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false };
     localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
   }
+  salvaSessione(sessione); // scrive sempre nel formato oggetto (anche in caso di migrazione dalla vecchia stringa)
   TICKER_ALLENAMENTO.forEach(([tk])=>{
     if(!serieSessione[tk]){
       const storica = SigmaEngines._internals.DEMO_DATA[tk].close;
-      const estesa = SigmaEngines.estendiSerie({ ticker: tk, seedSessione: seed, giorniExtra: GIORNI_EXTRA_SESSIONE });
+      const estesa = SigmaEngines.estendiSerie({ ticker: tk, seedSessione: sessione.seed, giorniExtra: GIORNI_EXTRA_SESSIONE });
       serieSessione[tk] = storica.concat(estesa);
     }
   });
@@ -1590,6 +1608,36 @@ function avanzaGiornoDemo(){
   const cambiSegno = aggiornaNumeriTradeAperti(clock);
   renderConto();
   segnalaCambiSegno(cambiSegno);
+  verificaBollaTerzoGiorno();
+}
+// verificaBollaTerzoGiorno (task 17/7): al terzo Aggiorna con almeno un
+// trade di allenamento aperto, UNA SOLA VOLTA per sessione, il coach mostra
+// il confronto ieri/oggi della probabilita' sul trade aperto piu' vecchio -
+// la lezione che le probabilita' cambiano ogni giorno e che nessuno (nemmeno
+// il coach) sa come andra' a finire. Non si ripete nella stessa sessione
+// (sigma_sessione.bollaTerzoGiornoVista); torna in una sessione nuova SOLO
+// se l'utente non ha ancora nessuna decisione giudicata in sigma_journal -
+// chi ha gia' visto l'ombra all'opera non ne ha bisogno.
+function verificaBollaTerzoGiorno(){
+  const sessione = leggiSessione();
+  if(!sessione || sessione.bollaTerzoGiornoVista) return;
+  if(leggiGiornale().length > 0) return;
+  const aperti = leggiConto().filter(rec => isTickerAllenamento(rec.ticker) && !rec.chiuso);
+  if(!aperti.length) return;
+  sessione.aggiornamentiVisti = (sessione.aggiornamentiVisti || 0) + 1;
+  if(sessione.aggiornamentiVisti !== 3){
+    salvaSessione(sessione);
+    return;
+  }
+  const candidati = aperti.filter(rec => rec.numeriOggi).sort((a,b)=> a.ts - b.ts);
+  if(!candidati.length){ salvaSessione(sessione); return; }
+  const rec = candidati[0];
+  const su10 = v => Math.max(0, Math.min(10, Math.round(v*10)));
+  const probOggi = su10(rec.numeriOggi.probMeglioDiOra);
+  const probIeri = rec.numeriIeri ? su10(rec.numeriIeri.probMeglioDiOra) : probOggi;
+  sessione.bollaTerzoGiornoVista = true;
+  salvaSessione(sessione);
+  agenteDì("Hai visto? "+rec.ticker+" era "+probIeri+" su 10, oggi è "+probOggi+" su 10: le probabilità cambiano ogni giorno, e nessuno può dirti come andrà a finire — nemmeno io. Per questo quando chiuderai il trade non finirà lì: continueremo a seguirlo insieme, e scoprirai se chiudere è stata la mossa giusta.");
 }
 function nuovaSessioneAllenamento(){
   assicuraSessioneAllenamento();
@@ -1616,8 +1664,7 @@ function nuovaSessioneAllenamento(){
   });
   salvaConto(c);
 
-  const nuovoSeed = 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9);
-  localStorage.setItem(CHIAVE_SESSIONE, nuovoSeed);
+  salvaSessione({ seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false });
   localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
   serieSessione = {};
   assicuraSessioneAllenamento();
