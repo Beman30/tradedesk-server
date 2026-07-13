@@ -182,6 +182,13 @@ body[data-profilo="esperto"] .esperto-extra{display:block}
 .step p{font-size:.88rem;color:var(--ink2);line-height:1.55}
 .vuoto{color:var(--ink2);font-size:.9rem;background:var(--fog);border-radius:10px;padding:18px;text-align:center}
 
+/* riquadro conto demo (solo neofita): pulsante Aggiorna + countdown nello
+   stesso box della lista trade, non sopra - intermedio/esperto invariati
+   (stesso div#demo-lista, ma senza il bordo extra: vedi scoping sotto) */
+body[data-profilo="neofita"] .conto-box{border:1px solid var(--line);border-radius:12px;background:var(--fog);padding:14px;margin-bottom:14px}
+.conto-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.conto-toolbar .countdown{font-size:.82rem;color:var(--ink2)}
+
 /* idea chiave: probabilità che si aggiornano */
 .stadi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
 @media (max-width:640px){.stadi{grid-template-columns:1fr}}
@@ -578,15 +585,18 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
     <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi Aggiorna.</p>
     <p data-solo="neofita" id="pd-ombra-full">E c'è una cosa che nessun altro ti fa vedere: quando chiudi un trade, per noi non è finita. Sigma continua a seguirlo come se non lo avessi mai chiuso — è il suo trade ombra. Così scopri se chiudere è stata la decisione giusta o se ti sei fatto prendere dalla fretta. Nel trading non basta sapere come è andata: bisogna capire come sarebbe andata.</p>
     <p class="pd-breve" data-solo="neofita" id="pd-ombra-breve" style="display:none">Anche dopo la chiusura, Sigma continua a seguire il trade per giudicare la tua decisione (trade ombra). <a href="#" onclick="riespandiIntro('pd-ombra-full','pd-ombra-breve');return false;">spiegami di nuovo</a></p>
-    <div data-solo="neofita" style="margin-bottom:14px">
-      <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+    <div class="conto-box">
+      <div class="conto-toolbar" data-solo="neofita">
+        <span class="countdown" id="countdown-sessione"></span>
+        <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+      </div>
+      <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
+        <p class="verdetto">sessione di allenamento completata — inizia una nuova sessione</p>
+        <button class="cta-secondaria" onclick="nuovaSessioneAllenamento()">Nuova sessione</button>
+      </div>
+      <div id="demo-lista"></div>
+      <p class="vuoto" id="demo-vuoto">Nessun trade demo ancora. Analizza un'operazione qui sopra e premi "Apri in DEMO": comparirà qui, viva.</p>
     </div>
-    <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
-      <p class="verdetto">sessione di allenamento completata — inizia una nuova sessione</p>
-      <button class="cta-secondaria" onclick="nuovaSessioneAllenamento()">Nuova sessione</button>
-    </div>
-    <div id="demo-lista"></div>
-    <p class="vuoto" id="demo-vuoto">Nessun trade demo ancora. Analizza un'operazione qui sopra e premi "Apri in DEMO": comparirà qui, viva.</p>
   </section>
 </main>
 
@@ -1512,10 +1522,13 @@ function aggiornaOmbreEGiudizi(){
 function verificaFineSessione(){
   const el = document.getElementById('sessione-conclusa');
   const btn = document.getElementById('btn-aggiorna-giorno');
+  const cd = document.getElementById('countdown-sessione');
   if(!el) return;
-  const finita = clockCorrente() >= indiceMassimoSessione();
+  const rimasti = indiceMassimoSessione() - clockCorrente();
+  const finita = rimasti <= 0;
   el.style.display = finita ? 'block' : 'none';
   if(btn) btn.disabled = finita;
+  if(cd) cd.textContent = finita ? '' : ('ancora ' + rimasti + ' gg al termine della simulazione');
 }
 function avanzaGiornoDemo(){
   assicuraSessioneAllenamento();
