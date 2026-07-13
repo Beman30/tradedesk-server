@@ -1750,6 +1750,7 @@ async function inviaAgente(){
   const testo = input.value.trim();
   if(!testo) return;
   input.value = '';
+  input.blur(); // chiude la tastiera su mobile: pannello+tastiera insieme coprivano tutto lo schermo
   bolla('io', testo);
   storia.push({role:'user', content: testo});
   const pensa = bolla('pensa', 'Sigma sta pensando…');
