@@ -1,0 +1,16 @@
+# Configurazione Cloudflare Worker per il coach Sigma.
+# Vedi README.md per i passi di deploy in ordine.
+
+name = "sigma-coach-worker"
+main = "sigma-coach-worker.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+# Origine consentita per le chiamate CORS al Worker (dominio dove gira
+# sigma-adaptive.html). Non e' un segreto: modificalo qui e rilancia
+# "wrangler deploy" se cambia dominio.
+ALLOWED_ORIGIN = "https://beman30.github.io"
+
+# ANTHROPIC_API_KEY e LOG_WEBHOOK NON vanno qui: sono secret, si impostano
+# con "wrangler secret put <NOME>" (vedi README.md) e non finiscono mai nel
+# repository.

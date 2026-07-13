@@ -119,3 +119,11 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
   lamentare il win rate. Essendo `buono` condiviso da tutti i profili,
   la correzione vale anche per intermedio/esperto (stessi identici
   testi di prima, solo la classificazione ora corretta).
+## Infrastruttura
+- Coach AI: browser → Cloudflare Worker (/coach) → API Anthropic, Haiku,
+  system prompt lato server, CORS ristretto, rate limit 20 req/10min per
+  IP, chiave solo come secret. Registro anonimo domande/risposte su
+  Google Sheet via webhook, asincrono e mai bloccante, IP mai salvato in
+  chiaro (solo hash troncato di IP+giorno). Codice in worker/ (vedi
+  worker/README.md per il deploy); COACH_ENDPOINT in sigma-adaptive.html
+  è un placeholder finché il Worker non è distribuito.
