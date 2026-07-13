@@ -395,7 +395,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
       <div class="stadio"><b>3. Mercato reale</b></div>
     </div>
     <p class="lead" data-solo="neofita" id="pd-titoli-full">Questi non sono titoli veri: sono titoli di allenamento, costruiti per muoversi come le vere famiglie di azioni del mercato — da quelle tranquille a quelle più nervose. Qui prendi confidenza con il metodo in pochi esercizi, senza rischiare nulla. Quando sarai pronto, passerai ai titoli veri in demo, e solo alla fine al mercato reale.</p>
-    <p class="lead pd-breve" data-solo="neofita" id="pd-titoli-breve" style="display:none">Titoli di allenamento, non reali: imparerai coi titoli veri più avanti. <a href="#" onclick="riespandiIntro('pd-titoli-full','pd-titoli-breve');return false;">spiegami di nuovo</a></p>
+    <p class="lead pd-breve" data-solo="neofita" id="pd-titoli-breve" style="display:none">Titoli di allenamento, non reali: imparerai con i titoli veri più avanti. <a href="#" onclick="riespandiIntro('pd-titoli-full','pd-titoli-breve');return false;">spiegami di nuovo</a></p>
     <p class="lead" data-solo="intermedio">Il motore simula ~10.000 trade con le stesse caratteristiche del tuo e ti restituisce una base statistica su cui decidere.</p>
     <p class="lead" data-solo="esperto">Monte Carlo GBM, ~10.000 percorsi, repricing Black-Scholes. Dati demo congelati al 9/7/2026.</p>
     <div data-solo="intermedio esperto">
@@ -588,9 +588,10 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
   <section class="blocco" id="sez-storico">
     <div class="eyebrow">Conto demo</div>
     <h2>I tuoi trade demo</h2>
-    <p class="lead">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
+    <p class="lead" data-solo="intermedio esperto">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
+    <p class="lead" data-solo="neofita">Torna tra qualche ora o clicca Aggiorna: vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
     <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi Aggiorna.</p>
-    <p data-solo="neofita" id="pd-ombra-full">E c'è una cosa che nessun altro ti fa vedere: quando chiudi un trade, per noi non è finita. Sigma continua a seguirlo come se non lo avessi mai chiuso — è il suo trade ombra. Così scopri se chiudere è stata la decisione giusta o se ti sei fatto prendere dalla fretta. Nel trading non basta sapere come è andata: bisogna capire come sarebbe andata.</p>
+    <p data-solo="neofita" id="pd-ombra-full">Solo Sigma ti mostra il trade anche da chiuso: questo per capire se hai fatto la scelta giusta. Nel tempo imparerai dai tuoi trade passati a capire sempre meglio il tuo modo di fare trading.</p>
     <p class="pd-breve" data-solo="neofita" id="pd-ombra-breve" style="display:none">Anche dopo la chiusura, Sigma continua a seguire il trade per giudicare la tua decisione (trade ombra). <a href="#" onclick="riespandiIntro('pd-ombra-full','pd-ombra-breve');return false;">spiegami di nuovo</a></p>
     <div class="conto-box">
       <div class="conto-toolbar" data-solo="neofita">
@@ -991,7 +992,7 @@ function commentoEsitoCalcolo(d, ev, buono){
   apriAgente();
   const probabilita = Math.round(d.prob*100);
   const testo = buono
-    ? "I numeri sono dalla tua parte: guadagno atteso "+ev+"$. Nota bene: vinci "+probabilita+" volte su 100 — non è la percentuale che conta, è che quando vinci prendi più di quanto perdi quando perdi. Ora premi 'Apri questo trade in demo' e guardalo vivere."
+    ? "I numeri sono dalla tua parte: guadagno atteso "+ev+"$. Nota bene: vinci "+probabilita+" volte su 100 — non è la percentuale che conta, è che quando vinci guadagni più di quanto perdi. Ora premi 'Apri questo trade in demo' e guardalo vivere."
     : "Qui i numeri sono contro: in media questo trade perde "+Math.abs(ev)+"$, anche se può vincere "+probabilita+" volte su 100. Hai appena imparato la cosa più preziosa: non tutti i trade vanno aperti. Prova un altro titolo o cambia la perdita massima.";
   bolla('ai', testo);
 }
