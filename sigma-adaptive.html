@@ -234,6 +234,11 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
   background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(16,35,58,.3);
   display:none;flex-direction:column;max-height:min(560px,78vh);overflow:hidden
 }
+/* Su mobile il pannello non deve coprire quasi tutto lo schermo: resta
+   comunque un input+risposta visibile, solo meno invasivo (task 19/7). */
+@media (max-width:640px){
+  #agente{right:10px;bottom:10px;max-height:min(420px,52vh)}
+}
 #agente.aperto{display:flex}
 #agente header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--ink);color:#fff}
 #agente header b{font-family:'Archivo',sans-serif;letter-spacing:.18em;font-size:.85rem}
