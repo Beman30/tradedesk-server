@@ -100,6 +100,8 @@ button{font-family:inherit;cursor:pointer}
 }
 .campo select:focus,.campo input:focus{outline:2px solid var(--ink);outline-offset:1px}
 .aiuto{font-size:.8rem;color:var(--ink2);line-height:1.5;margin-bottom:16px}
+.riga-fissa{background:var(--fog);border-radius:8px;padding:8px 10px;border:1.5px solid transparent}
+.riga-fissa.lampeggia{border-color:var(--amber);transition:border-color .3s}
 .cta{
   background:var(--green);color:#fff;border:none;border-radius:10px;padding:13px 26px;
   font-size:.95rem;font-weight:700;letter-spacing:.02em
@@ -229,6 +231,14 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
 #agente-btn.mostra{display:flex}
 #agente-btn .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);animation:pulsa 2.4s infinite}
 @keyframes pulsa{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
+/* Notifica discreta del coach (task 19/7): il pannello non si apre mai da
+   solo, questa e' l'anteprima compatta che appare vicino al pulsante. */
+#coach-notifica{
+  position:fixed;right:18px;bottom:82px;z-index:55;max-width:min(260px,calc(100vw - 36px));
+  background:var(--ink);color:#fff;padding:10px 14px;border-radius:12px;font-size:.82rem;line-height:1.4;
+  box-shadow:0 12px 30px rgba(16,35,58,.35);display:none;cursor:pointer
+}
+#coach-notifica.mostra{display:block}
 #agente{
   position:fixed;right:18px;bottom:18px;z-index:60;width:min(380px,calc(100vw - 24px));
   background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(16,35,58,.3);
@@ -237,7 +247,7 @@ body[data-profilo="esperto"] [data-solo~="esperto"]{display:block}
 /* Su mobile il pannello non deve coprire quasi tutto lo schermo: resta
    comunque un input+risposta visibile, solo meno invasivo (task 19/7). */
 @media (max-width:640px){
-  #agente{right:10px;bottom:10px;max-height:min(420px,52vh)}
+  #agente{right:10px;bottom:10px;max-height:60vh}
 }
 #agente.aperto{display:flex}
 #agente header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--ink);color:#fff}
@@ -294,6 +304,10 @@ body[data-profilo="neofita"] #sez-builder .cta-demo:hover{filter:brightness(1.06
   border-radius:10px; padding:11px 22px; font-size:.9rem; font-weight:700; letter-spacing:.02em;
 }
 .cta-secondaria:hover{border-color:var(--ink)}
+/* Invito a premere "Fai passare 1 giorno" (task 19/7): pulsa finche' non
+   viene premuto la prima volta con almeno un trade aperto. */
+#btn-aggiorna-giorno.pulsa-invito{animation:pulsaInvito 1.6s ease-in-out infinite}
+@keyframes pulsaInvito{0%,100%{box-shadow:0 0 0 0 rgba(232,160,19,.5)}50%{box-shadow:0 0 0 8px rgba(232,160,19,0)}}
 
 /* "idea chiave" e "come funziona": sempre visibili, nessun accordion (richiesta utente 13/7) */
 
@@ -424,6 +438,8 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
       </div>
     </div>
     <p class="aiuto" data-solo="neofita" id="ticker-personalita"></p>
+    <p class="aiuto riga-fissa" data-solo="neofita">Titoli di allenamento: finti, ma si muovono come il mercato vero. Ti alleni qui, poi sblocchi i titoli reali.</p>
+    <p class="aiuto riga-fissa" data-solo="neofita" id="riga-sblocco-livello2" style="display:none">🔒 AAPL, MSFT e TSLA si sbloccano dopo 3 trade completati — te ne mancano <b id="sblocco-mancanti">3</b>.</p>
     <p class="aiuto" data-solo="neofita" id="pd-perdita-full">La "perdita massima" è la tua rete di sicurezza: la cifra oltre la quale l'operazione si chiude da sola. È il numero più importante di tutti, per questo si parte da qui.</p>
     <p class="aiuto pd-breve" data-solo="neofita" id="pd-perdita-breve" style="display:none">La perdita massima è il numero più importante: oltre quella cifra il trade si chiude da solo. <a href="#" onclick="riespandiIntro('pd-perdita-full','pd-perdita-breve');return false;">spiegami di nuovo</a></p>
     <p class="aiuto" data-solo="intermedio">Quanto sei disposto a perdere al massimo su questa operazione: da qui calcoliamo automaticamente quante azioni comprare.</p>
@@ -589,8 +605,8 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
     <div class="eyebrow">Conto demo</div>
     <h2>I tuoi trade demo</h2>
     <p class="lead" data-solo="intermedio esperto">Tutto simulato, niente soldi veri — ma i prezzi si muovono col tempo: torna tra qualche ora e vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
-    <p class="lead" data-solo="neofita">Torna tra qualche ora o clicca Aggiorna: vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
-    <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi Aggiorna.</p>
+    <p class="lead" data-solo="neofita">Torna tra qualche ora o premi ▶: vedrai i tuoi trade evolversi, con probabilità e P&L aggiornati.</p>
+    <p class="lead" data-solo="neofita">Qui il tempo lo comandi tu: in palestra il tempo passa un giorno alla volta, solo quando premi ▶.</p>
     <p data-solo="neofita" id="pd-ombra-full">Solo Sigma ti mostra il trade anche da chiuso: questo per capire se hai fatto la scelta giusta. Nel tempo imparerai dai tuoi trade passati a capire sempre meglio il tuo modo di fare trading.</p>
     <p class="pd-breve" data-solo="neofita" id="pd-ombra-breve" style="display:none">Anche dopo la chiusura, Sigma continua a seguire il trade per giudicare la tua decisione (trade ombra). <a href="#" onclick="riespandiIntro('pd-ombra-full','pd-ombra-breve');return false;">spiegami di nuovo</a></p>
     <div class="conto-box">
@@ -598,7 +614,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
         <span class="countdown" id="countdown-sessione"></span>
         <div class="conto-azioni">
           <button class="cta-secondaria" id="btn-cancella-conclusi" onclick="cancellaTradeConclusi()">Cancella trade conclusi</button>
-          <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">Aggiorna (passa al giorno successivo)</button>
+          <button class="cta-secondaria" id="btn-aggiorna-giorno" onclick="avanzaGiornoDemo()">▶ Fai passare 1 giorno</button>
         </div>
       </div>
       <div id="sessione-conclusa" data-solo="neofita" style="display:none;margin-bottom:14px">
@@ -612,6 +628,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
 </main>
 
 <!-- ============ AGENTE ============ -->
+<div id="coach-notifica" onclick="nascondiNotificaCoach()"></div>
 <button id="agente-btn" onclick="apriAgente()"><span class="dot"></span> Assistente Sigma</button>
 <div id="agente" role="dialog" aria-label="Assistente Sigma">
   <header><b><i>Σ</i> ASSISTENTE</b><button onclick="chiudiAgente()" aria-label="Chiudi">×</button></header>
@@ -689,27 +706,45 @@ function popolaSelectTicker(){
   sel.innerHTML = html;
   tickerPrecedente = sel.value;
   aggiornaPersonalitaTicker();
+  aggiornaRigaSblocco();
+}
+// aggiornaRigaSblocco (task 19/7): la riga "🔒 AAPL, MSFT e TSLA si
+// sbloccano..." vive SEMPRE in pagina (mai solo in chat), visibile solo
+// finche' il Livello 2 e' bloccato; il contatore si aggiorna ad ogni
+// giudizio (vedi registraDecisioneGiudicata).
+function aggiornaRigaSblocco(){
+  const riga = document.getElementById('riga-sblocco-livello2');
+  if(!riga) return;
+  const sbloccato = livelloSbloccato();
+  riga.style.display = sbloccato ? 'none' : '';
+  if(!sbloccato){
+    const mancantiEl = document.getElementById('sblocco-mancanti');
+    if(mancantiEl) mancantiEl.textContent = Math.max(0, 3 - leggiGiornale().length);
+  }
 }
 // onCambioTicker - il select disabilita gia' le option dei titoli reali
 // bloccati; questa e' una difesa in piu' nel caso il valore selezionato
 // risulti comunque un ticker reale non sbloccato (es. assegnazione diretta
 // di sel.value, che nei browser bypassa "disabled"): riporta la selezione
-// al ticker precedente e mostra lo sbarramento invece di procedere.
+// al ticker precedente. Niente chat (task 19/7): solo un lampeggio sulla
+// riga di sblocco gia' visibile in pagina.
 function onCambioTicker(){
   const sel = document.getElementById('ticker');
   const isReale = TICKER_REALI.some(([t])=>t===sel.value);
   if(profilo === 'neofita' && isReale && !livelloSbloccato()){
     sel.value = tickerPrecedente || TICKER_ALLENAMENTO[0][0];
-    mostraSbarramentoLivello2();
+    lampeggiaRigaSblocco();
     aggiornaPersonalitaTicker();
     return;
   }
   tickerPrecedente = sel.value;
   aggiornaPersonalitaTicker();
 }
-function mostraSbarramentoLivello2(){
-  const n = Math.max(0, 3 - leggiGiornale().length);
-  agenteDì("I titoli veri si sbloccano completando l'allenamento di base: apri 3 trade in palestra e portali fino al giudizio finale (chiusura + verdetto dell'ombra). Te ne mancano "+n+". Non è un pedaggio: è per farti arrivare sui titoli reali già capace di leggere i numeri.");
+function lampeggiaRigaSblocco(){
+  const riga = document.getElementById('riga-sblocco-livello2');
+  if(!riga) return;
+  riga.classList.add('lampeggia');
+  setTimeout(()=>riga.classList.remove('lampeggia'), 2000);
 }
 // mini-percorso 3 tappe (sez-builder): tappa 1 evidenziata finche' il
 // Livello 2 non e' sbloccato, poi passa alla tappa 2 (task 14/7).
@@ -989,12 +1024,11 @@ function avviaReplay(percorsiCampione, fine){
 // spiegaDemo (troppo didattiche, ripetevano quello che il replay/r-verdetto
 // già mostrano a schermo).
 function commentoEsitoCalcolo(d, ev, buono){
-  apriAgente();
   const probabilita = Math.round(d.prob*100);
   const testo = buono
     ? "I numeri sono dalla tua parte: guadagno atteso "+ev+"$. Nota bene: vinci "+probabilita+" volte su 100 — non è la percentuale che conta, è che quando vinci guadagni più di quanto perdi. Ora premi 'Apri questo trade in demo' e guardalo vivere."
     : "Qui i numeri sono contro: in media questo trade perde "+Math.abs(ev)+"$, anche se può vincere "+probabilita+" volte su 100. Hai appena imparato la cosa più preziosa: non tutti i trade vanno aperti. Prova un altro titolo o cambia la perdita massima.";
-  bolla('ai', testo);
+  agenteDì(testo);
 }
 
 /* ================= MODALITÀ E VALUTAZIONE POSIZIONE ================= */
@@ -1162,6 +1196,7 @@ function apriInDemo(tipo){
     // percorsi pieni (default MC_PATHS=10k) - non e' il ricalcolo live ripetuto
     // di Aggiorna, quindi nessun override di percorsiMC qui.
     aggiornaNumeriTrade(nuovoRec, nuovoRec.indiceApertura, false);
+    avviaTimerMercatoFermo();
   }
   c.unshift(nuovoRec);
   salvaConto(c);
@@ -1171,7 +1206,7 @@ function apriInDemo(tipo){
   const el = document.getElementById('sez-storico');
   el.classList.add('hi'); setTimeout(()=>el.classList.remove('hi'), 2600);
   if(profilo === 'neofita'){
-    agenteDì("Aperto. Da adesso comanda il tempo: premi Aggiorna e guarda i numeri cambiare. Io sono qui.");
+    agenteDì("Aperto. Da adesso comanda il tempo: premi ▶ e guarda i numeri cambiare. Io sono qui.");
   } else {
     agenteDì("Fatto: il trade su "+rec.ticker+" è nel tuo conto demo — vivo, ma senza un euro vero in ballo. I prezzi demo si muovono col tempo: torna tra qualche ora e ti dico come sta andando e cosa faresti al posto suo un trader esperto.");
   }
@@ -1260,7 +1295,50 @@ function renderConto(){
       + oriz
       + '</div>';
   }).join('');
-  if(profilo === 'neofita' && serieSessione.CALMO) verificaFineSessione();
+  if(profilo === 'neofita' && serieSessione.CALMO){
+    verificaFineSessione();
+    aggiornaPulsazioneAggiorna();
+  }
+}
+// aggiornaPulsazioneAggiorna (task 19/7): il pulsante "Fai passare 1
+// giorno" pulsa finche' l'utente non l'ha mai premuto in questa sessione
+// E c'e' almeno un trade di allenamento aperto - il tempo deve essere
+// ovviamente "manuale", non qualcosa che si aspetta passivamente.
+function aggiornaPulsazioneAggiorna(){
+  const btn = document.getElementById('btn-aggiorna-giorno');
+  if(!btn) return;
+  const sessione = leggiSessione();
+  const maiPremuto = !(sessione && sessione.primoAggiornaFatto);
+  const cAperti = leggiConto().some(r => isTickerAllenamento(r.ticker) && !r.chiuso);
+  btn.classList.toggle('pulsa-invito', maiPremuto && cAperti);
+}
+// rigaPrimoAggiornaHTML (task 19/7): sotto ogni trade di allenamento
+// ancora aperto, finche' l'utente non ha mai premuto "Fai passare 1
+// giorno" in questa sessione - rende ovvio che il tempo e' manuale.
+function rigaPrimoAggiornaHTML(){
+  const sessione = leggiSessione();
+  if(sessione && !sessione.primoAggiornaFatto){
+    return '<p class="aiuto">Qui non si aspetta: il tempo passa solo quando premi ▶. Prova ora.</p>';
+  }
+  return '';
+}
+// avviaTimerMercatoFermo (task 19/7): 30 secondi reali dopo l'apertura di
+// un trade di allenamento, se l'utente non ha ancora premuto ▶ nemmeno una
+// volta, notifica discreta (mai apertura forzata del pannello, vedi
+// agenteDì). Ricontrolla le condizioni al momento dello scatto: se nel
+// frattempo l'utente ha gia' premuto o non ci sono piu' trade aperti, non
+// dice nulla.
+let timerMercatoFermo = null;
+function avviaTimerMercatoFermo(){
+  clearTimeout(timerMercatoFermo);
+  timerMercatoFermo = setTimeout(()=>{
+    const sessione = leggiSessione();
+    const maiPremuto = !(sessione && sessione.primoAggiornaFatto);
+    const cAperti = leggiConto().some(r => isTickerAllenamento(r.ticker) && !r.chiuso);
+    if(maiPremuto && cAperti){
+      agenteDì('Il mercato è fermo finché non premi ▶');
+    }
+  }, 30000);
 }
 function chiudiDemo(id){
   const c = leggiConto();
@@ -1337,7 +1415,7 @@ function leggiSessione(){
     const parsed = JSON.parse(raw);
     if(parsed && typeof parsed === 'object' && parsed.seed) return parsed;
   }catch(e){}
-  return { seed: raw, aggiornamentiVisti: 0, bollaTerzoGiornoVista: false };
+  return { seed: raw, aggiornamentiVisti: 0, bollaTerzoGiornoVista: false, primoAggiornaFatto: false };
 }
 function salvaSessione(s){
   try{ localStorage.setItem(CHIAVE_SESSIONE, JSON.stringify(s)); }catch(e){}
@@ -1451,7 +1529,7 @@ function giornoStoricoIniziale(){
 function assicuraSessioneAllenamento(){
   let sessione = leggiSessione();
   if(!sessione){
-    sessione = { seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false };
+    sessione = { seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false, primoAggiornaFatto: false };
     localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
   }
   salvaSessione(sessione); // scrive sempre nel formato oggetto (anche in caso di migrazione dalla vecchia stringa)
@@ -1526,6 +1604,7 @@ function renderRigaAllenamento(rec, etichette){
     + '<div class="num"><span class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+(pnl>=0?'+':'')+pnl.toFixed(0)+' $</span><small>prezzo demo '+cur.prezzo.toFixed(2)+'</small></div>'
     + (finita ? '' : '<button class="chiudi" onclick="chiudiDemo('+rec.id+')">Chiudi</button>')
     + (finita ? '' : numeriOggiHTML(rec))
+    + (finita ? '' : rigaPrimoAggiornaHTML())
     + '</div>';
 }
 function costruisciGiudizio(rec, pnlOmbra){
@@ -1567,6 +1646,7 @@ function registraDecisioneGiudicata(rec, giudizio){
   const eraSbloccato = livelloSbloccato();
   salvaGiornale(costruisciVoceGiornale(rec, giudizio));
   localStorage.setItem(CHIAVE_PROGRESSO, String(leggiGiornale().length));
+  aggiornaRigaSblocco();
   if(!eraSbloccato && livelloSbloccato()) sbloccaLivello2();
 }
 function sbloccaLivello2(){
@@ -1612,6 +1692,15 @@ function verificaFineSessione(){
 }
 function avanzaGiornoDemo(){
   assicuraSessioneAllenamento();
+  // Task 19/7: primo click su "Fai passare 1 giorno" in questa sessione -
+  // il pulsante smette di pulsare e la riga "qui non si aspetta" sparisce
+  // dai trade aperti (rigaPrimoAggiornaHTML/aggiornaPulsazioneAggiorna la
+  // rileggono ad ogni render tramite questo flag).
+  const sessioneCorrente = leggiSessione();
+  if(sessioneCorrente && !sessioneCorrente.primoAggiornaFatto){
+    sessioneCorrente.primoAggiornaFatto = true;
+    salvaSessione(sessioneCorrente);
+  }
   const max = indiceMassimoSessione();
   let clock = clockCorrente();
   if(clock < max) clock++;
@@ -1679,7 +1768,7 @@ function nuovaSessioneAllenamento(){
   });
   salvaConto(c);
 
-  salvaSessione({ seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false });
+  salvaSessione({ seed: 'sess-' + Date.now() + '-' + Math.floor(Math.random()*1e9), aggiornamentiVisti: 0, bollaTerzoGiornoVista: false, primoAggiornaFatto: false });
   localStorage.setItem(CHIAVE_CLOCK, String(giornoStoricoIniziale()));
   serieSessione = {};
   assicuraSessioneAllenamento();
@@ -1691,18 +1780,40 @@ function nuovaSessioneAllenamento(){
 let storia = [];
 let occupato = false;
 
-function apriAgente(){
+function apriAgente(senzaFocus){
   document.getElementById('agente').classList.add('aperto');
   document.getElementById('agente-btn').classList.remove('mostra');
-  document.getElementById('agente-input').focus();
+  nascondiNotificaCoach();
+  if(!senzaFocus) document.getElementById('agente-input').focus();
 }
 function chiudiAgente(){
   document.getElementById('agente').classList.remove('aperto');
   if(profilo) document.getElementById('agente-btn').classList.add('mostra');
 }
+// agenteDì (task 19/7): il coach NON apre mai piu' il pannello da solo.
+// La bolla si accoda sempre in chat (pronta quando l'utente la apre); se
+// il pannello e' gia' aperto basta cosi', altrimenti compare solo la
+// notifica discreta (pallino + anteprima) sul pulsante flottante.
 function agenteDì(testo){
-  apriAgente();
   bolla('ai', testo);
+  const agente = document.getElementById('agente');
+  if(agente && agente.classList.contains('aperto')) return;
+  mostraNotificaCoach(testo);
+}
+let notificaCoachTimeout = null;
+function mostraNotificaCoach(testo){
+  const box = document.getElementById('coach-notifica');
+  if(!box) return;
+  box.textContent = testo.length > 60 ? testo.slice(0,59)+'…' : testo;
+  box.classList.add('mostra');
+  clearTimeout(notificaCoachTimeout);
+  notificaCoachTimeout = setTimeout(nascondiNotificaCoach, 6000);
+}
+function nascondiNotificaCoach(){
+  const box = document.getElementById('coach-notifica');
+  if(!box) return;
+  box.classList.remove('mostra');
+  clearTimeout(notificaCoachTimeout);
 }
 function bolla(chi, testo){
   const c = document.getElementById('chat');
@@ -1713,6 +1824,7 @@ function bolla(chi, testo){
   c.scrollTop = c.scrollHeight;
   return m;
 }
+const CHIAVE_BENVENUTO_VISTO = 'sigma_benvenuto_visto';
 function benvenutoAgente(){
   const benvenuti = {
     neofita: "Ciao! Sono il tuo coach. Ti guiderò passo a passo finché ragionare in probabilità ti verrà naturale. Scegli un titolo qui sopra, scrivi quanto sei disposto a rischiare e premi Calcola: al resto pensiamo insieme.",
@@ -1720,7 +1832,21 @@ function benvenutoAgente(){
     esperto: "Motore aperto in modalità completa: EV, EV/σ, percentili e VRP in chiaro. Dati demo congelati al 9/7. Se ti serve il dettaglio metodologico (GBM, griglia stop/target, repricing) chiedi qui."
   };
   storia = [];
-  setTimeout(()=>{ bolla('ai', benvenuti[profilo]); storia.push({role:'assistant', content: JSON.stringify({messaggio:benvenuti[profilo], azione:null})}); }, 400);
+  // Unica eccezione al "mai da solo" (task 19/7): la primissima visita in
+  // assoluto puo' aprire il pannello una volta, senza rubare il focus
+  // all'input (niente tastiera che copre lo schermo appena entrati). Da
+  // qui in poi, sempre e solo notifica discreta.
+  const primaVoltaAssoluta = !localStorage.getItem(CHIAVE_BENVENUTO_VISTO);
+  setTimeout(()=>{
+    bolla('ai', benvenuti[profilo]);
+    storia.push({role:'assistant', content: JSON.stringify({messaggio:benvenuti[profilo], azione:null})});
+    if(primaVoltaAssoluta){
+      apriAgente(true);
+      try{ localStorage.setItem(CHIAVE_BENVENUTO_VISTO, 'si'); }catch(e){}
+    } else {
+      mostraNotificaCoach(benvenuti[profilo]);
+    }
+  }, 400);
   document.getElementById('agente-btn').classList.add('mostra');
 }
 function agentePrompt(testo){

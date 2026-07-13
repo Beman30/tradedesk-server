@@ -67,6 +67,31 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
   Silenziati per il neofita: annuncio di cambio profilo, messaggi di
   chiusura trade (il verdetto dell'ombra resta comunque visibile sulla
   riga del trade). Intermedio/esperto invariati su tutti questi punti.
+- Il coach non apre mai il pannello da solo (salvo primo benvenuto
+  assoluto): bolle automatiche = notifica discreta sul pulsante. Le
+  informazioni vitali (cosa sono i titoli di allenamento, come si
+  sbloccano i reali, come passa il tempo) vivono SEMPRE in pagina, mai
+  solo nella chat. (task 19/7 - sostituisce il concetto di "bolle
+  automatiche che aprono il pannello" del task 15/7: ora aprono solo
+  una notifica, tutte le altre regole su quali messaggi partono restano
+  valide). Eccezione: la primissima visita in assoluto (localStorage
+  sigma_benvenuto_visto) apre il pannello una volta, senza rubare il
+  focus all'input. Su mobile il pannello aperto resta comunque entro il
+  60% di altezza schermo (60vh), mai a coprire tutto.
+- Titoli di allenamento e Livello 2 spiegati SEMPRE in pagina (task
+  19/7): sotto il select del neofita, una riga fissa mai collassata
+  ("Titoli di allenamento: finti, ma..."); mentre il Livello 2 è
+  bloccato, una seconda riga fissa mostra quante decisioni giudicate
+  mancano (aggiornata ad ogni giudizio). Tentativo di selezionare un
+  titolo reale bloccato: niente chat, solo un lampeggio (2s, bordo
+  ambra) su quella riga.
+- Il tempo è manuale, reso ovvio (task 19/7): il pulsante "Aggiorna" è
+  rinominato "▶ Fai passare 1 giorno". Appena si apre un trade di
+  allenamento, il pulsante pulsa e sotto il trade appare "Qui non si
+  aspetta..." finché l'utente non preme ▶ per la prima volta in questa
+  sessione (sigma_sessione.primoAggiornaFatto). Se un trade resta
+  aperto 30 secondi reali senza che l'utente prema ▶, notifica discreta
+  "Il mercato è fermo finché non premi ▶".
 - Bolla del terzo giorno (task 17/7): al terzo click su Aggiorna con
   almeno un trade di allenamento aperto, UNA SOLA VOLTA per sessione, il
   coach mostra il confronto ieri/oggi della probabilità (probMeglioDiOra)
