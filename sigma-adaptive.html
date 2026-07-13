@@ -281,15 +281,7 @@ body[data-profilo="neofita"] #sez-builder .cta-demo:hover{filter:brightness(1.06
 }
 .cta-secondaria:hover{border-color:var(--ink)}
 
-/* B5: accordion leggero per "idea chiave" e "come funziona", solo neofita - parte collassato */
-body[data-profilo="neofita"] #sez-idea .acc-corpo,
-body[data-profilo="neofita"] #sez-come .acc-corpo{display:none}
-body[data-profilo="neofita"] #sez-idea.aperto .acc-corpo,
-body[data-profilo="neofita"] #sez-come.aperto .acc-corpo{display:block}
-body[data-profilo="neofita"] .acc-tap{cursor:pointer}
-body[data-profilo="neofita"] .acc-tap::after{content:" ▸";font-size:.75em;color:var(--ink2)}
-body[data-profilo="neofita"] #sez-idea.aperto .acc-tap::after,
-body[data-profilo="neofita"] #sez-come.aperto .acc-tap::after{content:" ▾"}
+/* "idea chiave" e "come funziona": sempre visibili, nessun accordion (richiesta utente 13/7) */
 
 /* B6: mini-percorso 3 tappe sempre visibile ma compatto su una riga (solo neofita, non tocca .stadi dell'analogia in sez-idea) */
 body[data-profilo="neofita"] #sez-builder .stadi{display:flex;flex-wrap:wrap;gap:6px}
@@ -542,7 +534,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
   </section>
 
   <section class="blocco" id="sez-idea">
-    <div class="eyebrow acc-tap" onclick="toggleSezione('sez-idea')">L'idea chiave</div>
+    <div class="eyebrow">L'idea chiave</div>
     <h2 data-solo="neofita">Le probabilità cambiano mentre la partita è in corso</h2>
     <h2 data-solo="intermedio">Il navigatore ricalcola. Sigma anche.</h2>
     <h2 data-solo="esperto">Equity dinamica, come al tavolo</h2>
@@ -558,7 +550,7 @@ body[data-profilo="neofita"] #sez-builder .stadio b{font-size:.72rem;font-weight
   </section>
 
   <section class="blocco" id="sez-come">
-    <div class="eyebrow acc-tap" onclick="toggleSezione('sez-come')">Il metodo</div>
+    <div class="eyebrow">Il metodo</div>
     <h2>Come funziona Sigma</h2>
     <div class="acc-corpo">
     <div class="step"><span class="n">01</span><div><h3>Crea il trade</h3><p data-solo="neofita">Descrivi l'operazione che hai in mente e ricevi una fotografia chiara: quante probabilità ha di andare bene e quanto potresti guadagnare o perdere.</p><p data-solo="intermedio">Ricevi una fotografia statistica dell'operazione e scopri quale combinazione di rischio, stop e target è statisticamente più vantaggiosa.</p><p data-solo="esperto">Il motore esplora la griglia stop/target e restituisce la combinazione a EV massimo, con distribuzione completa dei percorsi.</p></div></div>
@@ -683,11 +675,7 @@ function progressoNeofita(){
   }
 }
 
-/* ================= GERARCHIA VISIVA NEOFITA: accordion + progressive disclosure ================= */
-function toggleSezione(id){
-  const el = document.getElementById(id);
-  if(el) el.classList.toggle('aperto');
-}
+/* ================= GERARCHIA VISIVA NEOFITA: progressive disclosure ================= */
 const CHIAVE_INTRO = 'sigma_intro_vista';
 const COPPIE_INTRO = [
   ['pd-titoli-full','pd-titoli-breve'],
