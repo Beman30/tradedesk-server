@@ -62,3 +62,17 @@ Scelte già fatte e motivate. Non riproporre alternative già scartate.
 - Analytics: GA4 G-1YD246YPC8 + Clarity xkqjrd5vw2, caricati SOLO dopo
   consenso (banner, localStorage sigma_consenso). Eventi:
   seleziona_profilo, calcolo_eseguito.
+- "I numeri di oggi" (task 13/7): nel conto demo del neofita, ogni trade
+  APERTO su CALMO/MEDIO/VIOLENTO richiama Motore 2 (valutaTradeAperto, non
+  toccato) sulla serie estesa di sessione e mostra, sotto il P&L, SOLO 3
+  frasi in linguaggio naturale: probabilità ("X casi su 10"), i tre valori
+  in euro (chiudendo ora / restando in media / vantaggio a restare, quest'
+  ultimo colorato verde/rosso) e la mini-tendenza vs ieri (freccia ↑/↓/=).
+  Niente p5/p95, orizzonte, drift o sigle (EV/IV/MC) per questo profilo.
+  Cambio di segno del vantaggio a restare vs ieri → bordo ambra 2-3s sul
+  trade + una riga dell'assistente, mai un consiglio di chiudere/tenere.
+- Percorsi Monte Carlo ridotti (percorsiMC/PERCORSI_LIVE_DEMO=2.000, invece
+  di MC_PATHS=10.000) SOLO per il ricalcolo live di valutaTradeAperto ad
+  ogni Aggiorna nel conto demo neofita (misurato: 3 trade aperti passano da
+  ~350ms a ~70ms). L'apertura del trade e la cattura a fine chiusura (per
+  sigma_journal) restano a 10.000 percorsi. Determinismo invariato.

@@ -347,7 +347,7 @@
     return sortedAsc[idx];
   }
 
-  function simulateHorizon(S0, sl, tp, hasTP, long, sigma, mu, days, gainAmount, dividendYield, jumpStats, shares, trailing, gainThresholds, sampleSize) {
+  function simulateHorizon(S0, sl, tp, hasTP, long, sigma, mu, days, gainAmount, dividendYield, jumpStats, shares, trailing, gainThresholds, sampleSize, nPaths) {
     var dt = 1 / 365;
     var drift = (mu || 0) - (dividendYield || 0) - 0.5 * sigma * sigma;
 
@@ -377,8 +377,15 @@
     var payoffs = [];
     var sample = [];
     var nSample = sampleSize || 0;
+    // nPaths: override SOLO per il ricalcolo live "Aggiorna" del conto demo
+    // neofita (Motore 2, valutaTradeAperto) - vedi sigma-adaptive.html,
+    // PERCORSI_LIVE_DEMO. Tutti gli altri chiamanti (valutaTrade, apertura
+    // trade, pannello "Ho gia' una posizione") non lo passano e restano a
+    // MC_PATHS (10.000). Determinismo invariato: stesso seed + stesso nPaths
+    // => stesso output.
+    var paths = nPaths || MC_PATHS;
 
-    for (var i = 0; i < MC_PATHS; i++) {
+    for (var i = 0; i < paths; i++) {
       var recordPath = i < nSample;
       var price = S0;
       var outcome = 'NONE';
@@ -449,23 +456,23 @@
     }
 
     var countSL = countSLOriginal + countTrailExit;
-    var mean = sumPayoff / MC_PATHS;
-    var variance = Math.max(0, sumSqPayoff / MC_PATHS - mean * mean);
+    var mean = sumPayoff / paths;
+    var variance = Math.max(0, sumSqPayoff / paths - mean * mean);
     var std = Math.sqrt(variance);
     var sortedPayoffs = payoffs.slice().sort(function (a, b) { return a - b; });
 
     return {
-      pTP: countTP / MC_PATHS,
-      pSL: countSL / MC_PATHS,
-      pSLOriginal: countSLOriginal / MC_PATHS,
-      pTrailExit: countTrailExit / MC_PATHS,
-      pNone: (MC_PATHS - countTP - countSL) / MC_PATHS,
-      ev: sumPayoff / MC_PATHS,
+      pTP: countTP / paths,
+      pSL: countSL / paths,
+      pSLOriginal: countSLOriginal / paths,
+      pTrailExit: countTrailExit / paths,
+      pNone: (paths - countTP - countSL) / paths,
+      ev: sumPayoff / paths,
       std: std,
-      probProfit: countProfit / MC_PATHS,
+      probProfit: countProfit / paths,
       p5: percentile(sortedPayoffs, 0.05),
       p95: percentile(sortedPayoffs, 0.95),
-      gainProbs: gainCounts ? gainCounts.map(function (c) { return c / MC_PATHS; }) : null,
+      gainProbs: gainCounts ? gainCounts.map(function (c) { return c / paths; }) : null,
       sample: sample
     };
   }
@@ -681,6 +688,13 @@
     var prezzoIngresso = input.prezzoIngresso;
     var azioni = input.azioni;
     var modalita = input.modalita;
+    // percorsiMC: opzionale, override del numero di percorsi Monte Carlo.
+    // Usato SOLO dal ricalcolo live "Aggiorna" nel conto demo del neofita
+    // (vedi sigma-adaptive.html, PERCORSI_LIVE_DEMO) per non bloccare
+    // l'interfaccia quando ci sono piu' trade aperti insieme. Se omesso,
+    // simulateHorizon usa il default MC_PATHS (10.000) - identico a prima
+    // per l'apertura del trade e per il pannello "Ho gia' una posizione".
+    var percorsiMC = input.percorsiMC;
 
     var statoPos = statoPosizione(input);
 
@@ -724,7 +738,7 @@
       var r = simulateHorizon(
         S0, sl, tp, hasTP, long, sigma, mu, days,
         null, d.dividendYield, jumpStats, azioni, trailing,
-        null, SAMPLE_PATHS_PER_HORIZON
+        null, SAMPLE_PATHS_PER_HORIZON, percorsiMC
       );
       r.days = days;
       return r;
