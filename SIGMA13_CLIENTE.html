@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ΣXIII · Scheda Operazione</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7fa; color:#1f2937; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; padding:18px; line-height:1.45; }
+  button { font-family:inherit; }
+  input, select { font-family:inherit; }
+  .mono-num { font-variant-numeric: tabular-nums; }
+  ::placeholder { color:#9ca3af; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+
+// ═══════════════════════════════════════════════════════════════
+// SIGMA13_CLIENTE — Scheda Operazione per il Cliente (standalone)
+// Clona l'engine matematico/di parsing/Monte Carlo da PORTFO_2.HTM
+// (Portfolio_monitor_fixed.html — ΣXIII Portfolio Monitor). Non tocca
+// quel file: qui l'engine è ricopiato identico, con UNA sola aggiunta
+// (raccolta payoff per path in mcSpread, vedi mcSpreadClient) e UNA
+// sola estensione (valutazione anticipata mark-to-model, mcMarkToModel,
+// costruita sugli stessi primitivi — nessun nuovo modello di prezzo).
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// COSTANTI — clonate identiche da PORTFO_2.HTM
+// ═══════════════════════════════════════════════════════════════
+var RFREE = 0.043;
+var DIVS  = {AAPL:0.004,BAC:0.023,CSCO:0.03,GLD:0.0,GOOGL:0.004,IWM:0.014,KO:0.026,META:0.004,NVDA:0.001,QQQ:0.005,SPY:0.013,TLT:0.038,XLF:0.02};
+var TICKERS = ['AAPL','BAC','CSCO','GLD','GOOGL','IWM','KO','META','NVDA','QQQ','SPY','TLT','XLF'];
+var DEF_IV  = {AAPL:0.28,BAC:0.25,CSCO:0.28,GLD:0.18,GOOGL:0.30,IWM:0.22,KO:0.21,META:0.38,NVDA:0.38,QQQ:0.22,SPY:0.16,TLT:0.12,XLF:0.22};
+// Contract id (STK, primary US listing) per underlying — risolti una volta, verificati via search_contracts
+var STK_CID = {AAPL:265598,BAC:10098,CSCO:268084,GLD:51529211,GOOGL:208813719,IWM:9579970,KO:8894,META:107113386,NVDA:4815747,QQQ:320227571,SPY:756733,TLT:15547841,XLF:4215220};
+var MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+var TGTS = [{lbl:"BE",m:1.0},{lbl:"+10%",m:1.1},{lbl:"+20%",m:1.2},{lbl:"+50%",m:1.5},{lbl:"+100%",m:2.0}];
+
+// ═══════════════════════════════════════════════════════════════
+// COLORI — palette leggibile per il cliente (stessa identità ΣXIII)
+// ═══════════════════════════════════════════════════════════════
+var C = {bg:"#f7f7fa",surf:"#ffffff",brd:"#e5e7eb",gold:"#a8760a",grn:"#16a34a",red:"#dc2626",amber:"#d97706",soft:"#6b7280",txt:"#1f2937",blue:"#2563eb",yellowBg:"#fffbeb",yellowBrd:"#f59e0b"};
+
+// ═══════════════════════════════════════════════════════════════
+// MATH ENGINE — clonato identico da PORTFO_2.HTM
+// ═══════════════════════════════════════════════════════════════
+function mulberry32(seed){
+  return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;var t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};
+}
+function erf(x){
+  var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+p*x);
+  return s*(1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x));
+}
+function nCDF(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function bsP(S,K,r,q,sig,T,tp){
+  if(T<=1e-6)return tp==='call'?Math.max(S-K,0):Math.max(K-S,0);
+  var sq=sig*Math.sqrt(T),d1=(Math.log(S/K)+(r-q+0.5*sig*sig)*T)/sq,d2=d1-sq;
+  if(tp==='put')return K*Math.exp(-r*T)*nCDF(-d2)-S*Math.exp(-q*T)*nCDF(-d1);
+  return S*Math.exp(-q*T)*nCDF(d1)-K*Math.exp(-r*T)*nCDF(d2);
+}
+function med(a){if(!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;}),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+function invSpot(tp,K,tgt,S0,DTE,r,q,iv){
+  var T=DTE/365,lo=S0*0.3,hi=S0*3;
+  for(var i=0;i<120;i++){var mid=(lo+hi)/2,v=bsP(mid,K,r,q,iv,T,tp);if(tp==='call'){if(v<tgt)lo=mid;else hi=mid;}else{if(v<tgt)hi=mid;else lo=mid;}}
+  return(lo+hi)/2;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARSING & PAIRING — clonato identico da PORTFO_2.HTM
+// ═══════════════════════════════════════════════════════════════
+function parseD(desc){
+  var m=desc.match(/^(\S+)\s+([A-Za-z]+)(\d+)'(\d+)\s+([\d.]+)\s+(CALL|PUT)/i);
+  if(!m)return null;
+  return{und:m[1],exk:m[2]+m[3]+"'"+m[4],expiry:new Date(2000+parseInt(m[4]),MO[m[2]],parseInt(m[3])),K:parseFloat(m[5]),type:m[6].toLowerCase()};
+}
+function dteOf(expiry){var t=new Date();t.setHours(0,0,0,0);return Math.max(0,Math.round((expiry-t)/864e5));}
+
+function buildStructure(raw){
+  var units=[];
+  for(var pi=0;pi<raw.length;pi++){
+    var p=raw[pi];
+    var info=parseD(p.desc);if(!info)continue;
+    var qty=Math.abs(p.pos);
+    for(var i=0;i<qty;i++)units.push(Object.assign({},p,info,{isS:p.pos<0,avgU:Math.abs(p.avg),markU:Math.abs(p.mark),pnlU:p.pnl/qty}));
+  }
+  var G={};
+  for(var ui=0;ui<units.length;ui++){
+    var u=units[ui];
+    var k=u.und+"|"+u.exk+"|"+u.type;
+    if(!G[k])G[k]={info:u,S:[],L:[]};
+    if(u.isS)G[k].S.push(u);else G[k].L.push(u);
+  }
+  var spreads=[],preLongs=[],gidx=0;
+  var keys=Object.keys(G);
+  for(var ki=0;ki<keys.length;ki++){
+    var grp=G[keys[ki]],info=grp.info,S=grp.S,L=grp.L;
+    if(!S.length){preLongs=preLongs.concat(L);continue;}
+    if(!L.length){preLongs=preLongs.concat(S);continue;}
+    var rS=S.slice(),rL=L.slice();
+    if(info.type==='call'){rS.sort(function(a,b){return a.K-b.K;});rL.sort(function(a,b){return a.K-b.K;});}
+    else{rS.sort(function(a,b){return b.K-a.K;});rL.sort(function(a,b){return b.K-a.K;});}
+    while(rS.length&&rL.length){
+      var sh=rS[0],bi=-1,bd=Infinity;
+      for(var li=0;li<rL.length;li++){
+        var lo=rL[li];
+        var ok=info.type==='call'?lo.K>sh.K:lo.K<sh.K;
+        if(!ok)continue;var d=Math.abs(lo.K-sh.K);if(d<bd){bd=d;bi=li;}
+      }
+      if(bi===-1){preLongs.push(rS.shift());}
+      else{
+        var loM=rL.splice(bi,1)[0];rS.shift();
+        var tag=info.type==='call'?'Bear Call':'Bull Put';
+        spreads.push({
+          id:String(++gidx),
+          label:info.und+" "+info.exk+" "+tag+" "+sh.K+"/"+loM.K,
+          und:info.und,exk:info.exk,type:info.type,
+          Ks:sh.K,Kl:loM.K,
+          premS:sh.avgU,premL:loM.avgU,
+          markS:sh.markU,markL:loM.markU,
+          DTE:dteOf(info.expiry),
+          totalPnl:sh.pnlU+loM.pnlU,
+          netCred:sh.avgU-loM.avgU,
+        });
+      }
+    }
+    preLongs=preLongs.concat(rS,rL);
+  }
+  var byUT={};
+  preLongs.forEach(function(u){
+    var k2=u.und+"|"+u.type;
+    if(!byUT[k2])byUT[k2]=[];
+    byUT[k2].push(u);
+  });
+  var longs=[],multiLeg=[],mgidx=0;
+  Object.keys(byUT).forEach(function(k2){
+    var legs=byUT[k2];
+    var exps={};
+    legs.forEach(function(u){exps[u.exk]=true;});
+    var mixedDir = legs.some(function(u){return u.isS!==legs[0].isS;});
+    if(Object.keys(exps).length>1 && mixedDir){
+      legs.sort(function(a,b){return a.expiry-b.expiry||a.K-b.K;});
+      var isDiagCandidate = legs.length===2 && legs[0].isS!==legs[1].isS;
+      var shortLeg = isDiagCandidate ? (legs[0].isS?legs[0]:legs[1]) : null;
+      var longLeg = isDiagCandidate ? (legs[0].isS?legs[1]:legs[0]) : null;
+      multiLeg.push({
+        id:String(++mgidx),
+        und:legs[0].und,type:legs[0].type,
+        legs:legs,
+        totalPnl:legs.reduce(function(s,u){return s+u.pnlU;},0),
+        isDiagCandidate:isDiagCandidate,
+        shortLeg:shortLeg,
+        longLeg:longLeg,
+      });
+    } else {
+      longs=longs.concat(legs);
+    }
+  });
+  longs.forEach(function(lo,idx){lo.id=String(idx+1);});
+  return{spreads:spreads,longs:longs,multiLeg:multiLeg};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OVERRIDE MANUALE — caso isolato SPY Aug21'26. Clonato identico da
+// PORTFO_2.HTM. Vedi commento originale: l'euristica nearest-strike
+// accoppia lo short 785 con il long 798 (il più vicino), ma la spread
+// realmente tradata è 785/800; il 798 è un long isolato a parte.
+// ═══════════════════════════════════════════════════════════════
+var SPY_AUG_OVERRIDE = { shortCid:853202625, pairedLongCid:885901974, trueLongCid:853202665 };
+
+function applySpyAugOverride(built, RAW){
+  var shortU = RAW.find(function(u){return u.contract_id===SPY_AUG_OVERRIDE.shortCid;});
+  var wrongLongU = RAW.find(function(u){return u.contract_id===SPY_AUG_OVERRIDE.pairedLongCid;});
+  var trueLongU = RAW.find(function(u){return u.contract_id===SPY_AUG_OVERRIDE.trueLongCid;});
+  if(!shortU || !wrongLongU || !trueLongU) return built;
+
+  var wrongInfo = parseD(wrongLongU.desc);
+  var trueInfo = parseD(trueLongU.desc);
+  if(!wrongInfo || !trueInfo) return built;
+
+  var spIdx = built.spreads.findIndex(function(sp){
+    return sp.und==='SPY' && sp.type==='call' && sp.Ks===785 && sp.Kl===wrongInfo.K;
+  });
+  if(spIdx===-1) return built;
+  var sp = built.spreads[spIdx];
+
+  var shortPnlU = shortU.pnl / Math.abs(shortU.pos);
+  var trueLongPnlU = trueLongU.pnl / Math.abs(trueLongU.pos);
+
+  sp.Kl = trueInfo.K;
+  sp.label = sp.und+" "+sp.exk+" Bear Call "+sp.Ks+"/"+sp.Kl;
+  sp.premL = Math.abs(trueLongU.avg);
+  sp.markL = Math.abs(trueLongU.mark);
+  sp.netCred = sp.premS - sp.premL;
+  sp.totalPnl = shortPnlU + trueLongPnlU;
+
+  var trueLongIdx = built.longs.findIndex(function(lo){return lo.contract_id===SPY_AUG_OVERRIDE.trueLongCid;});
+  if(trueLongIdx!==-1) built.longs.splice(trueLongIdx,1);
+
+  var alreadyIn = built.longs.some(function(lo){return lo.contract_id===SPY_AUG_OVERRIDE.pairedLongCid;});
+  if(!alreadyIn){
+    built.longs.push(Object.assign({}, wrongLongU, wrongInfo, {
+      isS:wrongLongU.pos<0, avgU:Math.abs(wrongLongU.avg), markU:Math.abs(wrongLongU.mark), pnlU:wrongLongU.pnl/Math.abs(wrongLongU.pos)
+    }));
+  }
+  built.longs.forEach(function(lo,idx){ lo.id=String(idx+1); });
+
+  return built;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MONTE CARLO — mcSpread clonato da PORTFO_2.HTM, UNICA MODIFICA:
+// raccolta del payoff per singolo path (pnls[]), stesso pattern già
+// usato da mcDueStrade con payoffs. Nessun nuovo modello di prezzo:
+// stessa dinamica GBM risk-neutral, stesso repricing BS ad ogni nodo,
+// stessi stepsPerDay 96/48, stessa regola di uscita "a rischio zero"
+// sulla gamba venduta quando il suo valore scende sotto la soglia
+// (soglia = incasso netto all'apertura), stessi target TGTS sulla
+// gamba acquistata.
+// ═══════════════════════════════════════════════════════════════
+async function mcSpreadClient(sp,spot,iv,N,onP,cRef){
+  var tp=sp.type,Ks=sp.Ks,Kl=sp.Kl,premS=sp.premS,premL=sp.premL,D=sp.DTE,und=sp.und;
+  if(D<=0||spot<=0||iv<=0)return null;
+  var r=RFREE,q=DIVS[und]||0;
+  var soglia=premS-premL;
+  var ftPx=invSpot(tp,Ks,soglia,spot,D,r,q,iv);
+  var trows=TGTS.map(function(t){var val=premL*t.m,px=invSpot(tp,Kl,val,spot,D,r,q,iv);return{lbl:t.lbl,val:val,px:px,mv:((px-spot)/spot)*100};});
+  var spd=D<=20?96:48;
+  var steps=Math.max(1,Math.floor(D*spd));
+  var dt_=1/365/spd,drift=(r-q-0.5*iv*iv)*dt_,diff=iv*Math.sqrt(dt_);
+  var rand=mulberry32((Date.now()&0xffffffff)^0x9e3779b9);
+  var nT=TGTS.length,mxL=(Math.abs(Kl-Ks)-soglia)*100;
+  var ftCnt=0,ftD=[];
+  var tcCnt=new Array(nT).fill(0),tcD=[];for(var z=0;z<nT;z++)tcD.push([]);
+  var sumE=0,winCnt=0;
+  var pnls=[]; // ← AGGIUNTA: payoff per path (in $/€ per 1 contratto, già ×100)
+  var CHK=500,done=0;
+  while(done<N){
+    if(cRef.current)return null;
+    var end=Math.min(done+CHK,N);
+    for(var i=done;i<end;i++){
+      var S=spot,ftH=false,ftSt=0;
+      var tH=new Array(nT).fill(false);
+      for(var s=1;s<=steps;s++){
+        var u1=Math.max(rand(),1e-12),u2=rand();
+        S*=Math.exp(drift+diff*Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2));
+        var Tr=Math.max(0,D-s/spd)/365;
+        if(!ftH){if(bsP(S,Ks,r,q,iv,Tr,tp)<=soglia){ftH=true;ftSt=s;ftCnt++;ftD.push(s/spd);}continue;}
+        var lv=bsP(S,Kl,r,q,iv,Tr,tp);
+        for(var t=0;t<nT;t++)if(!tH[t]&&lv>=trows[t].val){tH[t]=true;tcCnt[t]++;tcD[t].push((s-ftSt)/spd);}
+        if(tH[nT-1])break;
+      }
+      var pnl;
+      if(!ftH){pnl=-mxL;}
+      else{var mm=0;for(var t2=0;t2<nT;t2++)if(tH[t2])mm=TGTS[t2].m;pnl=premL*mm*100;if(pnl>0)winCnt++;}
+      sumE+=pnl;
+      pnls.push(pnl); // ← AGGIUNTA
+    }
+    done=end;onP(Math.round(done/N*100));
+    await new Promise(function(r_){setTimeout(r_,0);});
+  }
+  pnls.sort(function(a,b){return a-b;}); // ← AGGIUNTA: sort a fine loop
+  return{
+    soglia:soglia,ftPx:ftPx,ftMov:((ftPx-spot)/spot)*100,
+    ftProb:(ftCnt/N)*100,
+    ftMedD:ftD.length?Math.round(med(ftD)):null,
+    exp:sumE/N,winRate:(winCnt/N)*100,mxL:mxL,
+    lr:trows.map(function(tr,t){return Object.assign({},tr,{pCond:ftCnt?(tcCnt[t]/ftCnt)*100:0,pJoint:(tcCnt[t]/N)*100,mD:tcD[t].length?Math.round(med(tcD[t])):null});}),
+    N:N,spot:spot,iv:iv,
+    pnls:pnls, // ← AGGIUNTA: array ordinato dei payoff per 1 contratto
+    mode:'expiry',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MONTE CARLO — valutazione anticipata (mark-to-model), usata solo
+// quando il cliente chiede "entro quando?" una data precedente alla
+// scadenza reale della struttura. Nessuna assunzione di esercizio,
+// nessuna gestione "a rischio zero": si simula il sottostante fino
+// alla data richiesta (stessa GBM, stesso mulberry32) e si riprezzano
+// con Black-Scholes ENTRAMBE le gambe sul tempo residuo alla vera
+// scadenza. Stessi primitivi di mcSpreadClient — nessun nuovo modello.
+// ═══════════════════════════════════════════════════════════════
+async function mcMarkToModel(sp,spot,iv,N,Dtarget,onP,cRef){
+  var tp=sp.type,Ks=sp.Ks,Kl=sp.Kl,premS=sp.premS,premL=sp.premL,D=sp.DTE,und=sp.und;
+  if(D<=0||spot<=0||iv<=0||Dtarget<1||Dtarget>=D)return null;
+  var r=RFREE,q=DIVS[und]||0;
+  var soglia=premS-premL;
+  var mxL=(Math.abs(Kl-Ks)-soglia)*100;
+  var spd=D<=20?96:48;
+  var steps=Math.max(1,Math.floor(Dtarget*spd));
+  var dt_=1/365/spd,drift=(r-q-0.5*iv*iv)*dt_,diff=iv*Math.sqrt(dt_);
+  var rand=mulberry32((Date.now()&0xffffffff)^0x3c6ef372);
+  var Tr=Math.max(0,(D-Dtarget))/365; // tempo residuo alla vera scadenza, dalla data richiesta
+  var sumE=0,winCnt=0;
+  var pnls=[];
+  var CHK=500,done=0;
+  while(done<N){
+    if(cRef.current)return null;
+    var end=Math.min(done+CHK,N);
+    for(var i=done;i<end;i++){
+      var S=spot;
+      for(var s=1;s<=steps;s++){
+        var u1=Math.max(rand(),1e-12),u2=rand();
+        S*=Math.exp(drift+diff*Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2));
+      }
+      var shortVal=bsP(S,Ks,r,q,iv,Tr,tp);
+      var longVal=bsP(S,Kl,r,q,iv,Tr,tp);
+      var pnl=(premS-shortVal+longVal-premL)*100;
+      if(pnl>0)winCnt++;
+      sumE+=pnl;
+      pnls.push(pnl);
+    }
+    done=end;onP(Math.round(done/N*100));
+    await new Promise(function(r_){setTimeout(r_,0);});
+  }
+  pnls.sort(function(a,b){return a-b;});
+  return{
+    exp:sumE/N,winRate:(winCnt/N)*100,mxL:mxL,
+    N:N,spot:spot,iv:iv,Dtarget:Dtarget,
+    pnls:pnls,
+    mode:'mtm',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad2(n){return n<10?'0'+n:''+n;}
+function todayMid(){var d=new Date();d.setHours(0,0,0,0);return d;}
+function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function isoDate(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function fmtDateIt(d){return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear();}
+function fmtE(v){var s=v<0?'-':'';return s+'€'+Math.round(Math.abs(v)).toLocaleString('it-IT');}
+function fmtPct(v,d){d=d==null?1:d;return v.toFixed(d)+'%';}
+function pCol(v){return v>=0?C.grn:C.red;}
+// Accetta sia virgola che punto come separatore decimale (tastiera italiana).
+function parseNum(s){ if(s==null) return NaN; return parseFloat(String(s).trim().replace(',', '.')); }
+
+async function callTool(name,args){
+  var r = await window.cowork.callMcpTool(name, args||{});
+  if(r.isError) throw new Error((r.content&&r.content[0]&&r.content[0].text)||'tool error');
+  return r.structuredContent !== undefined && r.structuredContent !== null ? r.structuredContent : JSON.parse(r.content[0].text);
+}
+
+function withTimeout(promise, ms){
+  return new Promise(function(resolve,reject){
+    var done=false;
+    var to=setTimeout(function(){ if(!done){done=true;reject(new Error('timeout'));} }, ms);
+    promise.then(function(v){ if(!done){done=true;clearTimeout(to);resolve(v);} }, function(e){ if(!done){done=true;clearTimeout(to);reject(e);} });
+  });
+}
+
+// Snapshot spot/IV per singolo ticker (STK), timeout breve + un solo retry.
+// Quirk IBKR MCP verificato: get_price_snapshot su STK usa
+// ['plprice','last','implied_vol_underlying'] → risposta con chiavi
+// 'plprice'/'last'/'implied-vol-underlying' (snake_case is_valid/annual_iv).
+async function trySnapshotSTK(ticker, timeoutMs){
+  for(var attempt=0;attempt<2;attempt++){
+    try{
+      var snap = await withTimeout(callTool('mcp__8046d565-da36-43a6-85d9-204b876377aa__get_price_snapshot', {
+        contract_id: STK_CID[ticker],
+        market_data_names:['plprice','last','implied_vol_underlying']
+      }), timeoutMs);
+      var spot = (snap.plprice && snap.plprice.price) || (snap.last && snap.last.price) || 0;
+      var ivObj = snap['implied-vol-underlying'];
+      var iv = (ivObj && ivObj.is_valid && ivObj.annual_iv) ? ivObj.annual_iv : 0;
+      return {spot:spot, iv:iv};
+    }catch(e){ if(attempt===1) return null; }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUCKETING — traduce i payoff per path (già ordinati) in fasce
+// leggibili per il cliente. Con la gestione "a rischio zero" corrente
+// gli esiti a scadenza sono quasi discreti (un numero finito di valori
+// possibili): se i valori distinti sono pochi si raggruppa per valore
+// esatto, altrimenti si usa un istogramma a bande di uguale numerosità.
+// ═══════════════════════════════════════════════════════════════
+function bucketize(pnlsPerContractSorted, n, N){
+  var vals = pnlsPerContractSorted.map(function(v){return v*n;});
+  var rounded = vals.map(function(v){return Math.round(v);});
+  var counts = {};
+  rounded.forEach(function(v){counts[v]=(counts[v]||0)+1;});
+  var distinct = Object.keys(counts).map(Number).sort(function(a,b){return a-b;});
+  var groups;
+  if(distinct.length<=9){
+    groups = distinct.map(function(v){return {lo:v,hi:v,count:counts[v]};});
+  } else {
+    var nb=6, len=vals.length, tmp=[];
+    for(var i=0;i<nb;i++){
+      var i0=Math.floor(i*len/nb), i1=Math.floor((i+1)*len/nb);
+      if(i1<=i0) continue;
+      var slice=vals.slice(i0,i1);
+      tmp.push({lo:Math.round(slice[0]),hi:Math.round(slice[slice.length-1]),count:slice.length});
+    }
+    groups=tmp;
+  }
+  return groups.map(function(g){return {lo:g.lo,hi:g.hi,count:g.count,pct:g.count/N*100};});
+}
+
+function labelBucket(g, capitaleRischiato){
+  var mid = (g.lo+g.hi)/2;
+  var band = Math.max(5, capitaleRischiato*0.01);
+  if(Math.abs(mid)<=band) return 'Circa pareggio';
+  if(g.hi<=0) return 'Perdi '+fmtE(Math.abs(mid));
+  if(g.lo>=0){
+    if(g.hi>g.lo) return 'Guadagni '+fmtE(g.lo)+' – '+fmtE(g.hi);
+    return 'Guadagni ~'+fmtE(mid);
+  }
+  return (mid<0?'Perdi ~'+fmtE(Math.abs(mid)):'Guadagni ~'+fmtE(mid));
+}
+
+function buildClientResult(raw, n, targetGain){
+  var valsEuro = raw.pnls.map(function(v){return v*n;});
+  var N = raw.N;
+  var mxLE = raw.mxL*n;
+  var evE = raw.exp*n;
+  var buckets = bucketize(raw.pnls, n, N);
+  buckets.forEach(function(g){ g.label = labelBucket(g, mxLE); });
+  var targetInfo = null;
+  if(targetGain!=null && !isNaN(targetGain) && targetGain>0){
+    var cnt=0;
+    for(var i=0;i<valsEuro.length;i++) if(valsEuro[i]>=targetGain) cnt++;
+    targetInfo = {value:targetGain, prob: cnt/N*100};
+  }
+  return {buckets:buckets, mxLE:mxLE, evE:evE, N:N, targetInfo:targetInfo, mode:raw.mode, Dtarget:raw.Dtarget};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+function newSlot(id){
+  return {
+    id:id, mode:'manual',
+    und:null, type:'call', Ks:null, Kl:null, premS:null, premL:null, expiryDate:null,
+    spot:0, iv:0, spotLive:false, ivLive:false, fetchedAt:null, fetching:false,
+    liveSpreads:null, liveLoading:false, liveErr:null, selectedSpreadId:null,
+    n:0, mxLPerContract:0, capitaleRischiato:0,
+    running:false, prog:0, result:null, runErr:null, clampedToExpiry:false,
+    cRef:{current:false},
+  };
+}
+var state = { compare:false, simN:20000, slots:[newSlot(1)],
+  clientInputs:{ maxLoss:'', targetDate:'', targetGain:'' } };
+
+// ═══════════════════════════════════════════════════════════════
+// AZIONI
+// ═══════════════════════════════════════════════════════════════
+function structureComplete(slot){
+  return !!(slot.und && slot.Ks>0 && slot.Kl>0 && slot.premS!=null && slot.premL!=null && slot.expiryDate);
+}
+
+function computeRisk(slot){
+  if(!structureComplete(slot)) { slot.mxLPerContract=0; slot.n=0; slot.capitaleRischiato=0; return; }
+  var soglia = slot.premS - slot.premL;
+  var mxL = (Math.abs(slot.Kl-slot.Ks)-soglia)*100;
+  slot.mxLPerContract = mxL;
+  var L = parseNum(state.clientInputs.maxLoss)||0;
+  slot.n = mxL>0 ? Math.floor(L/mxL) : 0;
+  slot.capitaleRischiato = slot.n*mxL;
+}
+
+function ensureDefaultTargetDate(slot){
+  if(!state.clientInputs.targetDate && slot.expiryDate){
+    state.clientInputs.targetDate = isoDate(slot.expiryDate);
+    // aggiorna il campo data già in pagina senza ricostruire tutto il DOM
+    var dEl = document.getElementById('inTargetDate');
+    if(dEl) dEl.value = state.clientInputs.targetDate;
+  }
+}
+
+// Aggiorna solo la riga "contratti apribili / rischio effettivo" di uno
+// slot, senza toccare il resto del form (evita di perdere il focus
+// mentre l'utente sta ancora scrivendo negli altri campi).
+function patchRiskLine(slot){
+  var el = document.getElementById('riskLine-'+slot.id);
+  if(el) el.innerHTML = riskLineHtml(slot);
+}
+
+async function fetchSpotIvForSlot(slot){
+  if(!slot.und) return;
+  slot.fetching=true; renderApp();
+  var snap = await trySnapshotSTK(slot.und, 4000);
+  slot.spotLive=false; slot.ivLive=false;
+  if(snap){
+    if(snap.spot>0){ slot.spot=snap.spot; slot.spotLive=true; }
+    if(snap.iv>0){ slot.iv=snap.iv; slot.ivLive=true; }
+  }
+  if(!slot.spot || slot.spot<=0) slot.spot = 0; // resta a 0: va inserito a mano, nessun valore inventato
+  if(!slot.iv || slot.iv<=0) slot.iv = DEF_IV[slot.und]||0.25;
+  slot.fetchedAt = new Date();
+  slot.fetching=false;
+  renderApp();
+}
+
+function setManualTicker(slot, tk){
+  slot.und = tk; slot.selectedSpreadId=null;
+  computeRisk(slot);
+  renderApp();
+  fetchSpotIvForSlot(slot);
+}
+
+async function loadLivePositions(slot){
+  slot.liveLoading=true; slot.liveErr=null; slot.liveSpreads=null; renderApp();
+  try{
+    var posResp = await callTool('mcp__8046d565-da36-43a6-85d9-204b876377aa__get_account_positions', {});
+    var positions = posResp.positions || [];
+    var RAW = positions.filter(function(p){return p.asset_class==='OPT' && p.position!==0;})
+      .map(function(p){return {desc:p.contract_description, pos:p.position, avg:p.average_price, mark:p.market_price, pnl:p.unrealized_pnl, contract_id:p.contract_id};});
+    var built = buildStructure(RAW);
+    built = applySpyAugOverride(built, RAW) || built;
+    slot.liveSpreads = built.spreads;
+  }catch(e){
+    slot.liveErr = 'Impossibile leggere le posizioni in questo momento ('+e.message+'). Puoi usare la modalità manuale.';
+    slot.liveSpreads = [];
+  }
+  slot.liveLoading=false;
+  renderApp();
+}
+
+function selectLiveSpread(slot, sp){
+  slot.selectedSpreadId = sp.id;
+  slot.und=sp.und; slot.type=sp.type; slot.Ks=sp.Ks; slot.Kl=sp.Kl;
+  slot.premS=sp.premS; slot.premL=sp.premL;
+  slot.expiryDate = addDays(todayMid(), sp.DTE);
+  computeRisk(slot);
+  ensureDefaultTargetDate(slot);
+  renderApp();
+  fetchSpotIvForSlot(slot);
+}
+
+function onManualFieldChange(slot){
+  computeRisk(slot);
+  ensureDefaultTargetDate(slot);
+  patchRiskLine(slot); // niente renderApp() qui: altrimenti si perde il focus ad ogni carattere digitato
+}
+
+async function runSlot(slot){
+  slot.runErr=null;
+  computeRisk(slot);
+  if(!structureComplete(slot)){ slot.runErr='Completa i dati dell’operazione prima di procedere.'; renderApp(); return; }
+  if((slot.premS-slot.premL)<=0){ slot.runErr='Controlla gli importi delle due gambe: hai indicato di incassare '+fmtE(slot.premS*100)+' per contratto ma di pagarne '+fmtE(slot.premL*100)+' per l’altra — con questi numeri l’operazione non genera mai un incasso netto e il calcolo risulterebbe sempre in perdita massima. Probabilmente i due importi sono invertiti.'; renderApp(); return; }
+  if(!slot.spot || slot.spot<=0){ slot.runErr='Manca il prezzo attuale del titolo: inseriscilo a mano.'; renderApp(); return; }
+  if(!slot.iv || slot.iv<=0){ slot.runErr='Manca la volatilità attesa: inseriscila a mano.'; renderApp(); return; }
+  if(slot.mxLPerContract<=0){ slot.runErr='I dati inseriti non descrivono un’operazione valida (controlla strike e incassi/costi).'; renderApp(); return; }
+  if(slot.n<1){ slot.runErr='Con l’importo massimo indicato non è possibile aprire nemmeno un contratto (rischio minimo per 1 contratto: '+fmtE(slot.mxLPerContract)+').'; renderApp(); return; }
+
+  var sp = {type:slot.type,Ks:slot.Ks,Kl:slot.Kl,premS:slot.premS,premL:slot.premL,DTE:dteOf(slot.expiryDate),und:slot.und};
+  if(sp.DTE<=0){ slot.runErr='L’operazione risulta già scaduta.'; renderApp(); return; }
+
+  var targetDate = state.clientInputs.targetDate ? new Date(state.clientInputs.targetDate+'T00:00:00') : slot.expiryDate;
+  var Dtarget = Math.round((targetDate - todayMid())/864e5);
+  slot.clampedToExpiry = false;
+  if(Dtarget>=sp.DTE){ Dtarget = sp.DTE; if(state.clientInputs.targetDate && targetDate>slot.expiryDate) slot.clampedToExpiry = true; }
+  if(Dtarget<1) Dtarget=1;
+
+  slot.cRef.current=false; slot.running=true; slot.prog=0; slot.result=null; renderApp();
+
+  var raw;
+  if(Dtarget>=sp.DTE){
+    raw = await mcSpreadClient(sp, slot.spot, slot.iv, state.simN, function(p){slot.prog=p; renderProgressOnly(slot);}, slot.cRef);
+  } else {
+    raw = await mcMarkToModel(sp, slot.spot, slot.iv, state.simN, Dtarget, function(p){slot.prog=p; renderProgressOnly(slot);}, slot.cRef);
+  }
+  slot.running=false;
+  if(raw){
+    var tg = state.clientInputs.targetGain ? parseNum(state.clientInputs.targetGain) : null;
+    slot.result = buildClientResult(raw, slot.n, tg);
+  }
+  renderApp();
+}
+
+function stopSlot(slot){ slot.cRef.current=true; }
+function resetSlot(slot){ slot.result=null; slot.runErr=null; renderApp(); }
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+var app = document.getElementById('app');
+
+function BTN(bg,col,extra){
+  extra=extra||'';
+  return 'padding:10px 18px;background:'+bg+';color:'+col+';border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;'+extra;
+}
+
+// Aggiorna solo la barra di progresso durante la simulazione, senza
+// ridisegnare l'intera scheda (evita di perdere il focus sui campi).
+function renderProgressOnly(slot){
+  var bar = document.getElementById('progBar-'+slot.id);
+  var lab = document.getElementById('progLab-'+slot.id);
+  if(bar) bar.style.width = (slot.prog||0)+'%';
+  if(lab) lab.textContent = (slot.prog||0)+'%';
+}
+
+function renderApp(){
+  var el = document.getElementById('app');
+  el.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">'+
+      '<div>'+
+        '<div style="font-size:20px;font-weight:800;color:'+C.gold+';letter-spacing:1px;">ΣXIII</div>'+
+        '<div style="font-size:13px;color:'+C.soft+';">Scheda operazione</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'+
+        '<label style="font-size:13px;color:'+C.soft+';display:flex;align-items:center;gap:6px;cursor:pointer;">'+
+          '<input type="checkbox" id="cmpChk" '+(state.compare?'checked':'')+' style="width:16px;height:16px;"/> Confronta due operazioni'+
+        '</label>'+
+        '<select id="simNSel" style="padding:8px 10px;background:#fff;border:1px solid '+C.brd+';border-radius:6px;color:'+C.txt+';font-size:13px;">'+
+          [5000,20000,100000].map(function(v){return '<option value="'+v+'" '+(state.simN===v?'selected':'')+'>'+v.toLocaleString('it-IT')+' simulazioni</option>';}).join('')+
+        '</select>'+
+      '</div>'+
+    '</div>'+
+    '<div id="clientQ" style="background:'+C.surf+';border:1px solid '+C.brd+';border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"></div>'+
+    '<div id="slotsRow" style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;"></div>'+
+    '<div style="margin-top:20px;font-size:11px;color:'+C.soft+';text-align:center;line-height:1.6;padding:10px;">'+
+      'Simulazione probabilistica su dati di mercato correnti — non è una previsione né una promessa di rendimento.<br/>Materiale informativo riservato ai soci.'+
+    '</div>';
+
+  document.getElementById('cmpChk').onchange=function(e){
+    state.compare=e.target.checked;
+    if(state.compare && state.slots.length<2) state.slots.push(newSlot(2));
+    if(!state.compare) state.slots=[state.slots[0]];
+    renderApp();
+  };
+  document.getElementById('simNSel').onchange=function(e){ state.simN=+e.target.value; };
+
+  renderClientQuestions();
+  var row = document.getElementById('slotsRow');
+  state.slots.forEach(function(slot){
+    var card = document.createElement('div');
+    card.id = 'slotCard-'+slot.id;
+    card.style.cssText = 'flex:1 1 380px;min-width:340px;background:'+C.surf+';border:1px solid '+C.brd+';border-radius:12px;padding:18px 20px;box-shadow:0 1px 2px rgba(0,0,0,0.04);';
+    row.appendChild(card);
+    renderSlotCard(slot);
+  });
+}
+
+function renderClientQuestions(){
+  var el = document.getElementById('clientQ');
+  el.innerHTML =
+    '<div style="font-size:13px;color:'+C.gold+';font-weight:700;letter-spacing:0.5px;margin-bottom:12px;">LE TUE RICHIESTE</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">'+
+      '<div>'+
+        '<label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px;">Quanto sei disposto a perdere al massimo?</label>'+
+        '<div style="display:flex;align-items:center;gap:6px;">'+
+          '<span style="font-size:18px;color:'+C.soft+';">€</span>'+
+          '<input id="inMaxLoss" type="text" inputmode="decimal" placeholder="es. 2000" value="'+esc(state.clientInputs.maxLoss)+'" style="flex:1;padding:10px 12px;border:1px solid '+C.brd+';border-radius:8px;font-size:16px;"/>'+
+        '</div>'+
+      '</div>'+
+      '<div>'+
+        '<label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px;">Entro quando?</label>'+
+        '<input id="inTargetDate" type="date" value="'+esc(state.clientInputs.targetDate)+'" style="width:100%;padding:10px 12px;border:1px solid '+C.brd+';border-radius:8px;font-size:16px;"/>'+
+      '</div>'+
+      '<div>'+
+        '<label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px;">Quanto vorresti guadagnare? <span style="font-weight:400;color:'+C.soft+';font-size:12px;">(facoltativo)</span></label>'+
+        '<div style="display:flex;align-items:center;gap:6px;">'+
+          '<span style="font-size:18px;color:'+C.soft+';">€</span>'+
+          '<input id="inTargetGain" type="text" inputmode="decimal" placeholder="es. 1000" value="'+esc(state.clientInputs.targetGain)+'" style="flex:1;padding:10px 12px;border:1px solid '+C.brd+';border-radius:8px;font-size:16px;"/>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('inMaxLoss').oninput=function(e){ state.clientInputs.maxLoss=e.target.value; state.slots.forEach(computeRisk); updateAllRiskLines(); };
+  document.getElementById('inTargetDate').onchange=function(e){ state.clientInputs.targetDate=e.target.value; };
+  document.getElementById('inTargetGain').oninput=function(e){ state.clientInputs.targetGain=e.target.value; };
+}
+
+function updateAllRiskLines(){
+  state.slots.forEach(function(slot){
+    var elN = document.getElementById('riskLine-'+slot.id);
+    if(elN) elN.innerHTML = riskLineHtml(slot);
+  });
+}
+
+function riskLineHtml(slot){
+  if(!structureComplete(slot)) return '<span style="color:'+C.soft+';font-size:13px;">Completa i dati dell’operazione per vedere quanti contratti puoi aprire.</span>';
+  if(slot.mxLPerContract<=0) return '<span style="color:'+C.red+';font-size:13px;">Dati non validi per questa operazione.</span>';
+  var L = parseNum(state.clientInputs.maxLoss)||0;
+  if(L<=0) return '<span style="color:'+C.soft+';font-size:13px;">Indica sopra quanto sei disposto a perdere al massimo.</span>';
+  if(slot.n<1) return '<span style="color:'+C.red+';font-size:13px;">Con '+fmtE(L)+' non è possibile aprire nemmeno un contratto (minimo '+fmtE(slot.mxLPerContract)+').</span>';
+  return '<span style="font-size:13px;color:'+C.txt+';">Contratti apribili: <b>'+slot.n+'</b> · rischio effettivo: <b style="color:'+C.red+';">'+fmtE(slot.capitaleRischiato)+'</b> (non oltre i '+fmtE(L)+' indicati)</span>';
+}
+
+function renderSlotCard(slot){
+  var card = document.getElementById('slotCard-'+slot.id);
+  if(!card) return;
+  var title = state.compare ? ('Operazione '+(slot.id===1?'A':'B')) : 'Operazione';
+
+  var html = '<div style="font-size:15px;font-weight:700;color:'+C.txt+';margin-bottom:10px;">'+title+'</div>';
+
+  html += '<div style="display:flex;gap:6px;margin-bottom:12px;">'+
+    '<button id="modeManual-'+slot.id+'" style="'+BTN(slot.mode==='manual'?C.gold:'transparent', slot.mode==='manual'?'#fff':C.soft, 'border:1px solid '+(slot.mode==='manual'?C.gold:C.brd)+';font-size:12px;padding:6px 12px;')+'">Manuale</button>'+
+    '<button id="modeLive-'+slot.id+'" style="'+BTN(slot.mode==='live'?C.gold:'transparent', slot.mode==='live'?'#fff':C.soft, 'border:1px solid '+(slot.mode==='live'?C.gold:C.brd)+';font-size:12px;padding:6px 12px;')+'">Dalle posizioni</button>'+
+  '</div>';
+
+  html += '<div id="structArea-'+slot.id+'"></div>';
+  html += '<div id="riskLine-'+slot.id+'" style="margin:10px 0;">'+riskLineHtml(slot)+'</div>';
+
+  html += '<div style="margin-top:8px;">';
+  if(slot.running){
+    html += '<div style="display:flex;align-items:center;gap:10px;">'+
+      '<div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;"><div id="progBar-'+slot.id+'" style="height:100%;width:'+(slot.prog||0)+'%;background:'+C.gold+';border-radius:4px;transition:width .1s;"></div></div>'+
+      '<span id="progLab-'+slot.id+'" style="font-size:12px;color:'+C.soft+';min-width:32px;">'+(slot.prog||0)+'%</span>'+
+      '<button id="btnStop-'+slot.id+'" style="'+BTN(C.red,'#fff','font-size:12px;padding:6px 12px;')+'">■ Ferma</button>'+
+    '</div>';
+  } else {
+    html += '<button id="btnRun-'+slot.id+'" style="'+BTN(C.gold,'#fff','width:100%;padding:12px;font-size:15px;')+'">▶ Calcola gli scenari</button>';
+    if(slot.result) html += '<button id="btnReset-'+slot.id+'" style="'+BTN('transparent',C.soft,'border:1px solid '+C.brd+';margin-top:6px;width:100%;font-size:12px;')+'">Nuovo calcolo</button>';
+  }
+  if(slot.runErr) html += '<div style="margin-top:8px;padding:8px 10px;background:#fef2f2;border:1px solid '+C.red+';border-radius:6px;color:'+C.red+';font-size:12px;">'+esc(slot.runErr)+'</div>';
+  html += '</div>';
+
+  html += '<div id="resultArea-'+slot.id+'" style="margin-top:14px;"></div>';
+
+  card.innerHTML = html;
+
+  document.getElementById('modeManual-'+slot.id).onclick=function(){ slot.mode='manual'; renderApp(); };
+  document.getElementById('modeLive-'+slot.id).onclick=function(){ slot.mode='live'; renderApp(); if(!slot.liveSpreads) loadLivePositions(slot); };
+  var btnRun = document.getElementById('btnRun-'+slot.id);
+  if(btnRun) btnRun.onclick=function(){ runSlot(slot); };
+  var btnStop = document.getElementById('btnStop-'+slot.id);
+  if(btnStop) btnStop.onclick=function(){ stopSlot(slot); };
+  var btnReset = document.getElementById('btnReset-'+slot.id);
+  if(btnReset) btnReset.onclick=function(){ resetSlot(slot); };
+
+  renderStructArea(slot);
+  renderResultArea(slot);
+}
+
+function renderStructArea(slot){
+  var el = document.getElementById('structArea-'+slot.id);
+  if(!el) return;
+  if(slot.mode==='live'){ renderLiveStruct(slot, el); return; }
+  renderManualStruct(slot, el);
+}
+
+function renderManualStruct(slot, el){
+  el.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Titolo</label>'+
+        '<select id="selUnd-'+slot.id+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;">'+
+          '<option value="">—</option>'+
+          TICKERS.map(function(tk){return '<option value="'+tk+'" '+(slot.und===tk?'selected':'')+'>'+tk+'</option>';}).join('')+
+        '</select></div>'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Tipo</label>'+
+        '<select id="selType-'+slot.id+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;">'+
+          '<option value="call" '+(slot.type==='call'?'selected':'')+'>Call (rialzista)</option>'+
+          '<option value="put" '+(slot.type==='put'?'selected':'')+'>Put (ribassista)</option>'+
+        '</select></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Strike venduto</label>'+
+        '<input id="inKs-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.Ks!=null?slot.Ks:'')+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;"/></div>'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Strike acquistato</label>'+
+        '<input id="inKl-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.Kl!=null?slot.Kl:'')+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;"/></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Incasso ricevuto (gamba venduta)</label>'+
+        '<input id="inPremS-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.premS!=null?slot.premS:'')+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;"/></div>'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Costo pagato (gamba acquistata)</label>'+
+        '<input id="inPremL-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.premL!=null?slot.premL:'')+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;"/></div>'+
+    '</div>'+
+    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Scadenza dell’operazione</label>'+
+      '<input id="inExpiry-'+slot.id+'" type="date" value="'+(slot.expiryDate?isoDate(slot.expiryDate):'')+'" style="width:100%;padding:7px 8px;border:1px solid '+C.brd+';border-radius:6px;font-size:13px;"/></div>'+
+    renderSpotIvBlock(slot);
+
+  document.getElementById('selUnd-'+slot.id).onchange=function(e){ setManualTicker(slot, e.target.value||null); };
+  document.getElementById('selType-'+slot.id).onchange=function(e){ slot.type=e.target.value; onManualFieldChange(slot); };
+  document.getElementById('inKs-'+slot.id).oninput=function(e){ var v=parseNum(e.target.value); slot.Ks=isNaN(v)?null:v; onManualFieldChange(slot); };
+  document.getElementById('inKl-'+slot.id).oninput=function(e){ var v=parseNum(e.target.value); slot.Kl=isNaN(v)?null:v; onManualFieldChange(slot); };
+  document.getElementById('inPremS-'+slot.id).oninput=function(e){ var v=parseNum(e.target.value); slot.premS=isNaN(v)?null:v; onManualFieldChange(slot); };
+  document.getElementById('inPremL-'+slot.id).oninput=function(e){ var v=parseNum(e.target.value); slot.premL=isNaN(v)?null:v; onManualFieldChange(slot); };
+  document.getElementById('inExpiry-'+slot.id).onchange=function(e){ slot.expiryDate=e.target.value?new Date(e.target.value+'T00:00:00'):null; onManualFieldChange(slot); };
+  wireSpotIvBlock(slot);
+}
+
+function renderSpotIvBlock(slot){
+  var banner='';
+  if(slot.fetchedAt && (!slot.spotLive || !slot.ivLive)){
+    var hh=pad2(slot.fetchedAt.getHours()), mm=pad2(slot.fetchedAt.getMinutes());
+    banner = '<div style="background:'+C.yellowBg+';border:1px solid '+C.yellowBrd+';border-radius:6px;padding:6px 8px;margin-bottom:6px;font-size:11px;color:#92400e;">⚠ dati inseriti manualmente alle '+hh+':'+mm+' — verifica prezzo e volatilità prima di procedere.</div>';
+  }
+  return banner+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Prezzo attuale del titolo'+(slot.fetching?' (aggiornamento…)':'')+'</label>'+
+        '<input id="inSpot-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.spot||'')+'" style="width:100%;padding:7px 8px;border:1px solid '+(slot.spotLive?'#16a34a55':C.brd)+';border-radius:6px;font-size:13px;"/></div>'+
+      '<div><label style="font-size:11px;color:'+C.soft+';display:block;margin-bottom:3px;">Volatilità attesa (%)</label>'+
+        '<input id="inIv-'+slot.id+'" type="text" inputmode="decimal" value="'+(slot.iv?(slot.iv*100).toFixed(1):'')+'" style="width:100%;padding:7px 8px;border:1px solid '+(slot.ivLive?'#16a34a55':C.brd)+';border-radius:6px;font-size:13px;"/></div>'+
+    '</div>';
+}
+
+function wireSpotIvBlock(slot){
+  var spotEl = document.getElementById('inSpot-'+slot.id);
+  var ivEl = document.getElementById('inIv-'+slot.id);
+  if(spotEl) spotEl.oninput=function(e){ var v=parseNum(e.target.value); slot.spot=isNaN(v)?0:v; slot.spotLive=false; };
+  if(ivEl) ivEl.oninput=function(e){ var v=parseNum(e.target.value); slot.iv=isNaN(v)?0:(v/100); slot.ivLive=false; };
+}
+
+function renderLiveStruct(slot, el){
+  if(slot.liveLoading){ el.innerHTML='<div style="font-size:12px;color:'+C.soft+';padding:10px 0;">Caricamento posizioni…</div>'; return; }
+  if(slot.liveErr && (!slot.liveSpreads || slot.liveSpreads.length===0)){
+    el.innerHTML='<div style="font-size:12px;color:'+C.red+';padding:6px 0;">'+esc(slot.liveErr)+'</div>'+
+      '<button id="btnRetryLive-'+slot.id+'" style="'+BTN(C.gold,'#fff','font-size:12px;padding:6px 12px;')+'">Riprova</button>';
+    var rb=document.getElementById('btnRetryLive-'+slot.id); if(rb) rb.onclick=function(){ loadLivePositions(slot); };
+    return;
+  }
+  if(slot.selectedSpreadId){
+    var sp = (slot.liveSpreads||[]).filter(function(s){return s.id===slot.selectedSpreadId;})[0];
+    el.innerHTML =
+      '<div style="background:#f9fafb;border:1px solid '+C.brd+';border-radius:8px;padding:10px 12px;margin-bottom:8px;">'+
+        '<div style="font-weight:700;color:'+C.gold+';">'+esc(sp?sp.label:(slot.und+' '+slot.type))+'</div>'+
+        '<div style="font-size:12px;color:'+C.soft+';margin-top:2px;">scadenza '+fmtDateIt(slot.expiryDate)+'</div>'+
+      '</div>'+
+      '<button id="btnChangeLive-'+slot.id+'" style="'+BTN('transparent',C.soft,'border:1px solid '+C.brd+';font-size:12px;padding:6px 12px;margin-bottom:8px;')+'">Cambia operazione</button>'+
+      renderSpotIvBlock(slot);
+    var bc=document.getElementById('btnChangeLive-'+slot.id); if(bc) bc.onclick=function(){ slot.selectedSpreadId=null; renderApp(); };
+    wireSpotIvBlock(slot);
+    return;
+  }
+  var list = slot.liveSpreads||[];
+  if(list.length===0){ el.innerHTML='<div style="font-size:12px;color:'+C.soft+';padding:10px 0;">Nessuna operazione a due gambe trovata nelle posizioni correnti.</div>'; return; }
+  el.innerHTML = '<div style="font-size:11px;color:'+C.soft+';margin-bottom:6px;">Seleziona un’operazione dalle posizioni:</div>'+
+    '<div style="display:flex;flex-direction:column;gap:5px;max-height:220px;overflow:auto;">'+
+      list.map(function(sp){
+        return '<div class="liveOpt" data-id="'+sp.id+'" style="cursor:pointer;padding:8px 10px;border:1px solid '+C.brd+';border-radius:6px;">'+
+          '<div style="font-size:13px;font-weight:600;color:'+C.gold+';">'+esc(sp.label)+'</div>'+
+          '<div style="font-size:11px;color:'+C.soft+';">'+sp.DTE+' giorni alla scadenza</div>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+  el.querySelectorAll('.liveOpt').forEach(function(node){
+    node.onclick=function(){
+      var id=node.getAttribute('data-id');
+      var sp=list.filter(function(s){return s.id===id;})[0];
+      if(sp) selectLiveSpread(slot, sp);
+    };
+  });
+}
+
+function barColor(mid){ if(Math.abs(mid)<1e-6) return C.soft; return mid<0?C.red:C.grn; }
+
+function renderResultArea(slot){
+  var el = document.getElementById('resultArea-'+slot.id);
+  if(!el) return;
+  var r = slot.result;
+  if(!r){ el.innerHTML=''; return; }
+
+  var maxAbs = Math.max.apply(null, r.buckets.map(function(g){return Math.abs((g.lo+g.hi)/2);}).concat([1]));
+  var barsHtml = r.buckets.map(function(g){
+    var mid=(g.lo+g.hi)/2;
+    var col = barColor(mid);
+    var w = Math.max(4, Math.round(Math.abs(mid)/maxAbs*100));
+    var reaches = r.targetInfo && g.lo>=r.targetInfo.value;
+    return '<div style="margin-bottom:7px;">'+
+      '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:2px;">'+
+        '<span style="color:'+C.txt+';">'+esc(g.label)+(reaches?' 🎯':'')+'</span>'+
+        '<span style="color:'+C.soft+';">'+fmtPct(g.pct)+'</span>'+
+      '</div>'+
+      '<div style="height:14px;background:#f1f1f4;border-radius:4px;overflow:hidden;">'+
+        '<div style="height:100%;width:'+w+'%;background:'+col+';border-radius:4px;"></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  var mtmNote = r.mode==='mtm' ? '<div style="font-size:11px;color:'+C.soft+';margin-bottom:8px;">Valutazione alla data richiesta (l’operazione non è ancora arrivata a scadenza).</div>' : '';
+  var clampNote = slot.clampedToExpiry ? '<div style="font-size:12px;color:'+C.amber+';margin-bottom:8px;">L’operazione scade il '+fmtDateIt(slot.expiryDate)+': oltre quella data non esiste, il calcolo è fermato lì.</div>' : '';
+
+  var targetHtml='';
+  if(r.targetInfo){
+    targetHtml = '<div style="margin-top:10px;padding:10px 12px;background:#eff6ff;border:1px solid '+C.blue+'55;border-radius:8px;font-size:13px;">'+
+      '🎯 Il tuo obiettivo di <b>'+fmtE(r.targetInfo.value)+'</b> ha una probabilità del <b style="color:'+C.blue+';">'+fmtPct(r.targetInfo.prob)+'</b>.'+
+    '</div>';
+  }
+
+  el.innerHTML =
+    '<div style="display:flex;gap:10px;margin-bottom:12px;">'+
+      '<div style="flex:1;background:#fef2f2;border:1px solid '+C.red+'33;border-radius:8px;padding:10px 12px;">'+
+        '<div style="font-size:11px;color:'+C.soft+';">Nel caso peggiore</div>'+
+        '<div style="font-size:16px;font-weight:800;color:'+C.red+';">-'+fmtE(r.mxLE)+'</div>'+
+        '<div style="font-size:10.5px;color:'+C.soft+';">e non un euro di più</div>'+
+      '</div>'+
+      '<div style="flex:1;background:#f0fdf4;border:1px solid '+C.grn+'33;border-radius:8px;padding:10px 12px;">'+
+        '<div style="font-size:11px;color:'+C.soft+';">Risultato medio atteso</div>'+
+        '<div style="font-size:16px;font-weight:800;color:'+pCol(r.evE)+';">'+(r.evE>=0?'+':'')+fmtE(r.evE)+'</div>'+
+        '<div style="font-size:10.5px;color:'+C.soft+';">su '+r.N.toLocaleString('it-IT')+' simulazioni</div>'+
+      '</div>'+
+    '</div>'+
+    mtmNote + clampNote +
+    '<div style="font-size:12px;color:'+C.soft+';margin-bottom:6px;">Possibili esiti, dal peggiore al migliore:</div>'+
+    barsHtml +
+    targetHtml;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+renderApp();
+
+})();
+</script>
+</body>
+</html>
